@@ -16,7 +16,7 @@ public class Doggo {
         this.sex = sex;
     }
 
-    private enum gender{male,female};
+    protected enum gender{male,female};
     private gender sex;
 
     public gender getSex() {
