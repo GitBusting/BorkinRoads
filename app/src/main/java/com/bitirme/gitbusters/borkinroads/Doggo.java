@@ -7,6 +7,15 @@ public class Doggo {
     private String breed;
     private Date birth_date;
     private Date last_walk_date;
+
+    public Doggo(String name, String breed, Date birth_date, Date last_walk_date, gender sex) {
+        this.name = name;
+        this.breed = breed;
+        this.birth_date = birth_date;
+        this.last_walk_date = last_walk_date;
+        this.sex = sex;
+    }
+
     private enum gender{male,female};
     private gender sex;
 
