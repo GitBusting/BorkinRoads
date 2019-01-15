@@ -23,12 +23,16 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_chainStyle="spread_inside">
 
-            <ImageView
-                android:id="@+id/imageView2"
+            <ImageButton
+                android:id="@+id/pbutton"
                 android:layout_width="180dp"
                 android:layout_height="180dp"
-                android:contentDescription="ppofdoggie"
-                app:srcCompat="@color/colorPrimaryDark" />
+                android:layout_marginTop="6dp"
+                android:paddingStart="24dp"
+                android:paddingTop="16dp"
+                android:paddingEnd="24dp"
+                android:paddingBottom="16dp"
+                android:src="@drawable/currentdoggoimg" />
 
             <Space
                 android:layout_width="13dp"
@@ -149,6 +153,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintGuide_begin="105dp" />
+
     </android.support.constraint.ConstraintLayout>
 
 </android.support.design.widget.CoordinatorLayout>

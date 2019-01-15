@@ -1,14 +1,14 @@
 package com.bitirme.gitbusters.borkinroads;
 
-import java.util.Date;
+import java.util.GregorianCalendar;
 
 public class Doggo {
     private String name;
     private String breed;
-    private Date birth_date;
-    private Date last_walk_date;
+    private GregorianCalendar birth_date;
+    private GregorianCalendar last_walk_date;
 
-    public Doggo(String name, String breed, Date birth_date, Date last_walk_date, gender sex) {
+    public Doggo(String name, String breed, GregorianCalendar birth_date, GregorianCalendar last_walk_date, gender sex) {
         this.name = name;
         this.breed = breed;
         this.birth_date = birth_date;
@@ -16,7 +16,10 @@ public class Doggo {
         this.sex = sex;
     }
 
-    protected enum gender{male,female};
+    public GregorianCalendar getBirth_date() {
+        return birth_date;
+    }
+
     private gender sex;
 
     public gender getSex() {
@@ -43,20 +46,18 @@ public class Doggo {
         this.breed = breed;
     }
 
-    public Date getBirth_date() {
-        return birth_date;
-    }
-
-    public void setBirth_date(Date birth_date) {
+    public void setBirth_date(GregorianCalendar birth_date) {
         this.birth_date = birth_date;
     }
 
-    public Date getLast_walk_date() {
+    public GregorianCalendar getLast_walk_date() {
         return last_walk_date;
     }
 
-    public void setLast_walk_date(Date last_walk_date) {
+    public void setLast_walk_date(GregorianCalendar last_walk_date) {
         this.last_walk_date = last_walk_date;
     }
+
+    protected enum gender {male, female}
 
 }
