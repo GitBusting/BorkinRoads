@@ -26,11 +26,11 @@
         android:layout_width="240dp"
         android:layout_height="match_parent"
         android:numStars="5"
-        android:isIndicator="true"
         android:focusable="false"
-        android:clickable="false"
+        android:clickable="true"
         android:rating="3.5"
-        android:max="5"/>
+        android:max="5"
+        android:stepSize="0.5"/>
 
     <TextView
         android:id="@+id/display_row_date"
