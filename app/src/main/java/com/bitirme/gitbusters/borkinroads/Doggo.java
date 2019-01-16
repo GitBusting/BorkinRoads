@@ -1,14 +1,14 @@
 package com.bitirme.gitbusters.borkinroads;
 
-import java.util.GregorianCalendar;
+import java.time.ZonedDateTime;
 
 public class Doggo {
     private String name;
     private String breed;
-    private GregorianCalendar birth_date;
-    private GregorianCalendar last_walk_date;
+    private ZonedDateTime birth_date;
+    private ZonedDateTime last_walk_date;
 
-    public Doggo(String name, String breed, GregorianCalendar birth_date, GregorianCalendar last_walk_date, gender sex) {
+    Doggo(String name, String breed, ZonedDateTime birth_date, ZonedDateTime last_walk_date, gender sex) {
         this.name = name;
         this.breed = breed;
         this.birth_date = birth_date;
@@ -16,14 +16,14 @@ public class Doggo {
         this.sex = sex;
     }
 
-    public GregorianCalendar getBirth_date() {
+    ZonedDateTime getBirth_date() {
         return birth_date;
     }
 
     private gender sex;
 
-    public gender getSex() {
-        return sex;
+    public void setBirth_date(ZonedDateTime birth_date) {
+        this.birth_date = birth_date;
     }
 
     public void setSex(gender sex) {
@@ -38,7 +38,7 @@ public class Doggo {
         this.name = name;
     }
 
-    public String getBreed() {
+    String getBreed() {
         return breed;
     }
 
@@ -46,18 +46,18 @@ public class Doggo {
         this.breed = breed;
     }
 
-    public void setBirth_date(GregorianCalendar birth_date) {
-        this.birth_date = birth_date;
+    gender getSex() {
+        return sex;
     }
 
-    public GregorianCalendar getLast_walk_date() {
+    public ZonedDateTime getLast_walk_date() {
         return last_walk_date;
     }
 
-    public void setLast_walk_date(GregorianCalendar last_walk_date) {
+    public void setLast_walk_date(ZonedDateTime last_walk_date) {
         this.last_walk_date = last_walk_date;
     }
 
-    protected enum gender {male, female}
+    protected enum gender {Male, Female}
 
 }

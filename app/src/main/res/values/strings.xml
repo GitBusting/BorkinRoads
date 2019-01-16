@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">BorkinRoads</string>
     <string name="title_activity_map">Map</string>
+    <string name="name">Name</string>
+    <string name="gender">Gender</string>
+    <string name="breed">Breed</string>
+    <string name="ppofdoggo">ppofdoggo</string>
+    <string name="_01_01_1970">01/01/1970</string>
+    <string name="bday">BDay</string>
 </resources>

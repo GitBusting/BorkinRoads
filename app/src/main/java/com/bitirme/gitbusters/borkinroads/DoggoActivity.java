@@ -13,7 +13,10 @@ import android.widget.TextView;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.GregorianCalendar;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 public class DoggoActivity extends AppCompatActivity {
 
@@ -32,7 +35,6 @@ public class DoggoActivity extends AppCompatActivity {
         birthdate = findViewById(R.id.birthdate);
         age       = findViewById(R.id.age);
         ppbutton = findViewById(R.id.pbutton);
-        // TODO: fix the ratio of the button picture
 
         ppbutton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -40,13 +42,19 @@ public class DoggoActivity extends AppCompatActivity {
                 startActivityForResult(new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI), GET_FROM_GALLERY);
             }
         });
-        Doggo temp = new Doggo("SysTemp", "Terrier", new GregorianCalendar(2019, 1, 1), new GregorianCalendar(2019, 1, 1), Doggo.gender.male);
+        Doggo temp = new Doggo("SysTemp", "Terrier", ZonedDateTime.now(ZoneId.systemDefault()), ZonedDateTime.now(ZoneId.systemDefault()), Doggo.gender.Male);
         //  TODO: Swap out TestDoggo to selected doggo.
 
+        ZonedDateTime rn = ZonedDateTime.now(ZoneId.systemDefault());
+        long monthold = ChronoUnit.MONTHS.between(temp.getBirth_date(), rn);
         name.setText(temp.getName());
         breed.setText(temp.getBreed());
-        birthdate.setText(temp.getBirth_date().toString());
-        age.setText(temp.getBirth_date().toString()); //broken on purpose
+        gender.setText(temp.getSex().toString());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
+        birthdate.setText(temp.getBirth_date().format(formatter));
+        String plural = (monthold == 1) ? " month old" : " months old";
+        String mo = monthold + "";
+        age.setText(mo.concat(plural));
     }
 
     @Override
