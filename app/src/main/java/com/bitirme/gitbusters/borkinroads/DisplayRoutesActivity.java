@@ -1,6 +1,7 @@
 package com.bitirme.gitbusters.borkinroads;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -18,8 +19,7 @@ import com.google.android.gms.maps.MapsInitializer;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-
-import java.util.ArrayList;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 public class DisplayRoutesActivity extends Activity {
 
@@ -41,7 +41,9 @@ public class DisplayRoutesActivity extends Activity {
         mRecyclerView.setRecyclerListener(mRecycleListener);
     }
 
-
+    /*
+    * Adapter View Holder pattern for displaying lite mode Gmap
+     */
 
     private class DisplayRouteAdapter extends RecyclerView.Adapter<DisplayRouteAdapter.ViewHolder> {
         DisplayRouteRow[] mRouteList;
@@ -101,27 +103,54 @@ public class DisplayRoutesActivity extends Activity {
             public void onMapReady(GoogleMap googleMap) {
                 MapsInitializer.initialize(getApplicationContext());
                 map = googleMap;
-                setMapLocation();
+                displayRouteOnMap();
 
             }
 
-            private void setMapLocation() {
+//            private void setMapLocation() {
+//                if (map == null) return;
+//
+//                DisplayRouteRow data = (DisplayRouteRow) mapView.getTag();
+//                if (data == null) return;
+//
+//                //map.moveCamera(CameraUpdateFactory.newLatLngZoom(data.getPoints()));
+//                map.addMarker(new MarkerOptions().position(data.getPoints()));
+//
+//                map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+//
+//
+//
+//            }
+
+            private void displayRouteOnMap() {
                 if (map == null) return;
 
                 DisplayRouteRow data = (DisplayRouteRow) mapView.getTag();
                 if (data == null) return;
 
-                //map.moveCamera(CameraUpdateFactory.newLatLngZoom(data.getLocation()));
-                map.addMarker(new MarkerOptions().position(data.getLocation()));
+                PolylineOptions polylineOptions = new PolylineOptions();
+                for(LatLng point : data.getPoints())
+                    polylineOptions.add(point);
 
+                polylineOptions.width(12);
+                polylineOptions.clickable(false);
+                polylineOptions.color(Color.BLUE);
+                map.addPolyline(polylineOptions);
+                LatLng firstPoint = data.getPoints()[0];
+                LatLng lastPoint = data.getPoints()[data.getPoints().length - 1];
+                LatLng middlePoint = new LatLng((firstPoint.latitude + lastPoint.latitude)/2 ,(firstPoint.longitude + lastPoint.longitude)/2);
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(middlePoint, 11f));
+                map.addMarker((new MarkerOptions().position(firstPoint)));
+                map.addMarker(new MarkerOptions().position(lastPoint));
                 map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+
             }
 
             private void bindView(int pos) {
                 DisplayRouteRow item = mRouteList[pos];
                 layout.setTag(this);
                 mapView.setTag(item);
-                setMapLocation();
+                displayRouteOnMap();
                 title.setText(item.getTitle());
                 ratingBar.setRating(item.getRating());
                 routeDate.setText(item.getRouteDate());
@@ -146,8 +175,8 @@ public class DisplayRoutesActivity extends Activity {
      * A list of locations to show in this ListView.
      */
     private static final DisplayRouteRow[] LIST_LOCATIONS = new DisplayRouteRow[]{
-            new DisplayRouteRow("Cape Town", new LatLng(-33, 18), 3.5f, "11/11/11"),
-            new DisplayRouteRow("Beijing", new LatLng(39, 116), 3.5f, "11/11/11")
+            new DisplayRouteRow("Home to School", new LatLng[]{new LatLng(39.941734, 32.63447), new LatLng(39.920665, 32.801853)}, 3.5f, "11/11/11"),
+            new DisplayRouteRow("Beijing", new LatLng[]{new LatLng(50.854509, 4.376678), new LatLng(55.679423, 12.577114), new LatLng(52.372026, 9.735672)}, 3.5f, "11/11/11")
     };
 
 }

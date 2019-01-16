@@ -1,31 +1,29 @@
 package com.bitirme.gitbusters.borkinroads;
 
-import android.widget.RatingBar;
-
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.model.LatLng;
 
 public class DisplayRouteRow {
 
     private String title;
-    private LatLng location;
+    private LatLng[] points;
     private MapView mapView;
     private float rating;
     private String routeDate;
 
-    public DisplayRouteRow(String title, LatLng location, float rating, String routeDate) {
+    public DisplayRouteRow(String title, LatLng[] points, float rating, String routeDate) {
         this.title = title;
         this.rating = rating;
         this.routeDate = routeDate;
-        this.location = location;
+        this.points = points;
     }
 
-    public LatLng getLocation() {
-        return location;
+    public LatLng[] getPoints() {
+        return points;
     }
 
-    public void setLocation(LatLng location) {
-        this.location = location;
+    public void setPoints(LatLng[] points) {
+        this.points = points;
     }
 
     public String getTitle() {
