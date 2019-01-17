@@ -1,9 +1,12 @@
 package com.bitirme.gitbusters.borkinroads;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -36,17 +39,27 @@ public class MapActivity extends FragmentActivity
         implements GoogleMap.OnMyLocationButtonClickListener,
         GoogleMap.OnMyLocationClickListener,
         OnMapReadyCallback,
-        DirectionCallback {
+        DirectionCallback,
+        LocationListener {
 
   private GoogleMap mMap;
   private ArrayList<Marker> markers;
   private ArrayList<LatLng> coordinates;
   private ArrayList<Polyline> routes;
 
+  protected LocationManager locationManager;
+  private LatLng cur_location;
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_map);
+    cur_location=null;
+    locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+      return;
+    }
+    locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
 
     // "Reset Button" will remove all markers from
     // the screen and clear the coordinates list
@@ -123,9 +136,11 @@ public class MapActivity extends FragmentActivity
 
   public final void requestDirection() {
     ArrayList<LatLng> coords = new ArrayList<>(coordinates);
-    LatLng start = coords.remove(0);
-    LatLng end = coords.remove(coords.size() - 1);
-    GoogleDirection.withServerKey("AIzaSyA3nOUd0mIm1mCoUIx1DRa-qsCT3Kz1a_k")
+    LatLng start = cur_location;
+    LatLng end = cur_location;
+    String apikey = "";
+    assert(!apikey.equals("")); //insert apikey
+    GoogleDirection.withServerKey(apikey)
             .from(start)
             .and(coords)
             .to(end)
@@ -161,5 +176,25 @@ public class MapActivity extends FragmentActivity
   @Override
   public void onDirectionFailure(Throwable t) {
     t.printStackTrace();
+  }
+
+  @Override
+  public void onLocationChanged(Location location) {
+    cur_location = new LatLng(location.getLatitude(), location.getLongitude());
+  }
+
+  @Override
+  public void onStatusChanged(String s, int i, Bundle bundle) {
+
+  }
+
+  @Override
+  public void onProviderEnabled(String s) {
+
+  }
+
+  @Override
+  public void onProviderDisabled(String s) {
+
   }
 }
