@@ -3,12 +3,14 @@ package com.bitirme.gitbusters.borkinroads;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
@@ -74,6 +76,10 @@ public class DisplayRoutesActivity extends Activity {
             return new DisplayRouteAdapter.ViewHolder(LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.route_display_row, parent, false));
         }
+//
+//        public void addListenerOnRatingBar() {
+//            RatingBar ratingBar = (RatingBar) findViewById(R.id.display_row_rating);
+//        }
 
 
         class ViewHolder extends RecyclerView.ViewHolder implements OnMapReadyCallback {
@@ -84,6 +90,7 @@ public class DisplayRoutesActivity extends Activity {
             RatingBar ratingBar;
             GoogleMap map;
             View layout;
+            ImageView favourite;
 
             public ViewHolder(View itemView) {
                 super(itemView);
@@ -92,6 +99,7 @@ public class DisplayRoutesActivity extends Activity {
                 title = layout.findViewById(R.id.display_row_title);
                 routeDate = layout.findViewById(R.id.display_row_date);
                 ratingBar = layout.findViewById(R.id.display_row_rating);
+                favourite = layout.findViewById(R.id.favourite);
 
                 if (mapView != null) {
                     mapView.onCreate(null);
@@ -154,6 +162,19 @@ public class DisplayRoutesActivity extends Activity {
                 title.setText(item.getTitle());
                 ratingBar.setRating(item.getRating());
                 routeDate.setText(item.getRouteDate());
+
+                favourite.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+
+                        //Impelement db logic
+                        if (favourite.getColorFilter() != null) {
+                            favourite.clearColorFilter();
+                        } else {
+                            favourite.setColorFilter(Color.YELLOW);
+                        }
+                    }
+                });
             }
 
 
