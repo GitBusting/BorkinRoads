@@ -36,7 +36,7 @@ public class DisplayRoutesActivity extends Activity {
         mGridLayoutManager = new GridLayoutManager(this, 2);
         mLinearLayoutManager = new LinearLayoutManager(this);
 
-        mRecyclerView = (RecyclerView)findViewById(R.id.recyclerview);
+        mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
         mRecyclerView.setAdapter(new DisplayRouteAdapter(LIST_LOCATIONS));
@@ -162,6 +162,8 @@ public class DisplayRoutesActivity extends Activity {
                 title.setText(item.getTitle());
                 ratingBar.setRating(item.getRating());
                 routeDate.setText(item.getRouteDate());
+                if (item.getFavourite())
+                    favourite.setColorFilter(Color.YELLOW);
 
                 favourite.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -196,8 +198,8 @@ public class DisplayRoutesActivity extends Activity {
      * A list of locations to show in this ListView.
      */
     private static final DisplayRouteRow[] LIST_LOCATIONS = new DisplayRouteRow[]{
-            new DisplayRouteRow("Home to School", new LatLng[]{new LatLng(39.941734, 32.63447), new LatLng(39.920665, 32.801853)}, 3.5f, "11/11/11"),
-            new DisplayRouteRow("Beijing", new LatLng[]{new LatLng(50.854509, 4.376678), new LatLng(55.679423, 12.577114), new LatLng(52.372026, 9.735672)}, 3.5f, "11/11/11")
+            new DisplayRouteRow("Home to School", new LatLng[]{new LatLng(39.941734, 32.63447), new LatLng(39.920665, 32.801853)}, 3.5f, "11/11/11", true),
+            new DisplayRouteRow("Beijing", new LatLng[]{new LatLng(50.854509, 4.376678), new LatLng(55.679423, 12.577114), new LatLng(52.372026, 9.735672)}, 3.5f, "11/11/11", false)
     };
 
 }
