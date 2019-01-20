@@ -37,4 +37,14 @@
         android:padding="10dp"
         android:layout_marginTop="20dp"
         android:paddingRight="10dp"/>
+
+    <TextView
+        android:id="@+id/estimated_time"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:text="estimated time:"
+        android:textColor="@android:color/holo_blue_dark"
+        android:textColorHighlight="@android:color/primary_text_dark"
+        android:layout_gravity="center|top"
+        android:textSize="15dp"/>
 </fragment>

@@ -14,6 +14,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.akexorcist.googledirection.DirectionCallback;
@@ -58,6 +59,9 @@ public class MapActivity extends FragmentActivity
   protected LocationManager locationManager;
   private LatLng cur_location;
 
+  private int curEstTime;
+  private TextView estimated;
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -72,6 +76,10 @@ public class MapActivity extends FragmentActivity
     // TODO need to make sure we get an update every time the app starts
     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
     locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
+
+    //to show estimated time required for the selected route
+    estimated = (TextView) findViewById(R.id.estimated_time);
+    estimated.setVisibility(View.INVISIBLE);
 
     // "Reset Button" will remove all markers from
     // the screen and clear the coordinates list
@@ -160,6 +168,9 @@ public class MapActivity extends FragmentActivity
   public final void startEndRoute(){
     if(!routeActive) {
       currRoute = new ActiveRoute(cur_location, cur_location, coordinates, legColors);
+      estimated.setText("estimated time: " + curEstTime);
+      estimated.setBackgroundColor(Color.DKGRAY);
+      estimated.setVisibility(View.VISIBLE);
       cdt = new CountDownTimer(20000, 10000) {
         public void onTick(long millisUntilFinished) {
           System.out.println("Timer heartbeat per 10 seconds.");
@@ -169,6 +180,7 @@ public class MapActivity extends FragmentActivity
         }
       }.start();
     }else{
+        estimated.setVisibility(View.INVISIBLE);
       clearMap();
     }
     routeActive = !routeActive;
@@ -304,8 +316,11 @@ public class MapActivity extends FragmentActivity
     if (direction.isOK()) {
       Route route = direction.getRouteList().get(0);
       int legCount = route.getLegList().size();
+      curEstTime=0;
       for (int index = 0; index < legCount; index++) {
         Leg leg = route.getLegList().get(index);
+        System.out.println("index: " + index + " duration: " + leg.getDuration().getText() + " value: " + leg.getDuration().getValue());
+        curEstTime+=Integer.parseInt(leg.getDuration().getValue());
         List<Step> stepList = leg.getStepList();
         // Form & display polylines according to our route on the map
         ArrayList<PolylineOptions> polylineOptionList = new ArrayList<>();
