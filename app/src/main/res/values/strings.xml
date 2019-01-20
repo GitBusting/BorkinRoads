@@ -1,4 +1,14 @@
 <resources>
     <string name="app_name">BorkinRoads</string>
     <string name="title_activity_map">Map</string>
+    <string name="favourites">Favourites</string>
+    <string name="lake_river_sea">Lake/River/Sea</string>
+    <string name="park_forest">Park/Forest</string>
+
+    <string-array name="sorting_condtions">
+        <item>Rating</item>
+        <item>Number Of times Route is used</item>
+        <item>Last time when route is used</item>
+        <item>Estimated duration of route</item>
+    </string-array>
 </resources>

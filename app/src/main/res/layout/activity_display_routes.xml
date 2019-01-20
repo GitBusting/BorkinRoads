@@ -11,7 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingTop="5dp">
+        android:paddingTop="5dp"
+        >
 
         <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
             xmlns:map="http://schemas.android.com/apk/res-auto"
@@ -25,19 +26,19 @@
                 android:id="@+id/checkbox_favourite"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Favourites"/>
+                android:text="@string/favourites"/>
 
             <CheckBox
                 android:id="@+id/checkbox_lake_river_sea"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Lake/River/Sea"/>
+                android:text="@string/lake_river_sea"/>
 
             <CheckBox
                 android:id="@+id/checkbox_park_forest"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Park/Forest"/>
+                android:text="@string/park_forest"/>
 
 
         </LinearLayout>
@@ -81,27 +82,23 @@
                 android:id="@+id/spinner_sorting_condtion"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:></Spinner>
+                android:entries="@array/sorting_condtions"></Spinner>
+
             <ToggleButton
                 android:id="@+id/toggle_sorting_direction"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textOn="ASCENDING"
-                android:textOff="DESCENDING"/>
+                android:textOff="DESCENDING"
+                android:textOn="ASCENDING" />
 
-            <Button
-                android:id="@+id/button_sort"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="SORT"/>
+
         </LinearLayout>
 
-        <ToggleButton
-            android:id="@+id/toogleFav"
-            android:layout_width="wrap_content"
+        <Button
+            android:id="@+id/button_apply"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textOff="FAVOURITES"
-            android:textOn="ALL"/>
+            android:text="APPLY" />
 
 
     </LinearLayout>
