@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageButton;
@@ -36,6 +37,14 @@ public class DoggoActivity extends AppCompatActivity {
         age       = findViewById(R.id.age);
         ppbutton = findViewById(R.id.pbutton);
 
+        FloatingActionButton fab = findViewById(R.id.floatingActionButton);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(view.getContext(), BreedDoggos.class);
+                startActivity(i);
+            }
+        });
         ppbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
