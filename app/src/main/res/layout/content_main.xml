@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context=".MainActivity"
+    tools:showIn="@layout/app_bar_main">
+
+    <TableRow
+        android:id="@+id/tableRow"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/pbutton"
+            android:layout_width="180dp"
+            android:layout_height="180dp"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/ppofdoggo"
+            android:cropToPadding="true"
+            android:scaleType="centerCrop"
+            android:src="@drawable/currentdoggoimg" />
+
+        <Space
+            android:layout_width="13dp"
+            android:layout_height="match_parent" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:lineSpacingExtra="8sp"
+            android:orientation="vertical">
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="13dp" />
+
+            <TextView
+                android:id="@+id/name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/name"
+                android:textAppearance="@android:style/TextAppearance.DeviceDefault"
+                android:textSize="24sp" />
+
+            <TextView
+                android:id="@+id/gender"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lineSpacingExtra="10sp"
+                android:text="@string/gender"
+                android:textAlignment="viewStart"
+                android:textSize="18sp"
+                android:typeface="normal" />
+
+            <TextView
+                android:id="@+id/breed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lineSpacingExtra="8sp"
+                android:text="@string/breed"
+                android:textSize="18sp"
+                android:typeface="normal" />
+
+            <TextView
+                android:id="@+id/birthdate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lineSpacingExtra="8sp"
+                android:text="@string/bday"
+                android:textSize="18sp"
+                android:typeface="normal" />
+
+            <TextView
+                android:id="@+id/age"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:lineSpacingExtra="8sp"
+                android:text="@string/_01_01_1970"
+                android:textSize="18sp"
+                android:typeface="normal" />
+
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+    </TableRow>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="120dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:gravity="start"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageButton
+            style="@android:style/Widget.Holo.Light.ImageButton"
+            android:layout_width="0dp"
+            android:layout_height="128dp"
+            android:layout_weight="1"
+            android:adjustViewBounds="true"
+            android:contentDescription="tbd"
+            android:cropToPadding="true"
+            android:scaleType="fitStart"
+            app:srcCompat="@mipmap/ic_launcher_round" />
+
+    </LinearLayout>
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/floatingActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:clickable="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tableRow"
+        app:srcCompat="@android:drawable/btn_dialog" />
+
+</android.support.constraint.ConstraintLayout>
