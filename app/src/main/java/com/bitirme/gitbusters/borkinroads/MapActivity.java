@@ -8,6 +8,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -42,10 +43,17 @@ public class MapActivity extends FragmentActivity
         DirectionCallback,
         LocationListener {
 
+  private String apikey = "";
+
   private GoogleMap mMap;
   private ArrayList<Marker> markers;
   private ArrayList<LatLng> coordinates;
   private ArrayList<Polyline> routes;
+  private ArrayList<Integer> legColors;
+
+  private boolean routeActive;
+  private ActiveRoute currRoute;
+  private CountDownTimer cdt; // try to update route on finish
 
   protected LocationManager locationManager;
   private LatLng cur_location;
@@ -59,13 +67,19 @@ public class MapActivity extends FragmentActivity
     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
       return;
     }
+
+    // Register both GPS provider's and Network provider's updates to our listener
+    // TODO need to make sure we get an update every time the app starts
     locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
+    locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
 
     // "Reset Button" will remove all markers from
     // the screen and clear the coordinates list
+    routeActive = false;
     markers = new ArrayList<>();
     coordinates = new ArrayList<>();
     routes = new ArrayList<>();
+    legColors = new ArrayList<>();
     Button rb = findViewById(R.id.resetButton);
     rb.setOnClickListener(new View.OnClickListener() {
       @Override
@@ -77,6 +91,7 @@ public class MapActivity extends FragmentActivity
         for (Polyline p : routes)
           p.remove();
         routes.clear();
+        legColors.clear();
       }
     });
 
@@ -85,6 +100,14 @@ public class MapActivity extends FragmentActivity
       @Override
       public void onClick(View view) {
         requestDirection();
+      }
+    });
+
+    Button startRouteButton = findViewById(R.id.startRouteButton);
+    startRouteButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        startEndRoute();
       }
     });
 
@@ -134,12 +157,31 @@ public class MapActivity extends FragmentActivity
     return false;
   }
 
+  public final void startEndRoute(){
+    if(!routeActive) {
+      currRoute = new ActiveRoute(cur_location, cur_location, coordinates, legColors);
+      cdt = new CountDownTimer(20000, 10000) {
+        public void onTick(long millisUntilFinished) {
+          System.out.println("Timer heartbeat per 10 seconds.");
+        }
+        public void onFinish() {
+          updateRoute();
+        }
+      }.start();
+    }else{
+      clearMap();
+    }
+    routeActive = !routeActive;
+  }
+
   public final void requestDirection() {
     ArrayList<LatLng> coords = new ArrayList<>(coordinates);
     LatLng start = cur_location;
-    LatLng end = cur_location;
-    String apikey = "";
-    assert(!apikey.equals("")); //insert apikey
+    LatLng end   = cur_location;
+    if(cur_location == null)
+      throw new AssertionError("Location was null when a direction request was made");
+    if(apikey.equals(""))
+      throw new AssertionError("API key not found");
     GoogleDirection.withServerKey(apikey)
             .from(start)
             .and(coords)
@@ -151,7 +193,114 @@ public class MapActivity extends FragmentActivity
   // This will be called when a DirectionsAPI request returns data
   @Override
   public void onDirectionSuccess(Direction direction, String rawBody) {
+    System.out.println(rawBody);
+    if(routeActive)
+      handleRouteUpdate(direction);
+    else
+      handleInitialRouting(direction);
+  }
 
+  public void updateRoute()
+  {
+    // Few tasks to implement here,
+    // 1 - Did the user pass through any waypoints
+    // if so we need to remove them
+    // 2 - Do we have an updated location of the user
+    // if we do not, we might need to set a smaller countdown
+    // to pick up the next update earlier
+    LatLng oldStartLoc = currRoute.getStartLocation();
+    boolean userMoved = !oldStartLoc.equals(cur_location);
+    long countdownMillis = userMoved ? 20000 : 5000;
+    if(userMoved)
+    {
+      ArrayList<LatLng> coords = currRoute.getWaypoints();
+      LatLng firstWaypoint;
+      if(coords.size() > 0)
+        firstWaypoint = coords.get(0);
+      else
+        firstWaypoint = currRoute.getEndLocation();
+
+      float[] distanceVec = new float[3];
+      Location.distanceBetween(firstWaypoint.latitude, firstWaypoint.longitude,
+              cur_location.latitude, cur_location.longitude, distanceVec);
+      if(distanceVec[0] < 20.0) // if the user is within 20 metres of the waypoint
+      {
+        // All waypoints traversed only end point left
+        // so we can conclude that we have arrived
+        // at the final destination
+        if(coords.size() < 0) {
+          startEndRoute();
+          return;
+        }
+        markers.get(0).remove();
+        markers.remove(0);
+        routes.get(0).remove();
+        routes.remove(0);
+        coords.remove(0);
+        currRoute.getColors().remove(0);
+      }
+      LatLng start = cur_location;
+      GoogleDirection.withServerKey(apikey)
+              .from(start)
+              .and(coords)
+              .to(currRoute.getEndLocation())
+              .transportMode(TransportMode.WALKING)
+              .execute(this);
+    }
+    // Restart counter with each update call
+    cdt = new CountDownTimer(countdownMillis, countdownMillis/2) {
+      public void onTick(long millisUntilFinished) {
+        System.out.println("Timer heartbeat");
+      }
+      public void onFinish() {
+        updateRoute();
+      }
+    }.start();
+  }
+
+  public void clearMap()
+  {
+    for (Marker m : markers)
+      m.remove();
+    markers.clear();
+    coordinates.clear();
+    for (Polyline p : routes)
+      p.remove();
+    routes.clear();
+    legColors.clear();
+  }
+
+  public void handleRouteUpdate(Direction direction)
+  {
+    for(Polyline p : routes)
+      p.remove();
+    routes.clear();
+    legColors.clear();
+
+    if (direction.isOK()) {
+      Route route = direction.getRouteList().get(0);
+      int legCount = route.getLegList().size();
+      ArrayList<Integer> lineColors = currRoute.getColors();
+      for (int index = 0; index < legCount; index++) {
+        Leg leg = route.getLegList().get(index);
+        List<Step> stepList = leg.getStepList();
+        // Form & display polylines according to our route on the map
+        ArrayList<PolylineOptions> polylineOptionList = new ArrayList<>();
+        int lineColor = lineColors.get(index);
+        legColors.add(lineColor);
+        for (Step s : stepList) {
+          polylineOptionList.add(DirectionConverter.createPolyline(this,
+                  (ArrayList<LatLng>) s.getPolyline().getPointList(), 3, lineColor));
+        }
+        for (PolylineOptions polylineOption : polylineOptionList) {
+          routes.add(mMap.addPolyline(polylineOption));
+        }
+      }
+    } else { System.out.println("Could not find a valid route"); }
+  }
+
+  public void handleInitialRouting(Direction direction)
+  {
     if (direction.isOK()) {
       Route route = direction.getRouteList().get(0);
       int legCount = route.getLegList().size();
@@ -160,41 +309,35 @@ public class MapActivity extends FragmentActivity
         List<Step> stepList = leg.getStepList();
         // Form & display polylines according to our route on the map
         ArrayList<PolylineOptions> polylineOptionList = new ArrayList<>();
+        int r = (int) (Math.random()*256);
+        int g = (int) (Math.random()*256);
+        int b = (int) (Math.random()*256);
+        int lineColor = Color.argb(127,r,g,b);
+        legColors.add(lineColor);
         for (Step s : stepList) {
           polylineOptionList.add(DirectionConverter.createPolyline(this,
-                  (ArrayList<LatLng>) s.getPolyline().getPointList(), 3, Color.BLACK));
+                  (ArrayList<LatLng>) s.getPolyline().getPointList(), 3, lineColor));
         }
         for (PolylineOptions polylineOption : polylineOptionList) {
           routes.add(mMap.addPolyline(polylineOption));
         }
       }
-    } else {
-      System.out.println("Could not find a valid route");
-    }
+    } else { System.out.println("Could not find a valid route"); }
   }
 
   @Override
-  public void onDirectionFailure(Throwable t) {
-    t.printStackTrace();
-  }
+  public void onDirectionFailure(Throwable t) {t.printStackTrace();}
 
+  // Location related callbacks, we only need to know
+  // the updated location info
   @Override
   public void onLocationChanged(Location location) {
     cur_location = new LatLng(location.getLatitude(), location.getLongitude());
   }
-
   @Override
-  public void onStatusChanged(String s, int i, Bundle bundle) {
-
-  }
-
+  public void onStatusChanged(String s, int i, Bundle bundle) {}
   @Override
-  public void onProviderEnabled(String s) {
-
-  }
-
+  public void onProviderEnabled(String s) {}
   @Override
-  public void onProviderDisabled(String s) {
-
-  }
+  public void onProviderDisabled(String s) {}
 }
