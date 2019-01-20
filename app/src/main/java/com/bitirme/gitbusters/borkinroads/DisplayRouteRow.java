@@ -8,10 +8,10 @@ public class DisplayRouteRow {
     private String title;
     private LatLng[] points;
     private MapView mapView;
-    private float rating;
+    private Float rating;
     private String routeDate;
-    private int numberOfTimesRouteTaken;
-    private double estimatedRouteDuration;
+    private Integer numberOfTimesRouteTaken;
+    private Double estimatedRouteDuration;
     private boolean nearWater;
     private boolean nearPark;
     private boolean favourite;
@@ -37,7 +37,7 @@ public class DisplayRouteRow {
     }
 
 
-    public float getRating() {
+    public Float getRating() {
         return rating;
     }
 
@@ -58,7 +58,7 @@ public class DisplayRouteRow {
         return numberOfTimesRouteTaken;
     }
 
-    public double getEstimatedRouteDuration() {
+    public Double getEstimatedRouteDuration() {
         return estimatedRouteDuration;
     }
 
