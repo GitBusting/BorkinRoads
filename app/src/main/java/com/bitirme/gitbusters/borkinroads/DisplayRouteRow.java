@@ -10,15 +10,21 @@ public class DisplayRouteRow {
     private MapView mapView;
     private float rating;
     private String routeDate;
-
-
+    private int numberOfTimesRouteTaken;
+    private double estimatedRouteDuration;
+    private boolean nearWater;
+    private boolean nearPark;
     private boolean favourite;
 
-    public DisplayRouteRow(String title, LatLng[] points, float rating, String routeDate, boolean favourite) {
+    public DisplayRouteRow(String title, LatLng[] points, float rating, String routeDate, int numberOfTimesRouteTaken, double estimatedRouteDuration, boolean nearWater, boolean nearPark, boolean favourite) {
         this.title = title;
         this.points = points;
         this.rating = rating;
         this.routeDate = routeDate;
+        this.numberOfTimesRouteTaken = numberOfTimesRouteTaken;
+        this.estimatedRouteDuration = estimatedRouteDuration;
+        this.nearWater = nearWater;
+        this.nearPark = nearPark;
         this.favourite = favourite;
     }
 
@@ -46,4 +52,22 @@ public class DisplayRouteRow {
     public void setFavourite(boolean favourite) {
         this.favourite = favourite;
     }
+
+
+    public int getNumberOfTimesRouteTaken() {
+        return numberOfTimesRouteTaken;
+    }
+
+    public double getEstimatedRouteDuration() {
+        return estimatedRouteDuration;
+    }
+
+    public boolean isNearWater() {
+        return nearWater;
+    }
+
+    public boolean isNearPark() {
+        return nearPark;
+    }
+
 }
