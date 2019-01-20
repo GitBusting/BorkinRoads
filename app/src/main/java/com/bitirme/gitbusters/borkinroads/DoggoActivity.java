@@ -51,7 +51,7 @@ public class DoggoActivity extends AppCompatActivity {
                 startActivityForResult(new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI), GET_FROM_GALLERY);
             }
         });
-        Doggo temp = new Doggo("SysTemp", "Terrier", ZonedDateTime.now(ZoneId.systemDefault()), ZonedDateTime.now(ZoneId.systemDefault()), Doggo.gender.Male);
+        Doggo temp = new Doggo("SysTemp", "Terrier", ZonedDateTime.now(ZoneId.systemDefault()), Doggo.gender.Male);
         //  TODO: Swap out TestDoggo to selected doggo.
 
         ZonedDateTime rn = ZonedDateTime.now(ZoneId.systemDefault());

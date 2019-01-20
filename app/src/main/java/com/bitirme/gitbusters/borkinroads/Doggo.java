@@ -1,18 +1,19 @@
 package com.bitirme.gitbusters.borkinroads;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 
 public class Doggo {
+    static ArrayList<Doggo> doggos = new ArrayList<Doggo>();
     private String name;
     private String breed;
     private ZonedDateTime birth_date;
     private ZonedDateTime last_walk_date;
 
-    Doggo(String name, String breed, ZonedDateTime birth_date, ZonedDateTime last_walk_date, gender sex) {
+    Doggo(String name, String breed, ZonedDateTime birth_date, gender sex) {
         this.name = name;
         this.breed = breed;
         this.birth_date = birth_date;
-        this.last_walk_date = last_walk_date;
         this.sex = sex;
     }
 
