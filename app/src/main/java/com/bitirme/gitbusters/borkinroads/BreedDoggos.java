@@ -13,19 +13,19 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Locale;
 
 public class BreedDoggos extends AppCompatActivity {
 
-    EditText nametext, breedtext;
-    TextView warning;
-    Button create;
-    ToggleButton gender;
-    EditText birthtext;
-    DatePickerDialog.OnDateSetListener date;
+    private EditText nametext;
+    private EditText breedtext;
+    private TextView warning;
+    private ToggleButton gender;
+    private EditText birthtext;
+    private DatePickerDialog.OnDateSetListener date;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +37,7 @@ public class BreedDoggos extends AppCompatActivity {
         nametext = findViewById(R.id.Name);
         breedtext = findViewById(R.id.Breed);
         birthtext = findViewById(R.id.Birth);
-        create = findViewById(R.id.Create);
+        Button create = findViewById(R.id.Create);
         gender = findViewById(R.id.Gender);
         warning = findViewById(R.id.Warning);
         date = new DatePickerDialog.OnDateSetListener() {
@@ -75,14 +75,14 @@ public class BreedDoggos extends AppCompatActivity {
         create.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (!nametext.getText().equals("") | !breedtext.getText().equals("") | !birthtext.getText().equals("")) {
+                if (nametext.getText().toString().equals("") | breedtext.getText().toString().equals("") | birthtext.getText().toString().equals("")) {
                     warning.setText("You need to fill all the input spaces");
                 } else {
-                    ZonedDateTime zdt = ZonedDateTime.parse(birthtext.getText(), DateTimeFormatter.ofPattern("dd MMM yyyy"));
+                    ZonedDateTime zdt = ZonedDateTime.ofInstant(myCalendar.toInstant(), ZoneId.systemDefault());
                     Doggo newPet = new Doggo(nametext.getText().toString(), breedtext.getText().toString(), zdt, gender.isChecked() ? Doggo.gender.Male : Doggo.gender.Female);
                     Doggo.doggos.add(newPet);
-                    Toast.makeText(BreedDoggos.this, "Pet Added!", Toast.LENGTH_SHORT);
-                    Intent i = new Intent(view.getContext(), DoggoActivity.class);
+                    Toast.makeText(BreedDoggos.this, "Pet Added!", Toast.LENGTH_SHORT).show();
+                    Intent i = new Intent(view.getContext(), MainActivity.class);
                     startActivity(i);
                 }
             }

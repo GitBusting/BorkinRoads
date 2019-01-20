@@ -4,7 +4,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 
 public class Doggo {
-    static ArrayList<Doggo> doggos = new ArrayList<Doggo>();
+    static final ArrayList<Doggo> doggos = new ArrayList<>();
     private String name;
     private String breed;
     private ZonedDateTime birth_date;

@@ -27,7 +27,7 @@
         android:layout_marginTop="0dp"
         android:layout_marginEnd="8dp"
         android:textOff="@string/female"
-        android:textOn="Male"
+        android:textOn="@string/male"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/Birth" />
 
@@ -38,7 +38,6 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="32dp"
         android:layout_marginEnd="8dp"
-        android:contentDescription="@string/breed"
         android:hint="@string/breed"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.4"
@@ -55,11 +54,12 @@
         android:clickable="true"
         android:ems="10"
         android:focusable="false"
-        android:hint="Birth Date"
+        android:hint="@string/birth_date"
         android:inputType="date"
         android:longClickable="false"
         app:layout_constraintEnd_toStartOf="@+id/Gender"
         app:layout_constraintStart_toStartOf="parent"
+        android:importantForAutofill="no"
         app:layout_constraintTop_toBottomOf="@+id/Breed" />
 
     <Button
@@ -69,7 +69,7 @@
         android:layout_marginStart="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="100dp"
-        android:text="CREATE"
+        android:text="@string/create"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

@@ -8,4 +8,14 @@
     <string name="_01_01_1970">01/01/1970</string>
     <string name="bday">BDay</string>
     <string name="female">Female</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Android Studio</string>
+    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_main">MainActivity</string>
+    <string name="male">Male</string>
+    <string name="birth_date">Birth Date</string>
+    <string name="create">CREATE</string>
 </resources>
