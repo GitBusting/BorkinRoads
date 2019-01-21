@@ -12,6 +12,7 @@ import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
+import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -44,7 +45,7 @@ public class MapActivity extends FragmentActivity
         DirectionCallback,
         LocationListener {
 
-  private String apikey = "";
+  private String apikey = "AIzaSyA3nOUd0mIm1mCoUIx1DRa-qsCT3Kz1a_k";
 
   private GoogleMap mMap;
   private ArrayList<Marker> markers;
@@ -78,7 +79,8 @@ public class MapActivity extends FragmentActivity
     locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
 
     //to show estimated time required for the selected route
-    estimated = (TextView) findViewById(R.id.estimated_time);
+    estimated = findViewById(R.id.estimated_time);
+    estimated.setMovementMethod(new ScrollingMovementMethod());
     estimated.setVisibility(View.INVISIBLE);
 
     // "Reset Button" will remove all markers from
@@ -100,6 +102,7 @@ public class MapActivity extends FragmentActivity
           p.remove();
         routes.clear();
         legColors.clear();
+        estimated.setVisibility(View.INVISIBLE);
       }
     });
 
@@ -168,9 +171,6 @@ public class MapActivity extends FragmentActivity
   public final void startEndRoute(){
     if(!routeActive) {
       currRoute = new ActiveRoute(cur_location, cur_location, coordinates, legColors);
-      estimated.setText("estimated time: " + curEstTime);
-      estimated.setBackgroundColor(Color.DKGRAY);
-      estimated.setVisibility(View.VISIBLE);
       cdt = new CountDownTimer(20000, 10000) {
         public void onTick(long millisUntilFinished) {
           System.out.println("Timer heartbeat per 10 seconds.");
@@ -292,10 +292,12 @@ public class MapActivity extends FragmentActivity
     if (direction.isOK()) {
       Route route = direction.getRouteList().get(0);
       int legCount = route.getLegList().size();
+      curEstTime=0;
       ArrayList<Integer> lineColors = currRoute.getColors();
       for (int index = 0; index < legCount; index++) {
         Leg leg = route.getLegList().get(index);
         List<Step> stepList = leg.getStepList();
+        curEstTime+=Integer.parseInt(leg.getDuration().getValue());
         // Form & display polylines according to our route on the map
         ArrayList<PolylineOptions> polylineOptionList = new ArrayList<>();
         int lineColor = lineColors.get(index);
@@ -308,6 +310,9 @@ public class MapActivity extends FragmentActivity
           routes.add(mMap.addPolyline(polylineOption));
         }
       }
+      estimated.setText(getRouteOutline(route));
+      estimated.setVisibility(View.VISIBLE);
+      estimated.setAlpha((float) 0.75);
     } else { System.out.println("Could not find a valid route"); }
   }
 
@@ -337,9 +342,33 @@ public class MapActivity extends FragmentActivity
           routes.add(mMap.addPolyline(polylineOption));
         }
       }
+      estimated.setText(getRouteOutline(route));
+      estimated.setVisibility(View.VISIBLE);
+        estimated.setAlpha((float) 0.75);
     } else { System.out.println("Could not find a valid route"); }
   }
 
+  public String getRouteOutline(Route route){
+    String outline = "";
+    int estTime = 0;
+    int legCount = route.getLegList().size();
+    outline += "Next Stops:\n";
+    for (int index = 0; index < legCount; index++) {
+      Leg leg = route.getLegList().get(index);
+      estTime += Integer.parseInt(leg.getDuration().getValue());
+      outline += leg.getEndAddress() + "\n\n";
+    }
+    int min = estTime / 60;
+    int sec = estTime % 60;
+    int hour = estTime / 3600;
+    String overall_time="";
+    if(hour>0)
+      overall_time += hour + " h ";
+    overall_time += min + " min " + sec + " s";
+
+    outline = "Estimated time: " + overall_time + "\n" + outline;
+    return outline;
+  }
   @Override
   public void onDirectionFailure(Throwable t) {t.printStackTrace();}
 
