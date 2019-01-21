@@ -45,9 +45,12 @@ public class MapActivity extends FragmentActivity
         DirectionCallback,
         LocationListener {
 
-  private String apikey = "AIzaSyA3nOUd0mIm1mCoUIx1DRa-qsCT3Kz1a_k";
+  private String apikey = "";
 
   private GoogleMap mMap;
+
+  private boolean displayDirection;
+
   private ArrayList<Marker> markers;
   private ArrayList<LatLng> coordinates;
   private ArrayList<Polyline> routes;
@@ -62,6 +65,8 @@ public class MapActivity extends FragmentActivity
 
   private int curEstTime;
   private TextView estimated;
+
+  private Button resetButton, genPathButton;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -83,6 +88,10 @@ public class MapActivity extends FragmentActivity
     estimated.setMovementMethod(new ScrollingMovementMethod());
     estimated.setVisibility(View.INVISIBLE);
 
+    // A route is currently being displayed on the map
+    // if this is true
+    displayDirection = false;
+
     // "Reset Button" will remove all markers from
     // the screen and clear the coordinates list
     routeActive = false;
@@ -90,27 +99,23 @@ public class MapActivity extends FragmentActivity
     coordinates = new ArrayList<>();
     routes = new ArrayList<>();
     legColors = new ArrayList<>();
-    Button rb = findViewById(R.id.resetButton);
-    rb.setOnClickListener(new View.OnClickListener() {
+    resetButton = findViewById(R.id.resetButton);
+    resetButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
-        for (Marker m : markers)
-          m.remove();
-        markers.clear();
-        coordinates.clear();
-        for (Polyline p : routes)
-          p.remove();
-        routes.clear();
-        legColors.clear();
-        estimated.setVisibility(View.INVISIBLE);
+        clearMap();
+        displayDirection = false;
       }
     });
 
-    Button genPathButton = findViewById(R.id.generatePathButton);
+    genPathButton = findViewById(R.id.generatePathButton);
     genPathButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
-        requestDirection();
+        if(displayDirection)
+          Toast.makeText(view.getContext(),"Path already present!", Toast.LENGTH_SHORT).show();
+        else
+          requestDirection();
       }
     });
 
@@ -180,8 +185,18 @@ public class MapActivity extends FragmentActivity
         }
       }.start();
     }else{
-        estimated.setVisibility(View.INVISIBLE);
+      estimated.setVisibility(View.INVISIBLE);
+      cdt.cancel();
+      cdt = null;
       clearMap();
+    }
+    if(routeActive) {
+      resetButton.setVisibility(View.VISIBLE);
+      genPathButton.setVisibility(View.VISIBLE);
+    }
+    else {
+      genPathButton.setVisibility(View.INVISIBLE);
+      resetButton.setVisibility(View.INVISIBLE);
     }
     routeActive = !routeActive;
   }
@@ -319,6 +334,7 @@ public class MapActivity extends FragmentActivity
   public void handleInitialRouting(Direction direction)
   {
     if (direction.isOK()) {
+      displayDirection = true;
       Route route = direction.getRouteList().get(0);
       int legCount = route.getLegList().size();
       curEstTime=0;
