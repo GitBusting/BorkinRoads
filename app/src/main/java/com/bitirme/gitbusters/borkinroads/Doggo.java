@@ -9,6 +9,9 @@ public class Doggo {
     private String breed;
     private ZonedDateTime birth_date;
     private ZonedDateTime last_walk_date;
+    private ZonedDateTime last_bath_date;
+    private ZonedDateTime last_vet_date;
+
 
     Doggo(String name, String breed, ZonedDateTime birth_date, gender sex) {
         this.name = name;
