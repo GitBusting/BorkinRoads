@@ -40,14 +40,14 @@ public class DogButtonAdapter extends RecyclerView.Adapter<DogButtonAdapter.View
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Doggo tempDoggo = doggobarlist.get(position);
         String path = _context.getExternalFilesDir(Environment.DIRECTORY_DCIM) + "/" + tempDoggo.getName() + ".jpg";
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         try {
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inPreferredConfig = Bitmap.Config.ARGB_8888;
             Bitmap bitmap = BitmapFactory.decodeFile(path, options);
             holder.dog.setImageBitmap(bitmap);
         } catch (Exception e) {
             e.printStackTrace();
-            Bitmap b = BitmapFactory.decodeFile(_context.getExternalFilesDir(Environment.DIRECTORY_DCIM) + "/" + "SysTemp.jpg");
+            Bitmap b = BitmapFactory.decodeFile(_context.getExternalFilesDir(Environment.DIRECTORY_DCIM) + "/" + "SysTemp.jpg", options);
             holder.dog.setImageBitmap(b);
         }
     }
@@ -59,8 +59,8 @@ public class DogButtonAdapter extends RecyclerView.Adapter<DogButtonAdapter.View
     }
 
     // convenience method for getting data at click position
-    public String getItem(int id) {
-        return doggobarlist.get(id).getName();
+    public Doggo getItem(int id) {
+        return doggobarlist.get(id);
     }
 
     // allows clicks events to be caught
@@ -81,6 +81,7 @@ public class DogButtonAdapter extends RecyclerView.Adapter<DogButtonAdapter.View
             super(itemView);
             dog = itemView.findViewById(R.id.imageButton);
             itemView.setOnClickListener(this);
+            dog.setOnClickListener(this);
         }
 
         @Override

@@ -18,11 +18,13 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -87,10 +89,13 @@ public class MainActivity extends AppCompatActivity
         if (Doggo.doggos.size() == 0) {
             Doggo temp = new Doggo("SysTemp", "Terrier", ZonedDateTime.now(ZoneId.systemDefault()), Doggo.gender.Male);
             Doggo.doggos.add(temp);
+            currentDoggo = Doggo.doggos.get(0);
+            Log.v(TAG, "did it!");
         }
-        //  TODO: Swap out TestDoggo to selected doggo.
+        //  TODO: Swap out TestDoggo to selected doggo
 
-        if (currentDoggo == null) currentDoggo = Doggo.doggos.get(0);
+        currentDoggo = Doggo.doggos.get(0);
+
         setValues();
 
         // set up the RecyclerView
@@ -101,6 +106,7 @@ public class MainActivity extends AppCompatActivity
         adapter = new DogButtonAdapter(MainActivity.this, Doggo.doggos);
         adapter.setClickListener(this);
         recyclerView.setAdapter(adapter);
+
     }
 
     @Override
@@ -183,6 +189,10 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onItemClick(View view, int position) {
+        currentDoggo = adapter.getItem(position);
+        Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
+        finish();
+        startActivity(getIntent().putExtra(Intent.EXTRA_INDEX, position));
 
     }
 
