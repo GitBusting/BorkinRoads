@@ -5,10 +5,15 @@
     <string name="lake_river_sea">Lake/River/Sea</string>
     <string name="park_forest">Park/Forest</string>
 
+    <string name="rating">Rating</string>
+    <string name="route_used">Number Of times Route is used</string>
+    <string name="using_time">Last time when route is used</string>
+    <string name="estimated_time">Estimated duration of route</string>
+
     <string-array name="sorting_condtions">
-        <item>Rating</item>
-        <item>Number Of times Route is used</item>
-        <item>Last time when route is used</item>
-        <item>Estimated duration of route</item>
+        <item>@string/rating</item>
+        <item>@string/route_used</item>
+        <item>@string/using_time</item>
+        <item>@string/estimated_time</item>
     </string-array>
 </resources>

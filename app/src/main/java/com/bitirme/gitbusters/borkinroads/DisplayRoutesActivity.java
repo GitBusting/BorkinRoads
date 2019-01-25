@@ -6,7 +6,10 @@ import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -15,12 +18,16 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Filter;
 import android.widget.Filterable;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+
+import com.github.aakira.expandablelayout.ExpandableLinearLayout;
+import com.github.aakira.expandablelayout.ExpandableRelativeLayout;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -32,6 +39,9 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class DisplayRoutesActivity extends Activity {
@@ -47,6 +57,8 @@ public class DisplayRoutesActivity extends Activity {
     private Spinner mSpinnerSortingCondition;
     private ToggleButton mToggleButtonSortingDirection;
     private Button mButtonApply;
+    private ExpandableRelativeLayout expandableRelativeLayout;
+    private ImageButton expand_button;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,13 +81,20 @@ public class DisplayRoutesActivity extends Activity {
         mSpinnerSortingCondition = (Spinner) findViewById(R.id.spinner_sorting_condtion);
         mToggleButtonSortingDirection = (ToggleButton) findViewById(R.id.toggle_sorting_direction);
 
-        mButtonApply = (Button) findViewById(R.id.button_apply);
-        mButtonApply.setOnClickListener(new View.OnClickListener() {
+
+
+        expand_button = (ImageButton) findViewById(R.id.expanded_button);
+        expand_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                updateFilters();
+                expandableRelativeLayout = (ExpandableRelativeLayout) findViewById(R.id.expandableLayout);
+                expandableRelativeLayout.toggle();
             }
         });
+
+        setFilterMenuListeners();
+
+
     }
 
     /*
@@ -129,6 +148,39 @@ public class DisplayRoutesActivity extends Activity {
                             mFilteredRouteList.add(route);
                         }
                     }
+
+                    if (preferences.getSortingCondtion().equals(R.string.rating)) {
+                        Collections.sort(mFilteredRouteList, new Comparator<DisplayRouteRow>() {
+                            @Override
+                            public int compare(DisplayRouteRow o1, DisplayRouteRow o2) {
+                                return o1.getRating().compareTo(o2.getRating());
+                            }
+                        });
+                    } else if (preferences.getSortingCondtion().equals(R.string.route_used)) {
+                        Collections.sort(mFilteredRouteList, new Comparator<DisplayRouteRow>() {
+                            @Override
+                            public int compare(DisplayRouteRow o1, DisplayRouteRow o2) {
+                                return o1.getNumberOfTimesRouteTaken() - o2.getNumberOfTimesRouteTaken();
+                            }
+                        });
+                    } else if (preferences.getSortingCondtion().equals(R.string.using_time)) {
+                        Collections.sort(mFilteredRouteList, new Comparator<DisplayRouteRow>() {
+                            @Override
+                            public int compare(DisplayRouteRow o1, DisplayRouteRow o2) {
+                                return o1.getRouteDate().compareTo(o2.getRouteDate());
+                            }
+                        });
+                    } else if (preferences.getSortingCondtion().equals(R.string.estimated_time)) {
+                        Collections.sort(mFilteredRouteList, new Comparator<DisplayRouteRow>() {
+                            @Override
+                            public int compare(DisplayRouteRow o1, DisplayRouteRow o2) {
+                                return o1.getEstimatedRouteDuration().compareTo(o2.getEstimatedRouteDuration());
+                            }
+                        });
+                    }
+
+                    if (preferences.getSortingDirection())
+                        Collections.reverse(mFilteredRouteList);
 
                     FilterResults filterResults = new FilterResults();
                     filterResults.values = mFilteredRouteList;
@@ -250,11 +302,22 @@ public class DisplayRoutesActivity extends Activity {
      * Sets listener for each filter menu item( for more dynamic filtering)
      */
     private void setFilterMenuListeners() {
-        EditText.OnFocusChangeListener mEditTextListener = new EditText.OnFocusChangeListener() {
+
+
+        TextWatcher mEditTextListener = new TextWatcher() {
             @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (!hasFocus)
-                    updateFilters();
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                updateFilters();
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                updateFilters();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                updateFilters();
             }
         };
 
@@ -275,8 +338,8 @@ public class DisplayRoutesActivity extends Activity {
         mFavouriteCheckBox.setOnCheckedChangeListener(mCheckBoxListener);
         mNearForest.setOnCheckedChangeListener(mCheckBoxListener);
         mNearWater.setOnCheckedChangeListener(mCheckBoxListener);
-        mMaxDurationEditText.setOnFocusChangeListener(mEditTextListener);
-        mMinDurationEditText.setOnFocusChangeListener(mEditTextListener);
+        mMaxDurationEditText.addTextChangedListener(mEditTextListener);
+        mMinDurationEditText.addTextChangedListener(mEditTextListener);
         mToggleButtonSortingDirection.setOnCheckedChangeListener(mToogleButtonListener);
     }
 
