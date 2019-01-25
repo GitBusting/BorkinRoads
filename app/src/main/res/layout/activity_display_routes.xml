@@ -60,13 +60,15 @@
                 android:id="@+id/text_min_route_duration"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="less than"/>
+                android:hint="greater than"
+                android:inputType="number"/>
 
             <EditText
                 android:id="@+id/text_max_route_diretion"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="greater than"/>
+                android:hint="less than"
+                android:inputType="number"/>
 
         </LinearLayout>
 
