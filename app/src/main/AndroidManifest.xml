@@ -45,6 +45,9 @@
         <activity
             android:name=".MapActivity"
             android:label="@string/title_activity_map" />
+
+        <activity android:name=".DisplayRoutesActivity"></activity>
+
     </application>
 
 </manifest>
