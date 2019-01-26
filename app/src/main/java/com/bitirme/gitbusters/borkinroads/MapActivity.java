@@ -66,7 +66,7 @@ public class MapActivity extends FragmentActivity
   private int curEstTime;
   private TextView estimated;
 
-  private Button resetButton, genPathButton;
+  private Button resetButton, genPathButton, startRouteButton;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -119,7 +119,7 @@ public class MapActivity extends FragmentActivity
       }
     });
 
-    Button startRouteButton = findViewById(R.id.startRouteButton);
+    startRouteButton = findViewById(R.id.startRouteButton);
     startRouteButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
@@ -193,10 +193,12 @@ public class MapActivity extends FragmentActivity
     if(routeActive) {
       resetButton.setVisibility(View.VISIBLE);
       genPathButton.setVisibility(View.VISIBLE);
+      startRouteButton.setText("Start Route");
     }
     else {
       genPathButton.setVisibility(View.INVISIBLE);
       resetButton.setVisibility(View.INVISIBLE);
+      startRouteButton.setText("Stop");
     }
     routeActive = !routeActive;
   }
