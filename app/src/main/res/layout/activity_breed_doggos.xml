@@ -29,6 +29,7 @@
         android:textOff="@string/female"
         android:textOn="@string/male"
         app:layout_constraintEnd_toEndOf="parent"
+        android:focusable="false"
         app:layout_constraintTop_toTopOf="@+id/Birth" />
 
     <AutoCompleteTextView

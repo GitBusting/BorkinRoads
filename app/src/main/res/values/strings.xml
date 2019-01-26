@@ -10,12 +10,17 @@
     <string name="female">Female</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">Android Studio</string>
-    <string name="nav_header_subtitle">android.studio@android.com</string>
+    <string name="nav_header_title">BorkinRoads</string>
+    <string name="nav_header_subtitle">GitBusters: https://github.com/GitBusting/</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="male">Male</string>
     <string name="birth_date">Birth Date</string>
     <string name="create">CREATE</string>
+    <string name="petbutton">petButton</string>
+    <string name="add_new_pet">Add New Pet</string>
+    <string name="go_on_a_walk">Go On A Walk</string>
+    <string name="my_routes">My Routes</string>
+    <string name="warning">You need to fill all the input spaces</string>
 </resources>
