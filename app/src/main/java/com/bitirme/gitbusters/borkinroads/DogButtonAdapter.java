@@ -1,16 +1,19 @@
 package com.bitirme.gitbusters.borkinroads;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 
+import java.io.File;
 import java.util.List;
 
 public class DogButtonAdapter extends RecyclerView.Adapter<DogButtonAdapter.ViewHolder> {
@@ -43,12 +46,17 @@ public class DogButtonAdapter extends RecyclerView.Adapter<DogButtonAdapter.View
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
         try {
-            Bitmap bitmap = BitmapFactory.decodeFile(path, options);
-            holder.dog.setImageBitmap(bitmap);
+            if (new File(path).exists()) {
+                Bitmap bitmap = BitmapFactory.decodeFile(path, options);
+                holder.dog.setImageBitmap(bitmap);
+            } else {
+                Resources r = _context.getResources();
+                holder.dog.setImageDrawable(ResourcesCompat.getDrawable(r, R.drawable.plusicon, _context.getTheme()));/*
+                Bitmap b = BitmapFactory.decodeFile(_context.getExternalFilesDir(Environment.DIRECTORY_DCIM) + "/" + "SysTemp.jpg", options);
+                holder.dog.setImageBitmap(b);*/
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            Bitmap b = BitmapFactory.decodeFile(_context.getExternalFilesDir(Environment.DIRECTORY_DCIM) + "/" + "SysTemp.jpg", options);
-            holder.dog.setImageBitmap(b);
         }
     }
 

@@ -80,6 +80,9 @@ public class BreedDoggos extends AppCompatActivity {
                 } else {
                     ZonedDateTime zdt = ZonedDateTime.ofInstant(myCalendar.toInstant(), ZoneId.systemDefault());
                     Doggo newPet = new Doggo(nametext.getText().toString(), breedtext.getText().toString(), zdt, gender.isChecked() ? Doggo.gender.Male : Doggo.gender.Female);
+                    if (Doggo.doggos.get(0).getName().equals("Add New Pet")) {
+                        Doggo.doggos.remove(0);
+                    }
                     Doggo.doggos.add(newPet);
                     Toast.makeText(BreedDoggos.this, "Pet Added!", Toast.LENGTH_SHORT).show();
                     Intent i = new Intent(view.getContext(), MainActivity.class);

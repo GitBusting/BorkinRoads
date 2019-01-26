@@ -24,8 +24,9 @@
             android:adjustViewBounds="true"
             android:contentDescription="@string/ppofdoggo"
             android:cropToPadding="true"
+            android:padding="0dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/defaultdoggoimg" />
+            android:src="@drawable/plusicon" />
 
         <Space
             android:layout_width="13dp"
