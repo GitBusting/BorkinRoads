@@ -160,7 +160,8 @@ public class MainActivity extends AppCompatActivity
             startActivity(i);
 
         } else if (id == R.id.nav_walk) {
-            //TODO add your map activity switch here
+            Intent i = new Intent(this, MapActivity.class);
+            startActivity(i);
         } else if (id == R.id.nav_my_routes) {
             //TODO add your review activity switch here
         }
