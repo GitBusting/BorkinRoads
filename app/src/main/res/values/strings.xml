@@ -18,4 +18,9 @@
     <string name="male">Male</string>
     <string name="birth_date">Birth Date</string>
     <string name="create">CREATE</string>
+    <string name="petbutton">petButton</string>
+    <string name="add_new_pet">Add New Pet</string>
+    <string name="go_on_a_walk">Go On A Walk</string>
+    <string name="my_routes">My Routes</string>
+    <string name="warning">You need to fill all the input spaces</string>
 </resources>

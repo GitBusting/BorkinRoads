@@ -66,7 +66,7 @@ public class Doggo {
         this.last_walk_date = last_walk_date;
     }
 
-    protected enum gender {Male, Female}
+    protected enum gender {Male, Female, Gender}
 
     public ZonedDateTime getLast_bath_date() {
         return last_bath_date;

@@ -18,15 +18,15 @@ import java.util.List;
 
 public class DogButtonAdapter extends RecyclerView.Adapter<DogButtonAdapter.ViewHolder> {
 
-    private List<Doggo> doggobarlist;
-    private LayoutInflater mInflater;
+    private final List<Doggo> doggobarlist;
+    private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
-    private Context _context;
+    private final Context _context;
 
     // data is passed into the constructor
-    DogButtonAdapter(Context context, List<Doggo> doggobarlist) {
+    DogButtonAdapter(Context context) {
         this.mInflater = LayoutInflater.from(context);
-        this.doggobarlist = doggobarlist;
+        this.doggobarlist = Doggo.doggos;
         _context = context;
     }
 
@@ -83,7 +83,7 @@ public class DogButtonAdapter extends RecyclerView.Adapter<DogButtonAdapter.View
 
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
-        ImageButton dog;
+        final ImageButton dog;
 
         ViewHolder(View itemView) {
             super(itemView);

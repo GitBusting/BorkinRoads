@@ -5,10 +5,10 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageButton;
 
-public class DoggoBar extends RecyclerView.ViewHolder implements View.OnClickListener {
+class DoggoBar extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-    Context context;
-    ImageButton imageButtonView;
+    private final Context context;
+    private final ImageButton imageButtonView;
 
     public DoggoBar(View itemView) {
         super(itemView);
