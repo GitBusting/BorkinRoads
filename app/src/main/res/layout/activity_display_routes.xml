@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:map="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:paddingTop="5dp">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/linearLayout"
+        xmlns:map="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="5dp">
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:paddingTop="5dp">
+
+
+            <Spinner
+                android:id="@+id/spinner_sorting_condtion"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:entries="@array/sorting_condtions"></Spinner>
+
+            <ToggleButton
+                android:id="@+id/toggle_sorting_direction"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textOff="DESCENDING"
+                android:textOn="ASCENDING" />
+            <ImageButton
+                android:id="@+id/expanded_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_keyboard_arrow_down_black_24dp" />
+
+        </LinearLayout>
+    </LinearLayout>
+    <com.github.aakira.expandablelayout.ExpandableRelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/expandableLayout"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_below="@id/linearLayout"
+        app:ael_duration="500"
+        app:ael_interpolator="bounce"
+        app:ael_orientation="vertical">
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/checkbox_layout"
+            xmlns:map="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:orientation="horizontal"
+            android:paddingTop="5dp">
+
+
+            <CheckBox
+                android:id="@+id/checkbox_favourite"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/favourites"/>
+
+            <CheckBox
+                android:id="@+id/checkbox_lake_river_sea"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/lake_river_sea"/>
+
+            <CheckBox
+                android:id="@+id/checkbox_park_forest"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/park_forest"/>
+        </LinearLayout>
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:map="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:paddingTop="5dp"
+            android:layout_below="@+id/checkbox_layout">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Estimated Route Duration:"/>
+
+
+            <EditText
+                android:id="@+id/text_min_route_duration"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="less than"
+                android:inputType="number"/>
+
+            <EditText
+                android:id="@+id/text_max_route_diretion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="greater than"
+                android:inputType="number"/>
+
+        </LinearLayout>
+    </com.github.aakira.expandablelayout.ExpandableRelativeLayout>
+
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/expandableLayout"/>
+
+
+
+</RelativeLayout>

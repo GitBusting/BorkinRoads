@@ -1,6 +1,6 @@
 <resources>
-    <string name="app_name">BorkinRoads</string>
-    <string name="title_activity_map">Map</string>
+    <string name="app_name" translatable="false">BorkinRoads</string>
+    <string name="title_activity_map" translatable="false">Map</string>
     <string name="name">Name</string>
     <string name="gender">Gender</string>
     <string name="breed">Breed</string>
@@ -23,4 +23,19 @@
     <string name="go_on_a_walk">Go On A Walk</string>
     <string name="my_routes">My Routes</string>
     <string name="warning">You need to fill all the input spaces</string>
+    <string name="favourites">Favourites</string>
+    <string name="lake_river_sea">Lake/River/Sea</string>
+    <string name="park_forest">Park/Forest</string>
+
+    <string name="rating">Rating</string>
+    <string name="route_used">Number Of times Route is used</string>
+    <string name="using_time">Last time when route is used</string>
+    <string name="estimated_time">Estimated duration of route</string>
+
+    <string-array name="sorting_condtions">
+        <item>@string/rating</item>
+        <item>@string/route_used</item>
+        <item>@string/using_time</item>
+        <item>@string/estimated_time</item>
+    </string-array>
 </resources>
