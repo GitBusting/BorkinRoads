@@ -45,7 +45,7 @@ public class MapActivity extends FragmentActivity
         DirectionCallback,
         LocationListener {
 
-  private String apikey = "";
+  private final String apikey = "";
 
   private GoogleMap mMap;
 
@@ -60,7 +60,6 @@ public class MapActivity extends FragmentActivity
   private ActiveRoute currRoute;
   private CountDownTimer cdt; // try to update route on finish
 
-  protected LocationManager locationManager;
   private LatLng cur_location;
 
   private int curEstTime;
@@ -73,7 +72,7 @@ public class MapActivity extends FragmentActivity
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_map);
     cur_location=null;
-    locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+    LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
       return;
     }
@@ -129,6 +128,7 @@ public class MapActivity extends FragmentActivity
 
     SupportMapFragment mapFragment =
             (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+    assert mapFragment != null;
     mapFragment.getMapAsync(this);
   }
 
@@ -173,7 +173,7 @@ public class MapActivity extends FragmentActivity
     return false;
   }
 
-  public final void startEndRoute(){
+  private void startEndRoute() {
     if(!routeActive) {
       currRoute = new ActiveRoute(cur_location, cur_location, coordinates, legColors);
       cdt = new CountDownTimer(20000, 10000) {
@@ -193,23 +193,24 @@ public class MapActivity extends FragmentActivity
     if(routeActive) {
       resetButton.setVisibility(View.VISIBLE);
       genPathButton.setVisibility(View.VISIBLE);
-      startRouteButton.setText("Start Route");
+      startRouteButton.setText(R.string.start_route);
     }
     else {
       genPathButton.setVisibility(View.INVISIBLE);
       resetButton.setVisibility(View.INVISIBLE);
-      startRouteButton.setText("Stop");
+      startRouteButton.setText(R.string.stop);
     }
     routeActive = !routeActive;
   }
 
-  public final void requestDirection() {
+  @SuppressWarnings("ConstantConditions")
+  private void requestDirection() {
     ArrayList<LatLng> coords = new ArrayList<>(coordinates);
     LatLng start = cur_location;
     LatLng end   = cur_location;
     if(cur_location == null)
       throw new AssertionError("Location was null when a direction request was made");
-    if(apikey.equals(""))
+    if (apikey.isEmpty())
       throw new AssertionError("API key not found");
     GoogleDirection.withServerKey(apikey)
             .from(start)
@@ -229,7 +230,8 @@ public class MapActivity extends FragmentActivity
       handleInitialRouting(direction);
   }
 
-  public void updateRoute()
+  @SuppressWarnings("ConstantConditions")
+  private void updateRoute()
   {
     // Few tasks to implement here,
     // 1 - Did the user pass through any waypoints
@@ -287,7 +289,7 @@ public class MapActivity extends FragmentActivity
     }.start();
   }
 
-  public void clearMap()
+  private void clearMap()
   {
     for (Marker m : markers)
       m.remove();
@@ -299,7 +301,7 @@ public class MapActivity extends FragmentActivity
     legColors.clear();
   }
 
-  public void handleRouteUpdate(Direction direction)
+  private void handleRouteUpdate(Direction direction)
   {
     for(Polyline p : routes)
       p.remove();
@@ -333,7 +335,7 @@ public class MapActivity extends FragmentActivity
     } else { System.out.println("Could not find a valid route"); }
   }
 
-  public void handleInitialRouting(Direction direction)
+  private void handleInitialRouting(Direction direction)
   {
     if (direction.isOK()) {
       displayDirection = true;
@@ -366,7 +368,7 @@ public class MapActivity extends FragmentActivity
     } else { System.out.println("Could not find a valid route"); }
   }
 
-  public String getRouteOutline(Route route){
+  private String getRouteOutline(Route route) {
     String outline = "";
     int estTime = 0;
     int legCount = route.getLegList().size();
@@ -374,7 +376,7 @@ public class MapActivity extends FragmentActivity
     for (int index = 0; index < legCount; index++) {
       Leg leg = route.getLegList().get(index);
       estTime += Integer.parseInt(leg.getDuration().getValue());
-      outline += leg.getEndAddress() + "\n\n";
+      outline = outline.concat(leg.getEndAddress() + "\n\n");
     }
     int min = estTime / 60;
     int sec = estTime % 60;

@@ -7,13 +7,10 @@ import android.widget.ImageButton;
 
 class DoggoBar extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-    private final Context context;
-    private final ImageButton imageButtonView;
-
     public DoggoBar(View itemView) {
         super(itemView);
-        this.context = itemView.getContext();
-        imageButtonView = itemView.findViewById(R.id.image);
+        Context context = itemView.getContext();
+        ImageButton imageButtonView = itemView.findViewById(R.id.image);
         itemView.setOnClickListener(this);
         imageButtonView.setOnClickListener(this);
 

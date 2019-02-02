@@ -20,11 +20,11 @@ import java.util.Locale;
 
 public class BreedDoggos extends AppCompatActivity {
 
-    private EditText nametext;
-    private EditText breedtext;
+    private EditText nameText;
+    private EditText breedText;
     private TextView warning;
     private ToggleButton gender;
-    private EditText birthtext;
+    private EditText birthText;
     private DatePickerDialog.OnDateSetListener date;
 
     @Override
@@ -34,9 +34,9 @@ public class BreedDoggos extends AppCompatActivity {
 
         final Calendar myCalendar = Calendar.getInstance();
 
-        nametext = findViewById(R.id.Name);
-        breedtext = findViewById(R.id.Breed);
-        birthtext = findViewById(R.id.Birth);
+        nameText = findViewById(R.id.Name);
+        breedText = findViewById(R.id.Breed);
+        birthText = findViewById(R.id.Birth);
         Button create = findViewById(R.id.Create);
         gender = findViewById(R.id.Gender);
         warning = findViewById(R.id.Warning);
@@ -56,12 +56,12 @@ public class BreedDoggos extends AppCompatActivity {
                 String myFormat = "dd MMM yyyy";
                 SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
 
-                birthtext.setText(sdf.format(myCalendar.getTime()));
+                birthText.setText(sdf.format(myCalendar.getTime()));
             }
 
         };
 
-        birthtext.setOnClickListener(new View.OnClickListener() {
+        birthText.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
@@ -75,11 +75,11 @@ public class BreedDoggos extends AppCompatActivity {
         create.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (nametext.getText().toString().equals("") | breedtext.getText().toString().equals("") | birthtext.getText().toString().equals("")) {
+                if (nameText.getText().toString().equals("") | breedText.getText().toString().equals("") | birthText.getText().toString().equals("")) {
                     warning.setText(R.string.warning);
                 } else {
                     ZonedDateTime zdt = ZonedDateTime.ofInstant(myCalendar.toInstant(), ZoneId.systemDefault());
-                    Doggo newPet = new Doggo(nametext.getText().toString(), breedtext.getText().toString(), zdt, gender.isChecked() ? Doggo.gender.Male : Doggo.gender.Female);
+                    Doggo newPet = new Doggo(nameText.getText().toString(), breedText.getText().toString(), zdt, gender.isChecked() ? Doggo.gender.Male : Doggo.gender.Female);
                     if (Doggo.doggos.get(0).getName().equals("Add New Pet")) {
                         Doggo.doggos.remove(0);
                     }

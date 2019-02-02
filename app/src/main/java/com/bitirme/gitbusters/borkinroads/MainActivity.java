@@ -68,9 +68,9 @@ public class MainActivity extends AppCompatActivity
         name = findViewById(R.id.name);
         breed = findViewById(R.id.breed);
         gender = findViewById(R.id.gender);
-        birthdate = findViewById(R.id.birthdate);
+        birthdate = findViewById(R.id.birth_date);
         age = findViewById(R.id.age);
-        ppbutton = findViewById(R.id.pbutton);
+        ppbutton = findViewById(R.id.p_button);
         ppbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity
         setValues();
 
         // set up the RecyclerView
-        RecyclerView recyclerView = findViewById(R.id.doggobar);
+        RecyclerView recyclerView = findViewById(R.id.doggo_bar);
         LinearLayoutManager horizontalLayoutManager
                 = new LinearLayoutManager(MainActivity.this, LinearLayoutManager.HORIZONTAL, false);
         recyclerView.setLayoutManager(horizontalLayoutManager);
@@ -155,7 +155,7 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_addpet) {
+        if (id == R.id.nav_addPet) {
             Intent i = new Intent(this, BreedDoggos.class);
             startActivity(i);
 
@@ -206,7 +206,7 @@ public class MainActivity extends AppCompatActivity
                 ppbutton.setImageBitmap(bitmap);
             } else {
                 Resources r = getResources();
-                ppbutton.setImageDrawable(ResourcesCompat.getDrawable(r, R.drawable.plusicon, this.getTheme()));
+                ppbutton.setImageDrawable(ResourcesCompat.getDrawable(r, R.drawable.plus_icon, this.getTheme()));
             }
 
         } catch (Exception e) {
@@ -215,7 +215,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    @SuppressWarnings("ConstantConditions")
+    @SuppressWarnings({"ConstantConditions", "ResultOfMethodCallIgnored"})
     private void saveImage(Bitmap finalBitmap) {
         File myDir = new File(getExternalFilesDir(Environment.DIRECTORY_DCIM).toString());
         myDir.mkdirs();

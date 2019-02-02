@@ -17,7 +17,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageButton
-            android:id="@+id/pbutton"
+            android:id="@+id/p_button"
             android:layout_width="180dp"
             android:layout_height="180dp"
             android:adjustViewBounds="true"
@@ -25,7 +25,7 @@
             android:cropToPadding="true"
             android:padding="0dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/plusicon" />
+            android:src="@drawable/plus_icon" />
 
         <Space
             android:layout_width="13dp"
@@ -69,11 +69,11 @@
                 android:typeface="normal" />
 
             <TextView
-                android:id="@+id/birthdate"
+                android:id="@+id/birth_date"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:lineSpacingExtra="8sp"
-                android:text="@string/bday"
+                android:text="@string/birthday"
                 android:textSize="18sp"
                 android:typeface="normal" />
 
@@ -95,7 +95,7 @@
     </TableRow>
 
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/doggobar"
+        android:id="@+id/doggo_bar"
         android:layout_width="395dp"
         android:layout_height="128dp"
         android:layout_marginStart="8dp"
