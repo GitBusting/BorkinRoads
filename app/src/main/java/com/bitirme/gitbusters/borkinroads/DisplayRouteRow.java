@@ -3,17 +3,17 @@ package com.bitirme.gitbusters.borkinroads;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.model.LatLng;
 
-public class DisplayRouteRow {
+class DisplayRouteRow {
 
-    private String title;
-    private LatLng[] points;
+    private final String title;
+    private final LatLng[] points;
     private MapView mapView;
-    private Float rating;
-    private String routeDate;
-    private Integer numberOfTimesRouteTaken;
-    private Double estimatedRouteDuration;
-    private boolean nearWater;
-    private boolean nearPark;
+    private final Float rating;
+    private final String routeDate;
+    private final Integer numberOfTimesRouteTaken;
+    private final Double estimatedRouteDuration;
+    private final boolean nearWater;
+    private final boolean nearPark;
     private boolean favourite;
 
     public DisplayRouteRow(String title, LatLng[] points, float rating, String routeDate, int numberOfTimesRouteTaken, double estimatedRouteDuration, boolean nearWater, boolean nearPark, boolean favourite) {

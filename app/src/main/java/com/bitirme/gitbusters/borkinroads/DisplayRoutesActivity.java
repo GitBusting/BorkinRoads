@@ -3,13 +3,13 @@ package com.bitirme.gitbusters.borkinroads;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -25,8 +25,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-
-import com.github.aakira.expandablelayout.ExpandableLinearLayout;
 import com.github.aakira.expandablelayout.ExpandableRelativeLayout;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -39,7 +37,6 @@ import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -47,8 +44,6 @@ import java.util.List;
 public class DisplayRoutesActivity extends Activity {
 
     private RecyclerView mRecyclerView;
-    private LinearLayoutManager mLinearLayoutManager;
-    private GridLayoutManager mGridLayoutManager;
     private CheckBox mFavouriteCheckBox;
     private CheckBox mNearWater;
     private CheckBox mNearForest;
@@ -58,36 +53,55 @@ public class DisplayRoutesActivity extends Activity {
     private ToggleButton mToggleButtonSortingDirection;
     private Button mButtonApply;
     private ExpandableRelativeLayout expandableRelativeLayout;
-    private ImageButton expand_button;
+
+    /**
+     * A list of locations to show in this ListView.
+     */
+    private static final List<DisplayRouteRow> LIST_LOCATIONS = new ArrayList<>(Arrays.asList(new DisplayRouteRow("Home to School", new LatLng[]{new LatLng(39.941734, 32.63447), new LatLng(39.920665, 32.801853)}, 3.5f, "11/11/11", 1, 25, false, true, true),
+            new DisplayRouteRow("School to Somewhere", new LatLng[]{new LatLng(39.920665, 32.801853), new LatLng(39.90, 32.514)}, 3.5f, "11/11/11", 2, 20, false, false, false),
+            new DisplayRouteRow("Beijing2", new LatLng[]{new LatLng(50.854509, 4.376678), new LatLng(55.679423, 12.577114), new LatLng(52.372026, 9.735672)}, 3.5f, "11/11/11", 1, 13, false, false, false),
+            new DisplayRouteRow("Home to School2", new LatLng[]{new LatLng(39.941734, 32.63447), new LatLng(39.920665, 32.801853)}, 3.5f, "11/11/11", 1, 38, true, true, true)));
+
+
+    //Adapter View Holder pattern for displaying lite mode Google maps
+    private final RecyclerView.RecyclerListener mRecycleListener = new RecyclerView.RecyclerListener() {
+        @Override
+        public void onViewRecycled(@NonNull RecyclerView.ViewHolder holder) {
+            DisplayRouteAdapter.ViewHolder mapHolder = (DisplayRouteAdapter.ViewHolder) holder;
+            if (mapHolder.map != null) {
+                mapHolder.map.clear();
+                mapHolder.map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_display_routes);
-        mGridLayoutManager = new GridLayoutManager(this, 2);
-        mLinearLayoutManager = new LinearLayoutManager(this);
+        GridLayoutManager mGridLayoutManager = new GridLayoutManager(this, 2);
+        LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview);
+        mRecyclerView = findViewById(R.id.recycler_view);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
-        mRecyclerView.setAdapter(new DisplayRouteAdapter(LIST_LOCATIONS));
+        mRecyclerView.setAdapter(new DisplayRouteAdapter());
         mRecyclerView.setRecyclerListener(mRecycleListener);
 
-        mFavouriteCheckBox = (CheckBox) findViewById(R.id.checkbox_favourite);
-        mNearWater = (CheckBox) findViewById(R.id.checkbox_lake_river_sea);
-        mNearForest = (CheckBox) findViewById(R.id.checkbox_park_forest);
-        mMinDurationEditText = (EditText) findViewById(R.id.text_min_route_duration);
-        mMaxDurationEditText = (EditText) findViewById(R.id.text_max_route_diretion);
-        mSpinnerSortingCondition = (Spinner) findViewById(R.id.spinner_sorting_condtion);
-        mToggleButtonSortingDirection = (ToggleButton) findViewById(R.id.toggle_sorting_direction);
+        mFavouriteCheckBox = findViewById(R.id.checkbox_favourite);
+        mNearWater = findViewById(R.id.checkbox_lake_river_sea);
+        mNearForest = findViewById(R.id.checkbox_park_forest);
+        mMinDurationEditText = findViewById(R.id.text_min_route_duration);
+        mMaxDurationEditText = findViewById(R.id.text_max_route_direction);
+        mSpinnerSortingCondition = findViewById(R.id.spinner_sorting_condition);
+        mToggleButtonSortingDirection = findViewById(R.id.toggle_sorting_direction);
 
 
-
-        expand_button = (ImageButton) findViewById(R.id.expanded_button);
+        ImageButton expand_button = findViewById(R.id.expanded_button);
         expand_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                expandableRelativeLayout = (ExpandableRelativeLayout) findViewById(R.id.expandableLayout);
+                expandableRelativeLayout = findViewById(R.id.expandableLayout);
                 expandableRelativeLayout.toggle();
             }
         });
@@ -97,24 +111,94 @@ public class DisplayRoutesActivity extends Activity {
 
     }
 
-    /*
-    * Adapter View Holder pattern for displaying lite mode Gmap
+    /**
+     * Sets listener for each filter menu item( for more dynamic filtering)
+     */
+    private void setFilterMenuListeners() {
+
+
+        TextWatcher mEditTextListener = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                updateFilters();
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                updateFilters();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                updateFilters();
+            }
+        };
+
+        ToggleButton.OnCheckedChangeListener mToggleButtonListener = new ToggleButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                updateFilters();
+            }
+        };
+
+        CheckBox.OnCheckedChangeListener mCheckBoxListener = new CheckBox.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                updateFilters();
+            }
+        };
+
+        mFavouriteCheckBox.setOnCheckedChangeListener(mCheckBoxListener);
+        mNearForest.setOnCheckedChangeListener(mCheckBoxListener);
+        mNearWater.setOnCheckedChangeListener(mCheckBoxListener);
+        mMaxDurationEditText.addTextChangedListener(mEditTextListener);
+        mMinDurationEditText.addTextChangedListener(mEditTextListener);
+        mToggleButtonSortingDirection.setOnCheckedChangeListener(mToggleButtonListener);
+    }
+
+    /**
+     * Creates FilterPreference object from filter menu values and runs filter
+     */
+    private void updateFilters() {
+        DisplayRouteAdapter mAdapter = (DisplayRouteAdapter) mRecyclerView.getAdapter();
+        assert mAdapter != null;
+        mAdapter.getFilter().filter(new FilterPreferences(mFavouriteCheckBox.isChecked(), mNearWater.isChecked(), mNearForest.isChecked(), getFloatValueMax(mMaxDurationEditText.getText().toString()), getFloatValueMin(mMinDurationEditText.getText().toString()),
+                mSpinnerSortingCondition.getSelectedItem().toString(), mToggleButtonSortingDirection.isChecked()).toString());
+
+    }
+
+    /**
+     * Method for dealing with non-numerical values of EditText
      */
 
+    private Float getFloatValueMax(String s) {
+        try {
+            return Float.parseFloat(s);
+        } catch (Exception e) {
+            return Float.MAX_VALUE;
+        }
+    }
+
+    private Float getFloatValueMin(String s) {
+        try {
+            return Float.parseFloat(s);
+        } catch (Exception e) {
+            return Float.MIN_VALUE;
+        }
+    }
+
     private class DisplayRouteAdapter extends RecyclerView.Adapter<DisplayRouteAdapter.ViewHolder> implements Filterable {
-        List<DisplayRouteRow> mRouteList;
+        final List<DisplayRouteRow> mRouteList;
         List<DisplayRouteRow> mFilteredRouteList;
 
-        private DisplayRouteAdapter(List<DisplayRouteRow> routes) {
+        private DisplayRouteAdapter() {
             super();
-            this.mRouteList = routes;
+            this.mRouteList = DisplayRoutesActivity.LIST_LOCATIONS;
             this.mFilteredRouteList = mRouteList;
         }
 
         @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
-            if (holder == null) return;
-
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             holder.bindView(position);
         }
 
@@ -124,8 +208,9 @@ public class DisplayRoutesActivity extends Activity {
                 return mFilteredRouteList.size();
         }
 
+        @NonNull
         @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             return new DisplayRouteAdapter.ViewHolder(LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.route_display_row, parent, false));
         }
@@ -137,7 +222,7 @@ public class DisplayRoutesActivity extends Activity {
         public Filter getFilter() {
             return new Filter() {
 
-                protected FilterResults performFiltering(FilterPreferences preferences) {
+                FilterResults performFiltering(FilterPreferences preferences) {
                     List<DisplayRouteRow> mFilteredRouteList = new ArrayList<>();
                     for(DisplayRouteRow route : mRouteList) {
                         if ( (!preferences.isFavourite() || (route.getFavourite() == preferences.isFavourite())) &&
@@ -149,34 +234,39 @@ public class DisplayRoutesActivity extends Activity {
                         }
                     }
 
-                    if (preferences.getSortingCondtion().equals(R.string.rating)) {
-                        Collections.sort(mFilteredRouteList, new Comparator<DisplayRouteRow>() {
-                            @Override
-                            public int compare(DisplayRouteRow o1, DisplayRouteRow o2) {
-                                return o1.getRating().compareTo(o2.getRating());
-                            }
-                        });
-                    } else if (preferences.getSortingCondtion().equals(R.string.route_used)) {
-                        Collections.sort(mFilteredRouteList, new Comparator<DisplayRouteRow>() {
-                            @Override
-                            public int compare(DisplayRouteRow o1, DisplayRouteRow o2) {
-                                return o1.getNumberOfTimesRouteTaken() - o2.getNumberOfTimesRouteTaken();
-                            }
-                        });
-                    } else if (preferences.getSortingCondtion().equals(R.string.using_time)) {
-                        Collections.sort(mFilteredRouteList, new Comparator<DisplayRouteRow>() {
-                            @Override
-                            public int compare(DisplayRouteRow o1, DisplayRouteRow o2) {
-                                return o1.getRouteDate().compareTo(o2.getRouteDate());
-                            }
-                        });
-                    } else if (preferences.getSortingCondtion().equals(R.string.estimated_time)) {
-                        Collections.sort(mFilteredRouteList, new Comparator<DisplayRouteRow>() {
-                            @Override
-                            public int compare(DisplayRouteRow o1, DisplayRouteRow o2) {
-                                return o1.getEstimatedRouteDuration().compareTo(o2.getEstimatedRouteDuration());
-                            }
-                        });
+                    switch (preferences.getSortingCondition()) {
+                        case R.string.rating + "":
+                            Collections.sort(mFilteredRouteList, new Comparator<DisplayRouteRow>() {
+                                @Override
+                                public int compare(DisplayRouteRow o1, DisplayRouteRow o2) {
+                                    return o1.getRating().compareTo(o2.getRating());
+                                }
+                            });
+                            break;
+                        case R.string.route_used + "":
+                            Collections.sort(mFilteredRouteList, new Comparator<DisplayRouteRow>() {
+                                @Override
+                                public int compare(DisplayRouteRow o1, DisplayRouteRow o2) {
+                                    return o1.getNumberOfTimesRouteTaken() - o2.getNumberOfTimesRouteTaken();
+                                }
+                            });
+                            break;
+                        case R.string.using_time + "":
+                            Collections.sort(mFilteredRouteList, new Comparator<DisplayRouteRow>() {
+                                @Override
+                                public int compare(DisplayRouteRow o1, DisplayRouteRow o2) {
+                                    return o1.getRouteDate().compareTo(o2.getRouteDate());
+                                }
+                            });
+                            break;
+                        case R.string.estimated_time + "":
+                            Collections.sort(mFilteredRouteList, new Comparator<DisplayRouteRow>() {
+                                @Override
+                                public int compare(DisplayRouteRow o1, DisplayRouteRow o2) {
+                                    return o1.getEstimatedRouteDuration().compareTo(o2.getEstimatedRouteDuration());
+                                }
+                            });
+                            break;
                     }
 
                     if (preferences.getSortingDirection())
@@ -194,6 +284,7 @@ public class DisplayRoutesActivity extends Activity {
                     return performFiltering(new FilterPreferences(constraint.toString().split(",")));
                 }
 
+                @SuppressWarnings("unchecked")
                 @Override
                 protected void publishResults(CharSequence constraint, FilterResults results) {
                     if (results == null || !(results.values instanceof  ArrayList<?>)) return;
@@ -206,15 +297,15 @@ public class DisplayRoutesActivity extends Activity {
 
         class ViewHolder extends RecyclerView.ViewHolder implements OnMapReadyCallback {
 
-            MapView mapView;
-            TextView title;
-            TextView routeDate;
-            RatingBar ratingBar;
+            final MapView mapView;
+            final TextView title;
+            final TextView routeDate;
+            final RatingBar ratingBar;
             GoogleMap map;
-            View layout;
-            ImageView favourite;
+            final View layout;
+            final ImageView favourite;
 
-            public ViewHolder(View itemView) {
+            ViewHolder(View itemView) {
                 super(itemView);
                 layout = itemView;
                 mapView = layout.findViewById(R.id.display_row_map);
@@ -282,9 +373,8 @@ public class DisplayRoutesActivity extends Activity {
                     @Override
                     public void onClick(View v) {
 
-                        /**
-                         * TODO: Add db logic
-                         */
+                        //TODO: Add db logic
+
                         if (favourite.getColorFilter() != null) {
                             favourite.clearColorFilter();
                         } else {
@@ -297,104 +387,6 @@ public class DisplayRoutesActivity extends Activity {
 
         }
     }
-
-    /**
-     * Sets listener for each filter menu item( for more dynamic filtering)
-     */
-    private void setFilterMenuListeners() {
-
-
-        TextWatcher mEditTextListener = new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                updateFilters();
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                updateFilters();
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                updateFilters();
-            }
-        };
-
-        ToggleButton.OnCheckedChangeListener mToogleButtonListener = new ToggleButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                updateFilters();
-            }
-        };
-
-        CheckBox.OnCheckedChangeListener mCheckBoxListener = new CheckBox.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                updateFilters();
-            }
-        };
-
-        mFavouriteCheckBox.setOnCheckedChangeListener(mCheckBoxListener);
-        mNearForest.setOnCheckedChangeListener(mCheckBoxListener);
-        mNearWater.setOnCheckedChangeListener(mCheckBoxListener);
-        mMaxDurationEditText.addTextChangedListener(mEditTextListener);
-        mMinDurationEditText.addTextChangedListener(mEditTextListener);
-        mToggleButtonSortingDirection.setOnCheckedChangeListener(mToogleButtonListener);
-    }
-
-    private RecyclerView.RecyclerListener mRecycleListener = new RecyclerView.RecyclerListener() {
-        @Override
-        public void onViewRecycled(RecyclerView.ViewHolder holder) {
-            DisplayRouteAdapter.ViewHolder mapHolder = (DisplayRouteAdapter.ViewHolder) holder;
-            if (mapHolder != null && mapHolder.map != null) {
-                mapHolder.map.clear();
-                mapHolder.map.setMapType(GoogleMap.MAP_TYPE_NORMAL);
-            }
-        }
-    };
-
-
-
-    /**
-     * Creates FilterPreference object from filter menu values and runs filter
-     */
-    private void updateFilters() {
-        DisplayRouteAdapter mAdapter = (DisplayRouteAdapter) mRecyclerView.getAdapter();
-        mAdapter.getFilter().filter(new FilterPreferences(mFavouriteCheckBox.isChecked(), mNearWater.isChecked(), mNearForest.isChecked(), getFloatValueMax(mMaxDurationEditText.getText().toString()),getFloatValueMin(mMinDurationEditText.getText().toString()),
-                mSpinnerSortingCondition.getSelectedItem().toString(), mToggleButtonSortingDirection.isChecked()).toString());
-
-    }
-
-    /**
-    * Method for dealing with non-numerical values of EditText
-     */
-
-    private Float getFloatValueMax(String s) {
-        try {
-            return Float.parseFloat(s);
-        } catch (Exception e) {
-            return Float.MAX_VALUE;
-        }
-    }
-
-    private Float getFloatValueMin(String s) {
-        try {
-            return Float.parseFloat(s);
-        } catch (Exception e) {
-            return Float.MIN_VALUE;
-        }
-    }
-
-    /**
-     * A list of locations to show in this ListView.
-     */
-    private static final List<DisplayRouteRow> LIST_LOCATIONS = new ArrayList<>(Arrays.asList(new DisplayRouteRow[]{
-            new DisplayRouteRow("Home to School", new LatLng[]{new LatLng(39.941734, 32.63447), new LatLng(39.920665, 32.801853)}, 3.5f, "11/11/11", 1, 25, false, true, true),
-            new DisplayRouteRow("School to Somewhere", new LatLng[]{new LatLng(39.920665, 32.801853), new LatLng(39.90, 32.514)}, 3.5f, "11/11/11", 2, 20, false, false, false),
-            new DisplayRouteRow("Beijing2", new LatLng[]{new LatLng(50.854509, 4.376678), new LatLng(55.679423, 12.577114), new LatLng(52.372026, 9.735672)}, 3.5f, "11/11/11", 1, 13, false, false, false),
-            new DisplayRouteRow("Home to School2", new LatLng[]{new LatLng(39.941734, 32.63447), new LatLng(39.920665, 32.801853)}, 3.5f, "11/11/11", 1, 38, true, true, true)
-    }));
 
 
 

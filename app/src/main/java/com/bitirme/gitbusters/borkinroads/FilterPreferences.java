@@ -1,29 +1,31 @@
 package com.bitirme.gitbusters.borkinroads;
 
+import android.support.annotation.NonNull;
+
 /*
 * Class for representing the filtering preferences
 */
-public class FilterPreferences {
-    private boolean favourite;
-    private boolean isNearWater;
-    private boolean nearPark;
-    private Float maxDuration;
-    private Float minDuration;
-    private String sortingCondtion;
-    private Boolean sortingDirection;
+class FilterPreferences {
+    private final boolean favourite;
+    private final boolean isNearWater;
+    private final boolean nearPark;
+    private final Float maxDuration;
+    private final Float minDuration;
+    private final String sortingCondition;
+    private final Boolean sortingDirection;
 
-    public FilterPreferences(boolean favourite, boolean isNearWater, boolean nearPark, Float maxDuration, Float minDuration, String sortingCondtion, Boolean sortingDirection) {
+    public FilterPreferences(boolean favourite, boolean isNearWater, boolean nearPark, Float maxDuration, Float minDuration, String sortingCondition, Boolean sortingDirection) {
         this.favourite = favourite;
         this.isNearWater = isNearWater;
         this.nearPark = nearPark;
         this.maxDuration = maxDuration;
         this.minDuration = minDuration;
-        this.sortingCondtion = sortingCondtion;
+        this.sortingCondition = sortingCondition;
         this.sortingDirection = sortingDirection;
     }
 
     /**
-    * Creates FilterPreferences object from comma splited toString of an FilterPrefenence Object
+     * Creates FilterPreferences object from comma split toString of an FilterPreference Object
      */
     public FilterPreferences(String[] split) {
          this(Boolean.parseBoolean(split[0]), Boolean.parseBoolean(split[1]), Boolean.parseBoolean(split[2]),
@@ -50,21 +52,21 @@ public class FilterPreferences {
         return minDuration;
     }
 
-    public String getSortingCondtion() {
-        return sortingCondtion;
+    public String getSortingCondition() {
+        return sortingCondition;
     }
 
     public Boolean getSortingDirection() {
         return sortingDirection;
     }
 
-    /**
-    * Creates comma seperated string from attributes
-     */
+    // Creates comma separated string from attributes
+
+    @NonNull
     @Override
     public String toString() {
         return "" + favourite + "," + isNearWater + "," + isNearPark() + "," + maxDuration.toString() +
-                "," + minDuration.toString() + "," + sortingCondtion + "," + sortingDirection.toString();
+                "," + minDuration.toString() + "," + sortingCondition + "," + sortingDirection.toString();
     }
 
 }

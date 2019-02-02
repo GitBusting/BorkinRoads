@@ -11,44 +11,41 @@
         android:id="@+id/resetButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="left|top"
-        android:text="Reset Path"
-        android:padding="10dp"
+        android:layout_gravity="start|top"
         android:layout_marginTop="20dp"
-        android:paddingLeft="10dp"/>
+        android:padding="10dp"
+        android:text="@string/reset_path" />
 
     <Button
         android:id="@+id/generatePathButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="left|bottom"
-        android:text="Generate Path Button"
-        android:padding="10dp"
+        android:layout_gravity="start|bottom"
         android:layout_marginTop="20dp"
-        android:paddingLeft="10dp"/>
+        android:padding="10dp"
+        android:text="@string/generate_path_button" />
 
     <Button
         android:id="@+id/startRouteButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="right|bottom"
-        android:text="Start Route"
-        android:padding="10dp"
+        android:layout_gravity="end|bottom"
         android:layout_marginTop="20dp"
-        android:paddingRight="10dp"/>
+        android:padding="10dp"
+        android:text="@string/start_route" />
 
     <TextView
         android:id="@+id/estimated_time"
         android:layout_width="200dp"
         android:layout_height="200dp"
-        android:text="estimated time:"
+        android:layout_gravity="end|bottom"
         android:background="@android:color/background_light"
         android:textColor="@android:color/black"
         android:textColorHighlight="@android:color/primary_text_dark"
-        android:layout_gravity="right|bottom"
+        android:padding="10dp"
         android:layout_marginBottom="60dp"
-        android:padding="10px"
+        android:text="@string/estimated_time2"
         android:textAlignment="gravity"
         android:scrollbars="vertical"
-        android:textSize="15dp"/>
+        android:textSize="15sp" />
 </fragment>

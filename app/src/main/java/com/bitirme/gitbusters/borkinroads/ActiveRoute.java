@@ -4,12 +4,12 @@ import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
 
-public class ActiveRoute {
+class ActiveRoute {
 
-  private ArrayList<LatLng> waypoints;
-  private ArrayList<Integer> colors;
-  private LatLng startCoords;
-  private LatLng endCoords;
+  private final ArrayList<LatLng> waypoints;
+  private final ArrayList<Integer> colors;
+  private final LatLng startCoords;
+  private final LatLng endCoords;
 
   /**
    *

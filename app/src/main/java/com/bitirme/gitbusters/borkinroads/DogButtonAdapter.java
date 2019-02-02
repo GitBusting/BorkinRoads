@@ -38,7 +38,7 @@ public class DogButtonAdapter extends RecyclerView.Adapter<DogButtonAdapter.View
         return new ViewHolder(view);
     }
 
-    // binds the data to the view and textview in each row
+    // binds the data to the view and text view in each row
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Doggo tempDoggo = doggobarlist.get(position);
@@ -51,7 +51,7 @@ public class DogButtonAdapter extends RecyclerView.Adapter<DogButtonAdapter.View
                 holder.dog.setImageBitmap(bitmap);
             } else {
                 Resources r = _context.getResources();
-                holder.dog.setImageDrawable(ResourcesCompat.getDrawable(r, R.drawable.plusicon, _context.getTheme()));/*
+                holder.dog.setImageDrawable(ResourcesCompat.getDrawable(r, R.drawable.plus_icon, _context.getTheme()));/*
                 Bitmap b = BitmapFactory.decodeFile(_context.getExternalFilesDir(Environment.DIRECTORY_DCIM) + "/" + "SysTemp.jpg", options);
                 holder.dog.setImageBitmap(b);*/
             }
