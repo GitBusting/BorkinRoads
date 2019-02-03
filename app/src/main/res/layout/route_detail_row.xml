@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#282828">
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:map="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="5dp">
+
+        <TextView style="@style/details_text_view_theme"
+            android:id="@+id/tv_speed_bar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Speed"
+            android:background="#1F1F1F"
+            android:textColor="#979797"/>
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:map="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="5dp">
+
+            <TextView style="@style/details_text_view_theme"
+                android:id="@+id/tv_avg_speed_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Avg Speed"
+                android:layout_weight="1"
+                android:background="#282828"
+                android:textColor="#979797"/>
+
+            <TextView style="@style/details_text_view_theme"
+                android:id="@+id/tv_avg_speed_data"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="1.5km/h"
+                android:background="#282828"
+                android:textColor="#979797"/>
+        </LinearLayout>
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:map="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="5dp"
+            >
+
+            <TextView style="@style/details_text_view_theme"
+                android:id="@+id/tv_avg_mov_speed_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Avg Moving Speed"
+                android:layout_weight="1"
+                />
+
+            <TextView style="@style/details_text_view_theme"
+                android:id="@+id/tv_avg_mov_speed_data"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="6.5km/h"/>
+        </LinearLayout>
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:map="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="5dp">
+
+            <TextView style="@style/details_text_view_theme"
+                android:id="@+id/tv_max_speed_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Max Speed"
+                android:layout_weight="1" />
+
+            <TextView style="@style/details_text_view_theme"
+                android:id="@+id/tv_max_speed_data"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="1.5km/h"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:map="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="5dp">
+
+        <TextView style="@style/details_text_view_theme"
+            android:id="@+id/tv_pace_bar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Pace"
+            android:background="#1F1F1F"/>
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:map="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="5dp">
+
+            <TextView style="@style/details_text_view_theme"
+                android:id="@+id/tv_avg_pace_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Avg pace"
+                android:layout_weight="1" />
+
+            <TextView style="@style/details_text_view_theme"
+                android:id="@+id/tv_avg_pace_data"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="1.5km/h"/>
+        </LinearLayout>
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:map="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="5dp">
+
+            <TextView style="@style/details_text_view_theme"
+                android:id="@+id/tv_avg_mov_pace_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Avg Moving pace"
+                android:layout_weight="1"/>
+
+            <TextView style="@style/details_text_view_theme"
+                android:id="@+id/tv_avg_mov_pace_data"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="6.5km/h"/>
+        </LinearLayout>
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:map="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="5dp">
+
+            <TextView style="@style/details_text_view_theme"
+                android:id="@+id/tv_max_pace_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Max pace"
+                android:layout_weight="1" />
+
+            <TextView style="@style/details_text_view_theme"
+                android:id="@+id/tv_max_pace_data"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="1.5km/h"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:map="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="5dp">
+
+        <TextView style="@style/details_text_view_theme"
+            android:id="@+id/tv_timing_bar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Timing"
+            android:background="#1F1F1F"/>
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:map="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="5dp">
+
+            <TextView style="@style/details_text_view_theme"
+                android:id="@+id/tv_total_timing_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Total Time"
+                android:layout_weight="1" />
+
+            <TextView style="@style/details_text_view_theme"
+                android:id="@+id/tv_avg_timing_data"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="15:47"/>
+        </LinearLayout>
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingTop="5dp">
+
+            <TextView style="@style/details_text_view_theme"
+                android:id="@+id/tv_mov_timing_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="Moving Time"
+                android:layout_weight="1"/>
+
+            <TextView style="@style/details_text_view_theme"
+                android:id="@+id/tv_avg_mov_timing_data"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="6.5km/h"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>
