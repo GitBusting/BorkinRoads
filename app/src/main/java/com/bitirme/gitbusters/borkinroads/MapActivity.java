@@ -65,7 +65,9 @@ public class MapActivity extends FragmentActivity
   private int curEstTime;
   private TextView estimated;
 
-  private Button resetButton, genPathButton, startRouteButton;
+  private Button resetButton, genPathButton, startRouteButton, nearbybutton;
+
+  private static final DirectionsHandler requester = new DirectionsHandler();
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -130,6 +132,17 @@ public class MapActivity extends FragmentActivity
             (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
     assert mapFragment != null;
     mapFragment.getMapAsync(this);
+
+    nearbybutton = findViewById(R.id.nearby);
+    nearbybutton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+          requester.setCurrentLocation(cur_location);
+          requester.setRadius(500); //this could change
+          requester.start();
+      }
+    });
+
   }
 
   @Override
