@@ -332,10 +332,10 @@ public class DisplayRoutesActivity extends Activity {
              * Sets up route from set of points and puts them on map
              * TODO: Add more dynamic focus on map for larger routes
              */
-            private void displayRouteOnMap() {
-                if (map == null) return;
+                private void displayRouteOnMap() {
+                    if (map == null) return;
 
-                DisplayRouteRow data = (DisplayRouteRow) mapView.getTag();
+                    DisplayRouteRow data = (DisplayRouteRow) mapView.getTag();
                 if (data == null) return;
 
                 PolylineOptions polylineOptions = new PolylineOptions();

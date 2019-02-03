@@ -26,6 +26,8 @@ import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.model.Step;
 import com.akexorcist.googledirection.util.DirectionConverter;
+import com.bitirme.gitbusters.borkinroads.dbinterface.RoutePuller;
+import com.bitirme.gitbusters.borkinroads.dbinterface.RoutePusher;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -35,8 +37,11 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.bitirme.gitbusters.borkinroads.routeutilities.RouteRecord;
 
 public class MapActivity extends FragmentActivity
         implements GoogleMap.OnMyLocationButtonClickListener,
@@ -45,7 +50,7 @@ public class MapActivity extends FragmentActivity
         DirectionCallback,
         LocationListener {
 
-  private final String apikey = "";
+  private final String apikey = "AIzaSyA3nOUd0mIm1mCoUIx1DRa-qsCT3Kz1a_k";
 
   private GoogleMap mMap;
 
@@ -57,7 +62,8 @@ public class MapActivity extends FragmentActivity
   private ArrayList<Integer> legColors;
 
   private boolean routeActive;
-  private ActiveRoute currRoute;
+  private RouteRecord currRoute, copyRoute;
+  private int estimatedMinutes;
   private CountDownTimer cdt; // try to update route on finish
 
   private LatLng cur_location;
@@ -130,6 +136,18 @@ public class MapActivity extends FragmentActivity
             (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
     assert mapFragment != null;
     mapFragment.getMapAsync(this);
+
+    // TODO this doesn't belong here
+    // RoutePuller rp = new RoutePuller();
+    // rp.start();
+    // try {
+    // rp.join();
+    // } catch (InterruptedException e) {
+    // e.printStackTrace();
+    // }
+    // for(RouteRecord rr : rp.getFetchedRoutes())
+    // rr.prettyPrint();
+
   }
 
   @Override
@@ -175,7 +193,9 @@ public class MapActivity extends FragmentActivity
 
   private void startEndRoute() {
     if(!routeActive) {
-      currRoute = new ActiveRoute(cur_location, cur_location, coordinates, legColors);
+      currRoute = new RouteRecord(cur_location, cur_location,
+              coordinates, legColors, estimatedMinutes);
+      copyRoute = new RouteRecord(currRoute); // Checkpoint the current state of the route
       cdt = new CountDownTimer(20000, 10000) {
         public void onTick(long millisUntilFinished) {
           System.out.println("Timer heartbeat per 10 seconds.");
@@ -194,6 +214,11 @@ public class MapActivity extends FragmentActivity
       resetButton.setVisibility(View.VISIBLE);
       genPathButton.setVisibility(View.VISIBLE);
       startRouteButton.setText(R.string.start_route);
+      // TODO ask users to review their newly traversed path here
+
+      // For now we just push the newly created route
+      RoutePusher rp = new RoutePusher(copyRoute);
+      rp.start();
     }
     else {
       genPathButton.setVisibility(View.INVISIBLE);
@@ -364,8 +389,20 @@ public class MapActivity extends FragmentActivity
       }
       estimated.setText(getRouteOutline(route));
       estimated.setVisibility(View.VISIBLE);
+      updateEstimatedMinutesUntilEnd(route);
         estimated.setAlpha((float) 0.75);
     } else { System.out.println("Could not find a valid route"); }
+  }
+
+  private void updateEstimatedMinutesUntilEnd(Route route)
+  {
+    int estTime = 0;
+    int legCount = route.getLegList().size();
+    for (int index = 0; index < legCount; index++) {
+      Leg leg = route.getLegList().get(index);
+      estTime += Integer.parseInt(leg.getDuration().getValue());
+    }
+    estimatedMinutes = estTime / 60;
   }
 
   private String getRouteOutline(Route route) {
