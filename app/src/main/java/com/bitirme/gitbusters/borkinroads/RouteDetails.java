@@ -3,12 +3,28 @@ package com.bitirme.gitbusters.borkinroads;
 public class RouteDetails {
     private double maxPace;
     private double avgPace;
+    private double movingPace;
     private double maxSpeed;
     private double avgSpeed;
+    private double movingSpeed;
     private double routeLength;
     private double totalTime;
     private double movingTime;
-    private String data, time;
+    private String date, time;
+
+    public RouteDetails(double maxPace, double avgPace, double movingPace, double maxSpeed, double avgSpeed, double movingSpeed, double routeLength, double totalTime, double movingTime, String date, String time) {
+        this.maxPace = maxPace;
+        this.avgPace = avgPace;
+        this.movingPace = movingPace;
+        this.maxSpeed = maxSpeed;
+        this.avgSpeed = avgSpeed;
+        this.movingSpeed = movingSpeed;
+        this.routeLength = routeLength;
+        this.totalTime = totalTime;
+        this.movingTime = movingTime;
+        this.date = date;
+        this.time = time;
+    }
 
     public double getMaxPace() {
         return maxPace;
@@ -38,11 +54,19 @@ public class RouteDetails {
         return movingTime;
     }
 
-    public String getData() {
-        return data;
+    public String getDate() {
+        return date;
     }
 
     public String getTime() {
         return time;
+    }
+
+    public double getMovingSpeed() {
+        return movingSpeed;
+    }
+
+    public double getMovingPace() {
+        return movingPace;
     }
 }

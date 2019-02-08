@@ -5,6 +5,28 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#282828">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:map="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="5dp">
+
+        <TextView style="@style/details_text_view_theme"
+            android:id="@+id/tv_date_label"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Date"
+            android:layout_weight="1" />
+
+        <TextView style="@style/details_text_view_theme"
+            android:id="@+id/tv_date_data"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="14.01.1997 23:23"/>
+    </LinearLayout>
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:map="http://schemas.android.com/apk/res-auto"
         android:layout_width="match_parent"
@@ -200,7 +222,7 @@
                 android:layout_weight="1" />
 
             <TextView style="@style/details_text_view_theme"
-                android:id="@+id/tv_avg_timing_data"
+                android:id="@+id/tv_total_timing_data"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
@@ -221,11 +243,11 @@
                 android:layout_weight="1"/>
 
             <TextView style="@style/details_text_view_theme"
-                android:id="@+id/tv_avg_mov_timing_data"
+                android:id="@+id/tv_mov_timing_data"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="6.5km/h"/>
+                android:text="15:22"/>
         </LinearLayout>
 
     </LinearLayout>
