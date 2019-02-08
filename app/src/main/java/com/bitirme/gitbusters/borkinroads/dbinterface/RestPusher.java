@@ -1,6 +1,7 @@
 package com.bitirme.gitbusters.borkinroads.dbinterface;
 
-import com.bitirme.gitbusters.borkinroads.routeutilities.RouteRecord;
+import com.bitirme.gitbusters.borkinroads.data.RestRecord;
+import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -9,17 +10,20 @@ import java.util.ArrayList;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class RoutePusher extends Thread {
+public class RestPusher extends Thread {
 
-  public ArrayList<RouteRecord> toBePushed;
+  public ArrayList<RestRecordImpl> toBePushed;
+  private String DB_URL;
 
-  public RoutePusher(ArrayList<RouteRecord> rr)
+  public RestPusher(ArrayList<RestRecordImpl> rr)
   {
     toBePushed = rr;
+    DB_URL = rr.get(0).getURL();
   }
 
-  public RoutePusher(RouteRecord rr)
+  public RestPusher(RestRecordImpl rr)
   {
+    DB_URL = rr.getURL() + ".json";
     toBePushed = new ArrayList<>();
     toBePushed.add(rr);
   }
@@ -32,7 +36,7 @@ public class RoutePusher extends Thread {
   public void run() {
     HttpsURLConnection connPut = null;
     try {
-      URL webServerUrl = new URL("https://shielded-cliffs-47552.herokuapp.com/routes.json");
+      URL webServerUrl = new URL(DB_URL);
 
       connPut = (HttpsURLConnection) webServerUrl.openConnection();
 
@@ -45,9 +49,9 @@ public class RoutePusher extends Thread {
       connPut.connect();
       OutputStreamWriter out = new OutputStreamWriter(connPut.getOutputStream());
 
-      for(RouteRecord rr : toBePushed)
+      for(RestRecord rr : toBePushed)
       {
-        out.write(rr.getJSONRepresentation().toString());
+        out.write(rr.getJSON().toString());
         out.flush();
       }
       out.close();

@@ -1,4 +1,4 @@
-package com.bitirme.gitbusters.borkinroads.routeutilities;
+package com.bitirme.gitbusters.borkinroads.data;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -10,8 +10,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-public class RouteRecord {
+public class RouteRecord extends RestRecordImpl {
 
   private String title;
   private ArrayList<LatLng> waypoints;
@@ -25,6 +27,16 @@ public class RouteRecord {
   private boolean nearLake;
   private boolean nearPark;
   private int noUsed;
+  private int entryID;
+
+  /**
+   * Practically useless, can be used to generate
+   * template routerecords.
+   */
+  public RouteRecord()
+  {
+    super();
+  }
 
   /**
    *
@@ -65,10 +77,12 @@ public class RouteRecord {
     this.noUsed = copy.noUsed;
     this.date = copy.date;
     this.time = copy.time;
+    this.entryID = copy.entryID;
   }
 
   public RouteRecord(JSONObject jso)
   {
+    super(jso);
     parseRecordFromJSON(jso);
   }
 
@@ -88,27 +102,10 @@ public class RouteRecord {
     return colors;
   }
 
-  public JSONObject getJSONRepresentation()
-  {
-    JSONObject jso = new JSONObject();
-    try {
-      jso.put("title", this.title);
-      jso.put("rating", this.rating);
-      jso.put("date", this.date + this.time);
-      jso.put("estimatedDuration", this.estimatedMinutes);
-      jso.put("nearWater", this.nearLake);
-      jso.put("nearPark", this.nearPark);
-      jso.put("favourite", this.isFavorite);
-      jso.put("numberOfTimesUsed", this.noUsed);
-    } catch (JSONException e) {
-      e.printStackTrace();
-    }
-    return jso;
-  }
-
   private void parseRecordFromJSON(JSONObject jso)
   {
     try {
+      this.entryID = jso.getInt("id");
       this.title = jso.getString("title");
       this.rating = jso.getDouble("rating");
       String dateTime = jso.getString("date");
@@ -127,11 +124,40 @@ public class RouteRecord {
 
   public void prettyPrint()
   {
-    System.out.println("Route Record\n" +
-        "Title: " + title + "\n" +
-        "Rating: " + rating + "\n" +
-        "Date&Time: " + date + time + "\n" +
-        "Estimated Time to Finish: " + estimatedMinutes + "\n"
+    Logger.getGlobal().log(Level.INFO,"Route Record\n" +
+            "Title: " + title + "\n" +
+            "Rating: " + rating + "\n" +
+            "Date&Time: " + date + time + "\n" +
+            "Estimated Time to Finish: " + estimatedMinutes + "\n"
     );
+  }
+
+
+  @Override
+  public String getURL() {
+    return "https://shielded-cliffs-47552.herokuapp.com/routes";
+  }
+
+  @Override
+  public JSONObject getJSON() {
+    JSONObject jso = new JSONObject();
+    try {
+      jso.put("title", this.title);
+      jso.put("rating", this.rating);
+      jso.put("date", this.date + this.time);
+      jso.put("estimatedDuration", this.estimatedMinutes);
+      jso.put("nearWater", this.nearLake);
+      jso.put("nearPark", this.nearPark);
+      jso.put("favourite", this.isFavorite);
+      jso.put("numberOfTimesUsed", this.noUsed);
+    } catch (JSONException e) {
+      e.printStackTrace();
+    }
+    return jso;
+  }
+
+  @Override
+  public int getEntryID() {
+    return entryID;
   }
 }

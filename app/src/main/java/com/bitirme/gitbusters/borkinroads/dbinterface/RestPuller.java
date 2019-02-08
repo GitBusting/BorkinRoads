@@ -1,8 +1,7 @@
 package com.bitirme.gitbusters.borkinroads.dbinterface;
 
-import android.util.JsonReader;
-
-import com.bitirme.gitbusters.borkinroads.routeutilities.RouteRecord;
+import com.bitirme.gitbusters.borkinroads.data.RestRecord;
+import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -12,31 +11,50 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.net.ssl.HttpsURLConnection;
 
-public class RoutePuller extends Thread {
+public class RestPuller extends Thread {
 
-  private ArrayList<RouteRecord> fetchedRoutes;
+  private ArrayList<RestRecordImpl> fetchedRoutes;
+  private RestRecord templateReference;
+  private String DB_URL;
 
-  public RoutePuller()
+  public RestPuller(RestRecordImpl template)
   {
-    fetchedRoutes = new ArrayList<>();
+    this.fetchedRoutes = new ArrayList<>();
+    this.templateReference = template;
+    DB_URL = template.getURL() + ".json";
   }
 
-  public ArrayList<RouteRecord> getFetchedRoutes() {
+  public ArrayList<RestRecordImpl> getFetchedRoutes() {
     return fetchedRoutes;
   }
 
   @Override
   public void run()
   {
+    // Obtain the record's constructor
+    Class actualRecordClass = templateReference.getClass();
+    Constructor recordConstructor = null;
+    try {
+      recordConstructor = actualRecordClass.getConstructor
+              (new Class[]{JSONObject.class});
+    } catch (NoSuchMethodException e) {
+      e.printStackTrace();
+    }
+
     HttpsURLConnection conn = null;
     try {
+      Logger.getGlobal().log(Level.INFO,"Requesting routes from " + DB_URL);
 
-      URL webServerUrl = new URL("https://shielded-cliffs-47552.herokuapp.com/routes.json");
+      URL webServerUrl = new URL(DB_URL);
       conn =
               (HttpsURLConnection) webServerUrl.openConnection();
       conn.setReadTimeout(10000 /* milliseconds */);
@@ -55,13 +73,19 @@ public class RoutePuller extends Thread {
         }
         JSONArray jsa = new JSONArray(total.toString());
         for(int i = 0 ; i < jsa.length() ; i++)
-          fetchedRoutes.add(new RouteRecord(jsa.getJSONObject(i)));
+          fetchedRoutes.add((RestRecordImpl) recordConstructor.newInstance(jsa.getJSONObject(i)));
       } else {
         // Unable to connect
         System.out.println("a very bad thing happened.");
       }
 
     } catch (IOException | JSONException e) {
+      e.printStackTrace();
+    } catch (IllegalAccessException e) {
+      e.printStackTrace();
+    } catch (InstantiationException e) {
+      e.printStackTrace();
+    } catch (InvocationTargetException e) {
       e.printStackTrace();
     } finally {
       if(conn!=null)
