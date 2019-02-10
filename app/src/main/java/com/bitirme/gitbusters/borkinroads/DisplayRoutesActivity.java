@@ -28,6 +28,7 @@ import android.widget.ToggleButton;
 import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
 import com.bitirme.gitbusters.borkinroads.data.RouteRecord;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestPuller;
+import com.bitirme.gitbusters.borkinroads.dbinterface.RestUpdater;
 import com.github.aakira.expandablelayout.ExpandableRelativeLayout;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -118,6 +119,12 @@ public class DisplayRoutesActivity extends Activity {
           routeList.add(rr);
           rr.prettyPrint();
         }
+
+        /* Below code is to test the update functionality */
+        //RouteRecord rr = routeList.get(0);
+        //rr.toggleFavorite();
+        //RestUpdater ru = new RestUpdater(rr);
+        //ru.start();
 
         ImageButton expand_button = findViewById(R.id.expanded_button);
         expand_button.setOnClickListener(new View.OnClickListener() {

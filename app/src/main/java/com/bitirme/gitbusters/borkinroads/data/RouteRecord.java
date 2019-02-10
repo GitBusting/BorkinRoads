@@ -59,7 +59,7 @@ public class RouteRecord extends RestRecordImpl {
     String strDate = dateFormat.format(currentTime);
     date = strDate.split(" ")[0] + "T";
     time = strDate.split(" ")[1] + ".000Z";
-    System.out.println("Record date and time: " + date + time);
+    entryID = -1;
   }
 
   public RouteRecord(RouteRecord copy)
@@ -84,6 +84,11 @@ public class RouteRecord extends RestRecordImpl {
   {
     super(jso);
     parseRecordFromJSON(jso);
+  }
+
+  public void toggleFavorite()
+  {
+    isFavorite = !isFavorite;
   }
 
   public LatLng getEndLocation() {
