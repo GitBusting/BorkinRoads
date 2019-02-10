@@ -39,46 +39,47 @@ public class DirectionsHandler extends Thread {
     public void run() {
         HttpsURLConnection conn = null;
         try {
-            String parameters = "key=";
-            parameters += apikey;
-            parameters += "&" + "location=" + currentLocation.latitude +","+ currentLocation.longitude;
-            parameters += "&radius=" + radius; //radius is in meters. this can be changed in the future.
-            //parameters += "&keyword=park"; //"park" is selected for type for now, according to the user story.
-            URL webServerUrl = new URL("https://maps.googleapis.com/maps/api/place/nearbysearch/json?" + parameters);
+            String url = buildRequest("");
+            URL webServerUrl = new URL(url);
             conn = (HttpsURLConnection) webServerUrl.openConnection();
             conn.setReadTimeout(10000 /* milliseconds */);
             conn.setConnectTimeout(15000 /* milliseconds */);
-
             conn.setRequestMethod("GET");
             conn.connect();
-            System.out.println("parameters: " + parameters);
             BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-
             StringBuilder sb = new StringBuilder();
 
             String result;
-            String lat="";
-            String lng="";
+            double lat= currentLocation.latitude;
+            double lng= currentLocation.longitude;
             while ((result = br.readLine()) != null) {
-                System.out.println(result);
                 sb.append(result);
-                if(result.contains("\"lat\"")) {
-                    result = result.replaceAll(",","");
-                    result = result.replaceAll(" ","");
-                    lat = result;
-                }
-                if(result.contains("\"lng\"")) lng = result;
+                if(result.contains("\"lat\""))
+                    lat = cleanText(result);
+                    //lat = (Math.abs(cleanText(result)-currentLocation.latitude) > Math.abs(currentLocation.latitude-lat)) ? cleanText(result) : lat;
+                if(result.contains("\"lng\""))
+                    lng = cleanText(result);
+                    //lng = (Math.abs(cleanText(result)-currentLocation.longitude) > Math.abs(currentLocation.longitude - lng)) ? cleanText(result) : lng;
             }
-            lat=lat.replaceAll(",","");
-            lat=lat.replaceAll(" ","");
-            lat = lat.substring(lat.indexOf(":")+1);
-            lng=lng.replaceAll(",","");
-            lng=lng.replaceAll(" ","");
-            lng = lng.substring(lng.indexOf(":")+1);
-            setMarker(Double.parseDouble(lat),Double.parseDouble(lng));
+            setMarker(lat,lng);
             System.out.println(sb.toString());
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    public String buildRequest(String keyword){
+        String parameters = "key=";
+        parameters += apikey;
+        parameters += "&" + "location=" + currentLocation.latitude +","+ currentLocation.longitude;
+        parameters += "&radius=" + radius; //radius is in meters. this can be changed in the future.
+        if(!keyword.equals(""))
+            parameters += "&keyword=" + keyword; //"park" is selected for type for now, according to the user story.
+        return "https://maps.googleapis.com/maps/api/place/nearbysearch/json?" + parameters;
+    }
+    public static Double cleanText(String res){
+        res = res.replaceAll(",","");
+        res = res.replaceAll(" ","");
+        res = res.substring(res.indexOf(":")+1);
+        return Double.parseDouble(res);
     }
 }

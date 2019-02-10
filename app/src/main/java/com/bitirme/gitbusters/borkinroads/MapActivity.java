@@ -108,6 +108,8 @@ public class MapActivity extends FragmentActivity
       @Override
       public void onClick(View view) {
         clearMap();
+        estimated.setText("");
+        estimated.setVisibility(View.INVISIBLE);
         displayDirection = false;
       }
     });
