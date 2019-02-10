@@ -11,7 +11,11 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class DirectionsHandler extends Thread {
     private LatLng currentLocation;
+    private String apikey;
     private int radius = 500; //default value
+    public void setApikey(String api){
+        apikey = api;
+    }
     public void setCurrentLocation(LatLng cl) {
         currentLocation = new LatLng(cl.latitude,cl.longitude);
     }
@@ -24,12 +28,11 @@ public class DirectionsHandler extends Thread {
     public void run() {
         HttpsURLConnection conn = null;
         try {
-            String parameters = "";
-            String apikey = "key=AIzaSyA3nOUd0mIm1mCoUIx1DRa-qsCT3Kz1a_k";
+            String parameters = "key=";
             parameters += apikey;
             parameters += "&" + "location=" + currentLocation.latitude +","+ currentLocation.longitude;
             parameters += "&radius=" + radius; //radius is in meters. this can be changed in the future.
-            parameters += "&keyword=park"; //"park" is selected for type for now, according to the user story.
+            //parameters += "&keyword=park"; //"park" is selected for type for now, according to the user story.
             URL webServerUrl = new URL("https://maps.googleapis.com/maps/api/place/nearbysearch/json?" + parameters);
             conn = (HttpsURLConnection) webServerUrl.openConnection();
             conn.setReadTimeout(10000 /* milliseconds */);

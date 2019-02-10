@@ -34,12 +34,12 @@
         android:padding="10dp"
         android:text="@string/start_route" />
     <Button
-        android:id="@+id/nearby"
+        android:id="@+id/limitedtime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end|center"
         android:padding="10dp"
-        android:text="Nearby Button" />
+        android:text="I have limited time!" />
 
     <TextView
         android:id="@+id/estimated_time"
