@@ -155,8 +155,16 @@ public class MapActivity extends FragmentActivity
             requester.setApikey(apikey);
             requester.setRadius(calculated_distance);
             requester.start();
-            //Toast.makeText(MapActivity.this,"You clicked OK",Toast.LENGTH_LONG).show();
-            Toast.makeText(MapActivity.this,"OK: "+timeInput.getText() + " distance: " + calculated_distance,Toast.LENGTH_LONG).show();
+              try {
+                  requester.join();
+              } catch (InterruptedException e) {
+                  e.printStackTrace();
+              }
+              //Toast.makeText(MapActivity.this,"You clicked OK",Toast.LENGTH_LONG).show();
+            Toast.makeText(MapActivity.this,"OK: "+timeInput.getText() + " distance: " + calculated_distance + "returned:" + requester.getResult(),Toast.LENGTH_LONG).show();
+            coordinates.clear();
+            coordinates.add(requester.getResult());
+            requestDirection();
           }
         });
 

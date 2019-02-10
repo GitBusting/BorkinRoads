@@ -12,6 +12,8 @@ import javax.net.ssl.HttpsURLConnection;
 public class DirectionsHandler extends Thread {
     private LatLng currentLocation;
     private String apikey;
+    private LatLng marker;
+    private boolean isLimitedTime = true;
     private int radius = 500; //default value
     public void setApikey(String api){
         apikey = api;
@@ -23,6 +25,15 @@ public class DirectionsHandler extends Thread {
         if (rad > 50000) return false;
         radius = rad;
         return true;
+    }
+    public LatLng getResult(){
+        return marker;
+    }
+    public void setIsLimitedTime(boolean limitedTime){
+        isLimitedTime = limitedTime;
+    }
+    public void setMarker(double lat, double lng){
+        marker = new LatLng(lat,lng);
     }
     @Override
     public void run() {
@@ -46,9 +57,25 @@ public class DirectionsHandler extends Thread {
             StringBuilder sb = new StringBuilder();
 
             String result;
-            while ((result = br.readLine()) != null)
+            String lat="";
+            String lng="";
+            while ((result = br.readLine()) != null) {
+                System.out.println(result);
                 sb.append(result);
-
+                if(result.contains("\"lat\"")) {
+                    result = result.replaceAll(",","");
+                    result = result.replaceAll(" ","");
+                    lat = result;
+                }
+                if(result.contains("\"lng\"")) lng = result;
+            }
+            lat=lat.replaceAll(",","");
+            lat=lat.replaceAll(" ","");
+            lat = lat.substring(lat.indexOf(":")+1);
+            lng=lng.replaceAll(",","");
+            lng=lng.replaceAll(" ","");
+            lng = lng.substring(lng.indexOf(":")+1);
+            setMarker(Double.parseDouble(lat),Double.parseDouble(lng));
             System.out.println(sb.toString());
         } catch (IOException e) {
             e.printStackTrace();
