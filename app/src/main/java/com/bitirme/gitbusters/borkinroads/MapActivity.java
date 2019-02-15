@@ -60,6 +60,7 @@ public class MapActivity extends FragmentActivity
   private ArrayList<Integer> legColors;
 
   private boolean routeActive;
+  private String currTitle;
   private RouteRecord currRoute, copyRoute;
   private int estimatedMinutes;
   private CountDownTimer cdt; // try to update route on finish
@@ -193,6 +194,7 @@ public class MapActivity extends FragmentActivity
     if(!routeActive) {
       currRoute = new RouteRecord(cur_location, cur_location,
               coordinates, legColors, estimatedMinutes);
+      currRoute.setTitle(currTitle);
       copyRoute = new RouteRecord(currRoute); // Checkpoint the current state of the route
       cdt = new CountDownTimer(20000, 10000) {
         public void onTick(long millisUntilFinished) {
@@ -385,6 +387,7 @@ public class MapActivity extends FragmentActivity
           routes.add(mMap.addPolyline(polylineOption));
         }
       }
+      currTitle = route.getLegList().get(0).getStartAddress();
       estimated.setText(getRouteOutline(route));
       estimated.setVisibility(View.VISIBLE);
       updateEstimatedMinutesUntilEnd(route);

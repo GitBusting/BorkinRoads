@@ -107,11 +107,16 @@ public class RouteRecord extends RestRecordImpl {
     return colors;
   }
 
+  public void setTitle(String title) { this.title = title; }
+
   private void parseRecordFromJSON(JSONObject jso)
   {
     try {
       this.entryID = jso.getInt("id");
       this.title = jso.getString("title");
+      this.waypoints = this.stringToWaypoints(jso.getString("route"));
+      this.startCoords = waypoints.remove(0);
+      this.endCoords = waypoints.remove(waypoints.size()-1);
       this.rating = jso.getDouble("rating");
       String dateTime = jso.getString("date");
       String[] tokens = dateTime.split("T");
@@ -133,7 +138,9 @@ public class RouteRecord extends RestRecordImpl {
             "Title: " + title + "\n" +
             "Rating: " + rating + "\n" +
             "Date&Time: " + date + time + "\n" +
-            "Estimated Time to Finish: " + estimatedMinutes + "\n"
+            "Estimated Time to Finish: " + estimatedMinutes + "\n" +
+            "Start&End: " + startCoords.toString() + " & "+ endCoords.toString() +
+            "First Waypoint: " + waypoints.get(0)
     );
   }
 
@@ -148,6 +155,7 @@ public class RouteRecord extends RestRecordImpl {
     JSONObject jso = new JSONObject();
     try {
       jso.put("title", this.title);
+      jso.put("route",this.waypointsToString());
       jso.put("rating", this.rating);
       jso.put("date", this.date + this.time);
       jso.put("estimatedDuration", this.estimatedMinutes);
@@ -164,5 +172,30 @@ public class RouteRecord extends RestRecordImpl {
   @Override
   public int getEntryID() {
     return entryID;
+  }
+
+  private String waypointsToString()
+  {
+    String ret = "";
+    ret += startCoords.latitude + "_" + startCoords.longitude + ";";
+    for(LatLng wp : waypoints)
+      ret += wp.latitude + "_" + wp.longitude + ";";
+    ret += endCoords.latitude + "_" + endCoords.longitude;
+    System.out.println("Route string: " + ret);
+    return ret;
+  }
+
+  private ArrayList<LatLng> stringToWaypoints(String s)
+  {
+    String[] coords = s.split(";");
+    ArrayList<LatLng> ret = new ArrayList<>();
+    for(int i = 0 ; i < coords.length ; i++)
+    {
+      String[] ll = coords[i].split("_");
+      double latitude = Double.parseDouble(ll[0]);
+      double longtitude = Double.parseDouble(ll[1]);
+      ret.add(new LatLng(latitude,longtitude));
+    }
+    return ret;
   }
 }
