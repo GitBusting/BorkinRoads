@@ -114,7 +114,7 @@ public class RouteRecord extends RestRecordImpl {
     try {
       this.entryID = jso.getInt("id");
       this.title = jso.getString("title");
-      this.waypoints = this.stringToWaypoints(jso.getString("route"));
+      this.waypoints = this.stringToWaypoints(jso.getString("path"));
       this.startCoords = waypoints.remove(0);
       this.endCoords = waypoints.remove(waypoints.size()-1);
       this.rating = jso.getDouble("rating");
@@ -155,7 +155,7 @@ public class RouteRecord extends RestRecordImpl {
     JSONObject jso = new JSONObject();
     try {
       jso.put("title", this.title);
-      jso.put("route",this.waypointsToString());
+      jso.put("path",this.waypointsToString());
       jso.put("rating", this.rating);
       jso.put("date", this.date + this.time);
       jso.put("estimatedDuration", this.estimatedMinutes);
@@ -197,5 +197,54 @@ public class RouteRecord extends RestRecordImpl {
       ret.add(new LatLng(latitude,longtitude));
     }
     return ret;
+  }
+
+
+  public String getTitle() {
+    return title;
+  }
+
+  public LatLng getStartCoords() {
+    return startCoords;
+  }
+
+  public LatLng getEndCoords() {
+    return endCoords;
+  }
+
+  public String getDate() {
+    return date;
+  }
+
+  public String getTime() {
+    return time;
+  }
+
+  public Double getRating() {
+    return rating;
+  }
+
+  public int getEstimatedMinutes() {
+    return estimatedMinutes;
+  }
+
+  public boolean isFavorite() {
+    return isFavorite;
+  }
+
+  public boolean isNearLake() {
+    return nearLake;
+  }
+
+  public boolean isNearPark() {
+    return nearPark;
+  }
+
+  public int getNoUsed() {
+    return noUsed;
+  }
+
+  public void setRating(double rating) {
+      this.rating = rating;
   }
 }
