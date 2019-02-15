@@ -19,7 +19,7 @@
         android:layout_height="150dp"
         map:liteMode="true"
         map:mapType="none"
-        android:clickable="false"/>
+        android:clickable="false" />
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:map="http://schemas.android.com/apk/res-auto"

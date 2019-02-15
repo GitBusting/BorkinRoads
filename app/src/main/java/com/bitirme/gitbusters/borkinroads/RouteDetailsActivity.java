@@ -61,6 +61,7 @@ public class RouteDetailsActivity extends AppCompatActivity implements OnMapRead
 
         if (mapView != null) {
             mapView.onCreate(null);
+            mapView.setClickable(false);
             mapView.getMapAsync(this);
         }
 
@@ -71,6 +72,8 @@ public class RouteDetailsActivity extends AppCompatActivity implements OnMapRead
     public void onMapReady(GoogleMap googleMap) {
         MapsInitializer.initialize(getApplicationContext());
         mMap = googleMap;
+        mMap.getUiSettings().setAllGesturesEnabled(false);
+        mMap.getUiSettings().setMapToolbarEnabled(false);
     }
 
     public static List<RouteDetails> testDetailsList() {

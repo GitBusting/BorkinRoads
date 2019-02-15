@@ -1,9 +1,12 @@
 package com.bitirme.gitbusters.borkinroads;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.model.LatLng;
 
-class DisplayRouteRow {
+class DisplayRouteRow implements Parcelable {
 
     private final String title;
     private final LatLng[] points;
@@ -70,4 +73,13 @@ class DisplayRouteRow {
         return nearPark;
     }
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+
+    }
 }
