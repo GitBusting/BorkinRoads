@@ -145,17 +145,26 @@ public class MapActivity extends FragmentActivity
         AlertDialog.Builder  alertDialogBuilder = new AlertDialog.Builder(MapActivity.this);
         alertDialogBuilder.setMessage("How much time do you have: (in minutes)");
         final EditText timeInput= new EditText(MapActivity.this);
-        timeInput.setInputType(InputType.TYPE_CLASS_NUMBER);
+        timeInput.setInputType(InputType.TYPE_CLASS_TEXT); //TODO: change this back to integer when park input issue resolved.
         alertDialogBuilder.setView(timeInput);
         alertDialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface arg0, int arg1) {
-            int mins = Integer.parseInt(timeInput.getText().toString())/2; // round-trip
+            String t_input = timeInput.getText().toString();
+            boolean weightParks = false;
+            if(t_input.contains("p") || t_input.contains("P")) { //TODO: this is the worst way to get this input.
+              weightParks = true;
+              t_input = t_input.replaceAll("p","");
+            }
+            int mins = Integer.parseInt(t_input)/2; // round-trip
             int calculated_distance = (int)Math.ceil(mins * speed);
             final DirectionsHandler requester = new DirectionsHandler();
             requester.setCurrentLocation(cur_location);
             requester.setApikey(apikey);
             requester.setRadius(calculated_distance);
+            if (weightParks)
+              requester.setKeyword("park");
+            else requester.setKeyword("");
             requester.start();
               try {
                   requester.join();
@@ -437,9 +446,9 @@ public class MapActivity extends FragmentActivity
       outline += "distance: " + leg.getDistance().getText() + "\n" + leg.getDistance().getValue() + "\n";
       outline += "duration: " + leg.getDuration().getText() + "\n" + leg.getDuration().getText() + "\n";
     }
-    int min = estTime / 60;
     int sec = estTime % 60;
     int hour = estTime / 3600;
+    int min = (estTime%3600) / 60;
     String overall_time="";
     if(hour>0)
       overall_time += hour + " h ";

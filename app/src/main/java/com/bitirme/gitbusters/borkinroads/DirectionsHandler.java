@@ -13,6 +13,7 @@ public class DirectionsHandler extends Thread {
     private LatLng currentLocation;
     private String apikey;
     private LatLng marker;
+    private String keyword="";
     private boolean isLimitedTime = true;
     private int radius = 500; //default value
     public void setApikey(String api){
@@ -20,6 +21,9 @@ public class DirectionsHandler extends Thread {
     }
     public void setCurrentLocation(LatLng cl) {
         currentLocation = new LatLng(cl.latitude,cl.longitude);
+    }
+    public void setKeyword(String key){
+        keyword = key;
     }
     public boolean setRadius(int rad) {
         if (rad > 50000) return false;
@@ -39,7 +43,7 @@ public class DirectionsHandler extends Thread {
     public void run() {
         HttpsURLConnection conn = null;
         try {
-            String url = buildRequest("");
+            String url = buildRequest(keyword);
             URL webServerUrl = new URL(url);
             conn = (HttpsURLConnection) webServerUrl.openConnection();
             conn.setReadTimeout(10000 /* milliseconds */);
@@ -91,9 +95,10 @@ public class DirectionsHandler extends Thread {
         String parameters = "key=";
         parameters += apikey;
         parameters += "&" + "location=" + currentLocation.latitude +","+ currentLocation.longitude;
-        parameters += "&radius=" + radius; //radius is in meters. this can be changed in the future.
         if(!keyword.equals(""))
-            parameters += "&keyword=" + keyword; //"park" is selected for type for now, according to the user story.
+            parameters += "&keyword=park"; //"park" is selected for type for now, according to the user story.
+        parameters += "&radius=" + radius; //radius is in meters. this can be changed in the future.
+        System.out.println("https://maps.googleapis.com/maps/api/place/nearbysearch/json?" + parameters);
         return "https://maps.googleapis.com/maps/api/place/nearbysearch/json?" + parameters;
     }
     public static Double cleanText(String res){
