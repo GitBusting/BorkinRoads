@@ -50,22 +50,42 @@ public class DirectionsHandler extends Thread {
             StringBuilder sb = new StringBuilder();
 
             String result;
-            double lat= currentLocation.latitude;
-            double lng= currentLocation.longitude;
+            double marker_lat= currentLocation.latitude;
+            double marker_lng= currentLocation.longitude;
+            boolean loc = false;
             while ((result = br.readLine()) != null) {
+                double lat=marker_lat, lng=marker_lng;
                 sb.append(result);
-                if(result.contains("\"lat\""))
+                if(result.contains("location")) {
+                    loc = true;
+                }
+                if(result.contains("},") && loc ) { //leaving the location part, lat and lng are the coordinates of the possible marker point
+                    loc = false;
+                }
+                if(result.contains("\"lat\"") && loc){
                     lat = cleanText(result);
-                    //lat = (Math.abs(cleanText(result)-currentLocation.latitude) > Math.abs(currentLocation.latitude-lat)) ? cleanText(result) : lat;
-                if(result.contains("\"lng\""))
+
+                }
+                if(result.contains("\"lng\"") && loc) {
                     lng = cleanText(result);
-                    //lng = (Math.abs(cleanText(result)-currentLocation.longitude) > Math.abs(currentLocation.longitude - lng)) ? cleanText(result) : lng;
+                    //System.out.println(distance(currentLocation.latitude,currentLocation.longitude, lat,lng)
+                     //       + " - " + distance(currentLocation.latitude,currentLocation.longitude,marker_lat,marker_lng));
+                    if(distance(currentLocation.latitude,currentLocation.longitude, lat,lng) >
+                            distance(currentLocation.latitude,currentLocation.longitude,marker_lat,marker_lng)) {
+                        marker_lat = lat;
+                        marker_lng = lng;
+                    }
+                }
             }
-            setMarker(lat,lng);
+            setMarker(marker_lat,marker_lng);
+            System.out.println(marker_lat + "," + marker_lng);
             System.out.println(sb.toString());
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+    public double distance(double first_lat, double first_lng, double second_lat, double second_lng) {
+        return Math.sqrt(Math.pow(first_lat-second_lat,2) + Math.pow(first_lng-second_lng,2));
     }
     public String buildRequest(String keyword){
         String parameters = "key=";
