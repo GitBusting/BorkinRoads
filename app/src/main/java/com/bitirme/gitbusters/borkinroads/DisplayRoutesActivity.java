@@ -316,6 +316,7 @@ public class DisplayRoutesActivity extends Activity {
 
                 if (mapView != null) {
                     mapView.onCreate(null);
+                    mapView.setClickable(false);
                     mapView.getMapAsync(this);
                 }
             }
@@ -324,6 +325,7 @@ public class DisplayRoutesActivity extends Activity {
             public void onMapReady(GoogleMap googleMap) {
                 MapsInitializer.initialize(getApplicationContext());
                 map = googleMap;
+                googleMap.getUiSettings().setMapToolbarEnabled(false);
                 displayRouteOnMap();
             }
 
