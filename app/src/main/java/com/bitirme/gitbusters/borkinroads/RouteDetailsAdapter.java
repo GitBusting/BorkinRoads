@@ -8,12 +8,14 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 
+import com.bitirme.gitbusters.borkinroads.data.RouteDetailsRecord;
+
 import java.util.List;
 
 public class RouteDetailsAdapter extends RecyclerView.Adapter<RouteDetailsAdapter.ViewHolder> {
-    List<RouteDetails> routeDetailsList;
+    List<RouteDetailsRecord> routeDetailsList;
 
-    public RouteDetailsAdapter(List<RouteDetails> list) {
+    public RouteDetailsAdapter(List<RouteDetailsRecord> list) {
         super();
         this.routeDetailsList = list;
     }
@@ -30,7 +32,7 @@ public class RouteDetailsAdapter extends RecyclerView.Adapter<RouteDetailsAdapte
     @Override
     public void onBindViewHolder(@NonNull ViewHolder viewHolder, int i) {
         View layout = viewHolder.layout;
-        RouteDetails routeDetails = routeDetailsList.get(i);
+        RouteDetailsRecord routeDetails = routeDetailsList.get(i);
 
         TextView date = layout.findViewById(R.id.tv_date_data);
         TextView avgSpeed = layout.findViewById(R.id.tv_avg_speed_data);

@@ -5,6 +5,7 @@ import org.json.JSONObject;
 
 public class RouteDetailsRecord extends RestRecordImpl {
     private int entryId;
+    private int route_id;
     private double maxPace;
     private double avgPace;
     private double movingPace;
@@ -16,8 +17,9 @@ public class RouteDetailsRecord extends RestRecordImpl {
     private double movingTime;
     private String date, time;
 
-    public RouteDetailsRecord(int id, double maxPace, double avgPace, double movingPace, double maxSpeed, double avgSpeed, double movingSpeed, double routeLength, double totalTime, double movingTime, String date, String time) {
+    public RouteDetailsRecord(int id, int route_id, double maxPace, double avgPace, double movingPace, double maxSpeed, double avgSpeed, double movingSpeed, double routeLength, double totalTime, double movingTime, String date, String time) {
         this.entryId = id;
+        this.route_id = route_id;
         this.maxPace = maxPace;
         this.avgPace = avgPace;
         this.movingPace = movingPace;
@@ -33,7 +35,8 @@ public class RouteDetailsRecord extends RestRecordImpl {
 
     public RouteDetailsRecord(JSONObject json) {
         try {
-            this.entryId = json.getInt("entryId");
+            this.entryId = json.getInt("id");
+            this.route_id = json.getInt("route_id");
             this.maxPace = json.getDouble("maxPace");
             this.avgPace = json.getDouble("avgPace");
             this.movingPace = json.getDouble("movingPace");
@@ -48,6 +51,10 @@ public class RouteDetailsRecord extends RestRecordImpl {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+
+    public RouteDetailsRecord() {
+        super();
     }
 
     public double getMaxPace() {
@@ -94,6 +101,10 @@ public class RouteDetailsRecord extends RestRecordImpl {
         return movingPace;
     }
 
+    public int getRoute_id() {
+        return route_id;
+    }
+
     @Override
     public String getURL() {
         return "https://shielded-cliffs-47552.herokuapp.com/route_details";
@@ -104,6 +115,7 @@ public class RouteDetailsRecord extends RestRecordImpl {
         JSONObject json = new JSONObject();
         try {
             json.put("entryId", entryId);
+            json.put("route_id", route_id);
             json.put("maxPace", maxPace);
             json.put("avgPace", avgPace);
             json.put("movingPace", movingPace);
