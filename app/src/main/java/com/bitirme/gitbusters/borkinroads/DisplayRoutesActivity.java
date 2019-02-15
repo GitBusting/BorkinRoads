@@ -25,6 +25,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
+import com.bitirme.gitbusters.borkinroads.data.RouteRecord;
+import com.bitirme.gitbusters.borkinroads.dbinterface.RestPuller;
+import com.bitirme.gitbusters.borkinroads.dbinterface.RestUpdater;
 import com.github.aakira.expandablelayout.ExpandableRelativeLayout;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -35,11 +39,14 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import okhttp3.Route;
 
 public class DisplayRoutesActivity extends Activity {
 
@@ -53,6 +60,8 @@ public class DisplayRoutesActivity extends Activity {
     private ToggleButton mToggleButtonSortingDirection;
     private Button mButtonApply;
     private ExpandableRelativeLayout expandableRelativeLayout;
+
+    private static List<RouteRecord> routeList;
 
     /**
      * A list of locations to show in this ListView.
@@ -96,6 +105,26 @@ public class DisplayRoutesActivity extends Activity {
         mSpinnerSortingCondition = findViewById(R.id.spinner_sorting_condition);
         mToggleButtonSortingDirection = findViewById(R.id.toggle_sorting_direction);
 
+        // fetch all the routes from our database
+        routeList = new ArrayList<>();
+        RestPuller rp = new RestPuller(new RouteRecord());
+        rp.start();
+        try {
+          rp.join();
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+        for(RestRecordImpl rec : rp.getFetchedRoutes()) {
+          RouteRecord rr = (RouteRecord) rec;
+          routeList.add(rr);
+          rr.prettyPrint();
+        }
+
+        /* Below code is to test the update functionality */
+        //RouteRecord rr = routeList.get(0);
+        //rr.toggleFavorite();
+        //RestUpdater ru = new RestUpdater(rr);
+        //ru.start();
 
         ImageButton expand_button = findViewById(R.id.expanded_button);
         expand_button.setOnClickListener(new View.OnClickListener() {
@@ -107,8 +136,6 @@ public class DisplayRoutesActivity extends Activity {
         });
 
         setFilterMenuListeners();
-
-
     }
 
     /**

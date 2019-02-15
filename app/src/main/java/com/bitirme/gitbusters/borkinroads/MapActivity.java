@@ -26,8 +26,7 @@ import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.model.Step;
 import com.akexorcist.googledirection.util.DirectionConverter;
-import com.bitirme.gitbusters.borkinroads.dbinterface.RoutePuller;
-import com.bitirme.gitbusters.borkinroads.dbinterface.RoutePusher;
+import com.bitirme.gitbusters.borkinroads.dbinterface.RestPusher;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -37,11 +36,10 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.bitirme.gitbusters.borkinroads.routeutilities.RouteRecord;
+import com.bitirme.gitbusters.borkinroads.data.RouteRecord;
 
 public class MapActivity extends FragmentActivity
         implements GoogleMap.OnMyLocationButtonClickListener,
@@ -138,7 +136,7 @@ public class MapActivity extends FragmentActivity
     mapFragment.getMapAsync(this);
 
     // TODO this doesn't belong here
-    // RoutePuller rp = new RoutePuller();
+    // RestPuller rp = new RestPuller();
     // rp.start();
     // try {
     // rp.join();
@@ -217,7 +215,7 @@ public class MapActivity extends FragmentActivity
       // TODO ask users to review their newly traversed path here
 
       // For now we just push the newly created route
-      RoutePusher rp = new RoutePusher(copyRoute);
+      RestPusher rp = new RestPusher(copyRoute);
       rp.start();
     }
     else {
