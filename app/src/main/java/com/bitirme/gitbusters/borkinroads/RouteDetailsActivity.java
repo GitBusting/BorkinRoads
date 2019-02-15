@@ -1,7 +1,5 @@
 package com.bitirme.gitbusters.borkinroads;
 
-import android.content.Intent;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,6 +10,8 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import com.bitirme.gitbusters.borkinroads.data.RouteDetailsRecord;
+import com.bitirme.gitbusters.borkinroads.data.RouteRecord;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.MapsInitializer;
@@ -22,8 +22,8 @@ import java.util.List;
 
 public class RouteDetailsActivity extends AppCompatActivity implements OnMapReadyCallback {
 
-    private DisplayRouteRow routeRow;
-    private List<RouteDetails> routeDetails;
+    private RouteRecord routeRow;
+    private List<RouteDetailsRecord> routeDetails;
     private RecyclerView mRecyclerView;
     private MapView mapView;
     private TextView mTitle;
@@ -76,13 +76,13 @@ public class RouteDetailsActivity extends AppCompatActivity implements OnMapRead
         mMap.getUiSettings().setMapToolbarEnabled(false);
     }
 
-    public static List<RouteDetails> testDetailsList() {
-        ArrayList<RouteDetails> list = new ArrayList<>();
-        list.add(new RouteDetails(5,5,5,5,5,5,5,5,5,"14.01.1997","00:12:31"));
-        list.add(new RouteDetails(6,6,6,6,6,6,6,6,6,"14.01.1997","00:12:31"));
-        list.add(new RouteDetails(6,6,6,6,6,6,6,6,6,"14.01.1997","00:12:31"));
-        list.add(new RouteDetails(6,6,6,6,6,6,6,6,6,"14.01.1997","00:12:31"));
-        list.add(new RouteDetails(6,6,6,6,6,6,6,6,6,"14.01.1997","00:12:31"));
+    public static List<RouteDetailsRecord> testDetailsList() {
+        ArrayList<RouteDetailsRecord> list = new ArrayList<>();
+        list.add(new RouteDetailsRecord(1,5,5,5,5,5,5,5,5,5,"14.01.1997","00:12:31"));
+        list.add(new RouteDetailsRecord(2,6,6,6,6,6,6,6,6,6,"14.01.1997","00:12:31"));
+        list.add(new RouteDetailsRecord(3,6,6,6,6,6,6,6,6,6,"14.01.1997","00:12:31"));
+        list.add(new RouteDetailsRecord(4,6,6,6,6,6,6,6,6,6,"14.01.1997","00:12:31"));
+        list.add(new RouteDetailsRecord(5,6,6,6,6,6,6,6,6,6,"14.01.1997","00:12:31"));
 
         return list;
     }
