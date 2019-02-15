@@ -1,7 +1,9 @@
 package com.bitirme.gitbusters.borkinroads;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -12,9 +14,11 @@ import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
+import android.text.InputType;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -67,10 +71,11 @@ public class MapActivity extends FragmentActivity
 
   private LatLng cur_location;
 
+  private double speed = 80.0; // meters / minute
   private int curEstTime;
   private TextView estimated;
 
-  private Button resetButton, genPathButton, startRouteButton;
+  private Button resetButton, genPathButton, startRouteButton, limited;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -108,6 +113,8 @@ public class MapActivity extends FragmentActivity
       @Override
       public void onClick(View view) {
         clearMap();
+        estimated.setText("");
+        estimated.setVisibility(View.INVISIBLE);
         displayDirection = false;
       }
     });
@@ -147,6 +154,63 @@ public class MapActivity extends FragmentActivity
     // for(RouteRecord rr : rp.getFetchedRoutes())
     // rr.prettyPrint();
 
+    limited = findViewById(R.id.limitedtime);
+    limited.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        AlertDialog.Builder  alertDialogBuilder = new AlertDialog.Builder(MapActivity.this);
+        alertDialogBuilder.setMessage("How much time do you have: (in minutes)");
+        final EditText timeInput= new EditText(MapActivity.this);
+        timeInput.setInputType(InputType.TYPE_CLASS_TEXT); //TODO: change this back to integer when park input issue resolved.
+        alertDialogBuilder.setView(timeInput);
+        alertDialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface arg0, int arg1) {
+            String t_input = timeInput.getText().toString();
+            boolean weightParks = false;
+            if(t_input.contains("p") || t_input.contains("P")) { //TODO: this is the worst way to get this input.
+              weightParks = true;
+              t_input = t_input.replaceAll("p","");
+            }
+            int mins = Integer.parseInt(t_input)/2; // round-trip
+            int calculated_distance = (int)Math.ceil(mins * speed);
+            final DirectionsHandler requester = new DirectionsHandler();
+            requester.setCurrentLocation(cur_location);
+            requester.setApikey(apikey);
+            requester.setRadius(calculated_distance);
+            if (weightParks)
+              requester.setKeyword("park");
+            else requester.setKeyword("");
+            requester.start();
+              try {
+                  requester.join();
+              } catch (InterruptedException e) {
+                  e.printStackTrace();
+              }
+              //Toast.makeText(MapActivity.this,"You clicked OK",Toast.LENGTH_LONG).show();
+            Toast.makeText(MapActivity.this,"OK: "+timeInput.getText() + " distance: " + calculated_distance + "returned:" + requester.getResult(),Toast.LENGTH_LONG).show();
+            coordinates.clear();
+            coordinates.add(requester.getResult());
+            requestDirection();
+          }
+        });
+
+        alertDialogBuilder.setNegativeButton("No, I have time.",new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface arg0, int arg1) {
+              Toast.makeText(MapActivity.this,"You clicked \"No, I have time.\"",Toast.LENGTH_LONG).show();
+          }
+        });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+        /*
+          requester.setCurrentLocation(cur_location);
+          requester.setRadius(500); //this could change
+          requester.start();
+          */
+      }
+    });
   }
 
   @Override
@@ -415,10 +479,12 @@ public class MapActivity extends FragmentActivity
       Leg leg = route.getLegList().get(index);
       estTime += Integer.parseInt(leg.getDuration().getValue());
       outline = outline.concat(leg.getEndAddress() + "\n\n");
+      outline += "distance: " + leg.getDistance().getText() + "\n" + leg.getDistance().getValue() + "\n";
+      outline += "duration: " + leg.getDuration().getText() + "\n" + leg.getDuration().getText() + "\n";
     }
-    int min = estTime / 60;
     int sec = estTime % 60;
     int hour = estTime / 3600;
+    int min = (estTime%3600) / 60;
     String overall_time="";
     if(hour>0)
       overall_time += hour + " h ";
