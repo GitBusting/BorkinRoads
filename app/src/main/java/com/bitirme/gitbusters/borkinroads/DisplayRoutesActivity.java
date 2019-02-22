@@ -1,6 +1,7 @@
 package com.bitirme.gitbusters.borkinroads;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -25,6 +26,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
+import com.bitirme.gitbusters.borkinroads.data.RouteRecord;
+import com.bitirme.gitbusters.borkinroads.dbinterface.RestPuller;
+import com.bitirme.gitbusters.borkinroads.dbinterface.RestUpdater;
 import com.github.aakira.expandablelayout.ExpandableRelativeLayout;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -35,11 +40,14 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import okhttp3.Route;
 
 public class DisplayRoutesActivity extends Activity {
 
@@ -54,13 +62,7 @@ public class DisplayRoutesActivity extends Activity {
     private Button mButtonApply;
     private ExpandableRelativeLayout expandableRelativeLayout;
 
-    /**
-     * A list of locations to show in this ListView.
-     */
-    private static final List<DisplayRouteRow> LIST_LOCATIONS = new ArrayList<>(Arrays.asList(new DisplayRouteRow("Home to School", new LatLng[]{new LatLng(39.941734, 32.63447), new LatLng(39.920665, 32.801853)}, 3.5f, "11/11/11", 1, 25, false, true, true),
-            new DisplayRouteRow("School to Somewhere", new LatLng[]{new LatLng(39.920665, 32.801853), new LatLng(39.90, 32.514)}, 3.5f, "11/11/11", 2, 20, false, false, false),
-            new DisplayRouteRow("Beijing2", new LatLng[]{new LatLng(50.854509, 4.376678), new LatLng(55.679423, 12.577114), new LatLng(52.372026, 9.735672)}, 3.5f, "11/11/11", 1, 13, false, false, false),
-            new DisplayRouteRow("Home to School2", new LatLng[]{new LatLng(39.941734, 32.63447), new LatLng(39.920665, 32.801853)}, 3.5f, "11/11/11", 1, 38, true, true, true)));
+    private static List<RouteRecord> routeList;
 
 
     //Adapter View Holder pattern for displaying lite mode Google maps
@@ -82,10 +84,28 @@ public class DisplayRoutesActivity extends Activity {
         GridLayoutManager mGridLayoutManager = new GridLayoutManager(this, 2);
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
 
+
+        // fetch all the routes from our database
+        routeList = new ArrayList<>();
+        RestPuller rp = new RestPuller(new RouteRecord());
+        rp.start();
+        try {
+            rp.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        for(RestRecordImpl rec : rp.getFetchedRoutes()) {
+            RouteRecord rr = (RouteRecord) rec;
+            routeList.add(rr);
+            rr.prettyPrint();
+        }
+
+        System.out.println("Number of previous routes: " + routeList.size());
+
         mRecyclerView = findViewById(R.id.recycler_view);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
-        mRecyclerView.setAdapter(new DisplayRouteAdapter());
+        mRecyclerView.setAdapter(new DisplayRouteAdapter(routeList));
         mRecyclerView.setRecyclerListener(mRecycleListener);
 
         mFavouriteCheckBox = findViewById(R.id.checkbox_favourite);
@@ -97,6 +117,13 @@ public class DisplayRoutesActivity extends Activity {
         mToggleButtonSortingDirection = findViewById(R.id.toggle_sorting_direction);
 
 
+
+        /* Below code is to test the update functionality */
+        //RouteRecord rr = routeList.get(0);
+        //rr.toggleFavorite();
+        //RestUpdater ru = new RestUpdater(rr);
+        //ru.start();
+
         ImageButton expand_button = findViewById(R.id.expanded_button);
         expand_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -107,8 +134,6 @@ public class DisplayRoutesActivity extends Activity {
         });
 
         setFilterMenuListeners();
-
-
     }
 
     /**
@@ -188,12 +213,12 @@ public class DisplayRoutesActivity extends Activity {
     }
 
     private class DisplayRouteAdapter extends RecyclerView.Adapter<DisplayRouteAdapter.ViewHolder> implements Filterable {
-        final List<DisplayRouteRow> mRouteList;
-        List<DisplayRouteRow> mFilteredRouteList;
+        final List<RouteRecord> mRouteList;
+        List<RouteRecord> mFilteredRouteList;
 
-        private DisplayRouteAdapter() {
+        private DisplayRouteAdapter(List<RouteRecord> list) {
             super();
-            this.mRouteList = DisplayRoutesActivity.LIST_LOCATIONS;
+            this.mRouteList = list;
             this.mFilteredRouteList = mRouteList;
         }
 
@@ -211,8 +236,20 @@ public class DisplayRoutesActivity extends Activity {
         @NonNull
         @Override
         public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new DisplayRouteAdapter.ViewHolder(LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.route_display_row, parent, false));
+            final View view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.route_display_row, parent, false);
+            view.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    int pos = mRecyclerView.getChildLayoutPosition(view);
+
+                    Intent intent = new Intent(DisplayRoutesActivity.this, RouteDetailsActivity.class);
+                    intent.putExtra("id", mFilteredRouteList.get(pos).getEntryID());
+                    startActivity(intent);
+
+                }
+            });
+            return new DisplayRouteAdapter.ViewHolder(view);
         }
 
         /**
@@ -223,47 +260,47 @@ public class DisplayRoutesActivity extends Activity {
             return new Filter() {
 
                 FilterResults performFiltering(FilterPreferences preferences) {
-                    List<DisplayRouteRow> mFilteredRouteList = new ArrayList<>();
-                    for(DisplayRouteRow route : mRouteList) {
-                        if ( (!preferences.isFavourite() || (route.getFavourite() == preferences.isFavourite())) &&
+                    List<RouteRecord> mFilteredRouteList = new ArrayList<>();
+                    for(RouteRecord route : mRouteList) {
+                        if ( (!preferences.isFavourite() || (route.isFavorite() == preferences.isFavourite())) &&
                                 (!preferences.isNearPark() || (route.isNearPark() == preferences.isNearPark())) &&
-                                (!preferences.isNearWater() || (route.isNearWater() == preferences.isNearWater())) &&
-                                (preferences.getMaxDuration() == null || (route.getEstimatedRouteDuration() <= preferences.getMaxDuration())) &&
-                                (preferences.getMinDuration() == null || (route.getEstimatedRouteDuration() >= preferences.getMinDuration()))) {
+                                (!preferences.isNearWater() || (route.isNearLake() == preferences.isNearWater())) &&
+                                (preferences.getMaxDuration() == null || (route.getEstimatedMinutes() <= preferences.getMaxDuration())) &&
+                                (preferences.getMinDuration() == null || (route.getEstimatedMinutes() >= preferences.getMinDuration()))) {
                             mFilteredRouteList.add(route);
                         }
                     }
 
                     switch (preferences.getSortingCondition()) {
                         case R.string.rating + "":
-                            Collections.sort(mFilteredRouteList, new Comparator<DisplayRouteRow>() {
+                            Collections.sort(mFilteredRouteList, new Comparator<RouteRecord>() {
                                 @Override
-                                public int compare(DisplayRouteRow o1, DisplayRouteRow o2) {
+                                public int compare(RouteRecord o1, RouteRecord o2) {
                                     return o1.getRating().compareTo(o2.getRating());
                                 }
                             });
                             break;
                         case R.string.route_used + "":
-                            Collections.sort(mFilteredRouteList, new Comparator<DisplayRouteRow>() {
+                            Collections.sort(mFilteredRouteList, new Comparator<RouteRecord>() {
                                 @Override
-                                public int compare(DisplayRouteRow o1, DisplayRouteRow o2) {
-                                    return o1.getNumberOfTimesRouteTaken() - o2.getNumberOfTimesRouteTaken();
+                                public int compare(RouteRecord o1, RouteRecord o2) {
+                                    return o1.getNoUsed() - o2.getNoUsed();
                                 }
                             });
                             break;
                         case R.string.using_time + "":
-                            Collections.sort(mFilteredRouteList, new Comparator<DisplayRouteRow>() {
+                            Collections.sort(mFilteredRouteList, new Comparator<RouteRecord>() {
                                 @Override
-                                public int compare(DisplayRouteRow o1, DisplayRouteRow o2) {
-                                    return o1.getRouteDate().compareTo(o2.getRouteDate());
+                                public int compare(RouteRecord o1, RouteRecord o2) {
+                                    return o1.getDate().compareTo(o2.getDate());
                                 }
                             });
                             break;
                         case R.string.estimated_time + "":
-                            Collections.sort(mFilteredRouteList, new Comparator<DisplayRouteRow>() {
+                            Collections.sort(mFilteredRouteList, new Comparator<RouteRecord>() {
                                 @Override
-                                public int compare(DisplayRouteRow o1, DisplayRouteRow o2) {
-                                    return o1.getEstimatedRouteDuration().compareTo(o2.getEstimatedRouteDuration());
+                                public int compare(RouteRecord o1, RouteRecord o2) {
+                                    return o1.getEstimatedMinutes() -(o2.getEstimatedMinutes());
                                 }
                             });
                             break;
@@ -289,7 +326,7 @@ public class DisplayRoutesActivity extends Activity {
                 protected void publishResults(CharSequence constraint, FilterResults results) {
                     if (results == null || !(results.values instanceof  ArrayList<?>)) return;
 
-                    mFilteredRouteList = (ArrayList<DisplayRouteRow>) results.values;
+                    mFilteredRouteList = (ArrayList<RouteRecord>) results.values;
                     notifyDataSetChanged();
                 }
             };
@@ -316,14 +353,18 @@ public class DisplayRoutesActivity extends Activity {
 
                 if (mapView != null) {
                     mapView.onCreate(null);
+                    mapView.setClickable(false);
                     mapView.getMapAsync(this);
                 }
+
+
             }
 
             @Override
             public void onMapReady(GoogleMap googleMap) {
                 MapsInitializer.initialize(getApplicationContext());
                 map = googleMap;
+                googleMap.getUiSettings().setMapToolbarEnabled(false);
                 displayRouteOnMap();
             }
 
@@ -335,19 +376,21 @@ public class DisplayRoutesActivity extends Activity {
             private void displayRouteOnMap() {
                 if (map == null) return;
 
-                DisplayRouteRow data = (DisplayRouteRow) mapView.getTag();
+                RouteRecord data = (RouteRecord) mapView.getTag();
                 if (data == null) return;
 
                 PolylineOptions polylineOptions = new PolylineOptions();
-                for(LatLng point : data.getPoints())
+                polylineOptions.add(data.getStartCoords());
+                for(LatLng point : data.getWaypoints())
                     polylineOptions.add(point);
+                polylineOptions.add(data.getEndCoords());
 
                 polylineOptions.width(12);
                 polylineOptions.clickable(false);
                 polylineOptions.color(Color.BLUE);
                 map.addPolyline(polylineOptions);
-                LatLng firstPoint = data.getPoints()[0];
-                LatLng lastPoint = data.getPoints()[data.getPoints().length - 1];
+                LatLng firstPoint = data.getStartCoords();
+                LatLng lastPoint = data.getEndCoords();
                 LatLng middlePoint = new LatLng((firstPoint.latitude + lastPoint.latitude)/2 ,(firstPoint.longitude + lastPoint.longitude)/2);
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(middlePoint, 11f));
                 map.addMarker((new MarkerOptions().position(firstPoint)));
@@ -356,15 +399,15 @@ public class DisplayRoutesActivity extends Activity {
 
             }
 
-            private void bindView(int pos) {
-                DisplayRouteRow item = mFilteredRouteList.get(pos);
+            private void bindView(final int pos) {
+                RouteRecord item = mFilteredRouteList.get(pos);
                 layout.setTag(this);
                 mapView.setTag(item);
                 displayRouteOnMap();
                 title.setText(item.getTitle());
-                ratingBar.setRating(item.getRating());
-                routeDate.setText(item.getRouteDate());
-                if (item.getFavourite())
+                ratingBar.setRating((item.getRating().floatValue()));
+                routeDate.setText(item.getDate());
+                if (item.isFavorite())
                     favourite.setColorFilter(Color.YELLOW);
                 else
                     favourite.setColorFilter(null);
@@ -373,13 +416,31 @@ public class DisplayRoutesActivity extends Activity {
                     @Override
                     public void onClick(View v) {
 
-                        //TODO: Add db logic
+                        /* Below code is to test the update functionality */
+                        System.out.println("Favourite button pressed!");
+                        RouteRecord rr = routeList.get(pos);
+                        rr.toggleFavorite();
+                        RestUpdater ru = new RestUpdater(rr);
+                        ru.start();
+
 
                         if (favourite.getColorFilter() != null) {
                             favourite.clearColorFilter();
                         } else {
                             favourite.setColorFilter(Color.YELLOW);
                         }
+                    }
+                });
+
+                ratingBar.setOnRatingBarChangeListener(new RatingBar.OnRatingBarChangeListener() {
+                    @Override
+                    public void onRatingChanged(RatingBar ratingBar, float rating, boolean fromUser) {
+
+                        System.out.println("Rating  bar is pressed!");
+                        RouteRecord rr  = mFilteredRouteList.get(pos);
+                        rr.setRating(rating);
+                        RestUpdater ru = new RestUpdater(rr);
+                        ru.start();
                     }
                 });
             }

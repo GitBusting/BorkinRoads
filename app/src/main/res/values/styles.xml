@@ -1,5 +1,9 @@
 <resources>
 
+    <style name="details_text_view_theme">
+        <item name="android:paddingLeft">10dp</item>
+    </style>
+
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
         <!-- Customize your theme here. -->

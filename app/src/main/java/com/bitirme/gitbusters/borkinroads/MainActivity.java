@@ -55,6 +55,11 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        for (Doggo doggo : Doggo.doggos) {
+            Notifications tmp = new Notifications();
+            tmp.checkEverthing(doggo, this);
+        }
+
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
