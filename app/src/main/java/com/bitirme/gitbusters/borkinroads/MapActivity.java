@@ -41,7 +41,9 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.bitirme.gitbusters.borkinroads.data.RouteRecord;
 
@@ -75,6 +77,10 @@ public class MapActivity extends FragmentActivity
   private int curEstTime;
   private TextView estimated;
 
+  private boolean limitedTime;
+  private int timeLimit = 0;
+  private HashMap<LatLng,Double> backupMarkers;
+
   private Button resetButton, genPathButton, startRouteButton, limited;
 
   @Override
@@ -82,6 +88,7 @@ public class MapActivity extends FragmentActivity
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_map);
     cur_location=null;
+    limitedTime = false;
     LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
       return;
@@ -116,6 +123,9 @@ public class MapActivity extends FragmentActivity
         estimated.setText("");
         estimated.setVisibility(View.INVISIBLE);
         displayDirection = false;
+        limitedTime = false;
+        backupMarkers = null;
+        timeLimit = 0;
       }
     });
 
@@ -174,13 +184,9 @@ public class MapActivity extends FragmentActivity
             }
             int mins = Integer.parseInt(t_input)/2; // round-trip
             int calculated_distance = (int)Math.ceil(mins * speed);
-            final DirectionsHandler requester = new DirectionsHandler();
-            requester.setCurrentLocation(cur_location);
-            requester.setApikey(apikey);
-            requester.setRadius(calculated_distance);
+            final DirectionsHandler requester = new DirectionsHandler(apikey,calculated_distance,"",cur_location);
             if (weightParks)
               requester.setKeyword("park");
-            else requester.setKeyword("");
             requester.start();
               try {
                   requester.join();
@@ -190,6 +196,9 @@ public class MapActivity extends FragmentActivity
               //Toast.makeText(MapActivity.this,"You clicked OK",Toast.LENGTH_LONG).show();
             Toast.makeText(MapActivity.this,"OK: "+timeInput.getText() + " distance: " + calculated_distance + "returned:" + requester.getResult(),Toast.LENGTH_LONG).show();
             coordinates.clear();
+            backupMarkers = new HashMap<>(requester.getMarkerMap());
+            limitedTime = true;
+            timeLimit = mins * 2; //not round trip
             coordinates.add(requester.getResult());
             requestDirection();
           }
@@ -423,7 +432,17 @@ public class MapActivity extends FragmentActivity
       estimated.setAlpha((float) 0.75);
     } else { System.out.println("Could not find a valid route"); }
   }
-
+  private LatLng getMax(HashMap<LatLng, Double> markerMap) {
+      LatLng maxLatLng = null;
+      double maxDist = Double.MIN_VALUE;
+      for(Map.Entry<LatLng,Double> e : markerMap.entrySet()) {
+          if(e.getValue() > maxDist ) {
+              maxDist = e.getValue();
+              maxLatLng = e.getKey();
+          }
+      }
+      return maxLatLng;
+  }
   private void handleInitialRouting(Direction direction)
   {
     if (direction.isOK()) {
@@ -431,6 +450,24 @@ public class MapActivity extends FragmentActivity
       Route route = direction.getRouteList().get(0);
       int legCount = route.getLegList().size();
       curEstTime=0;
+      if(limitedTime) {
+          for (int index = 0; index < legCount ; index++){
+              Leg leg = route.getLegList().get(index);
+              curEstTime+=Integer.parseInt(leg.getDuration().getValue());
+          }
+          if(curEstTime > ((timeLimit + 5 /*its okay to have 5 extra minutes, also may change*/ ) * 60)) { //we are comparing seconds
+              System.out.println("requesting direction again.\nlimit: " + timeLimit + " route estimate: " + curEstTime/60);
+              backupMarkers.remove(coordinates.get(0));
+              System.out.println("deleted: " +coordinates.get(0));
+              LatLng max = getMax(backupMarkers);
+              coordinates.clear();
+              coordinates.add(max);
+              System.out.println("added: " +coordinates.get(0));
+              requestDirection();
+              return;
+          }
+          curEstTime = 0;
+      }
       for (int index = 0; index < legCount; index++) {
         Leg leg = route.getLegList().get(index);
         System.out.println("index: " + index + " duration: " + leg.getDuration().getText() + " value: " + leg.getDuration().getValue());
