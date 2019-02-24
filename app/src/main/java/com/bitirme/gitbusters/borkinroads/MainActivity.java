@@ -1,6 +1,8 @@
 package com.bitirme.gitbusters.borkinroads;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -24,6 +26,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import java.io.File;
@@ -35,18 +38,28 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
+import static com.bitirme.gitbusters.borkinroads.Notifications.zonedDateTimeDifference;
+
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, DogButtonAdapter.ItemClickListener {
     private final int GET_FROM_GALLERY = 4;
     private static final String TAG = "MainActivity";
+    private action last = null;
+    private TextView walkdate;
     private ImageButton ppbutton;
     private TextView name;
     private TextView breed;
     private TextView gender;
     private TextView birthdate;
     private TextView age;
-    private DogButtonAdapter adapter;
-    private Doggo currentDoggo;
+    private TextView vetdate;
+    private TextView bathdate;
+    private ProgressBar walkbar;
+    private ProgressBar vetbar;
+    private ProgressBar bathbar;
+    private ImageButton walkbutton;
+    private ImageButton vetbutton;
+    private ImageButton bathbutton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,11 +83,76 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+        builder.setTitle("Confirmation");
+        builder.setMessage("Do you wanna renew the " + last + " date?");
+
+        builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+
+            public void onClick(DialogInterface dialog, int which) {
+                // Do nothing but close the dialog
+                switch (last) {
+                    case walk:
+                        currentDoggo.setLast_walk_date(ZonedDateTime.now());
+                        break;
+                    case bath:
+                        currentDoggo.setLast_bath_date(ZonedDateTime.now());
+                        break;
+                    case vet:
+                        currentDoggo.setLast_vet_date(ZonedDateTime.now());
+                        break;
+                }
+                setValues();
+                dialog.dismiss();
+            }
+        });
+
+        builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
         name = findViewById(R.id.name);
         breed = findViewById(R.id.breed);
         gender = findViewById(R.id.gender);
         birthdate = findViewById(R.id.birth_date);
         age = findViewById(R.id.age);
+        walkdate = findViewById(R.id.walkDate);
+        vetdate = findViewById(R.id.vetDate);
+        bathdate = findViewById(R.id.bathDate);
+        walkbar = findViewById(R.id.walkBar);
+        vetbar = findViewById(R.id.vetBar);
+        bathbar = findViewById(R.id.bathBar);
+        walkbutton = findViewById(R.id.walkButton);
+        walkbutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                last = action.walk;
+                AlertDialog alert = builder.create();
+                alert.show();
+            }
+        });
+        vetbutton = findViewById(R.id.vetButton);
+        vetbutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                last = action.vet;
+                AlertDialog alert = builder.create();
+                alert.show();
+            }
+        });
+        bathbutton = findViewById(R.id.bathButton);
+        bathbutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                last = action.bath;
+                AlertDialog alert = builder.create();
+                alert.show();
+            }
+        });
         ppbutton = findViewById(R.id.p_button);
         ppbutton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -91,6 +169,7 @@ public class MainActivity extends AppCompatActivity
         currentDoggo = Doggo.doggos.get(0);
 
         setValues();
+        setBars();
 
         // set up the RecyclerView
         RecyclerView recyclerView = findViewById(R.id.doggo_bar);
@@ -101,6 +180,26 @@ public class MainActivity extends AppCompatActivity
         adapter.setClickListener(this);
         recyclerView.setAdapter(adapter);
 
+    }
+
+    private DogButtonAdapter adapter;
+    private Doggo currentDoggo;
+
+    private void setValues() {
+        ZonedDateTime rn = ZonedDateTime.now(ZoneId.systemDefault());
+        long monthOld = ChronoUnit.MONTHS.between(currentDoggo.getBirth_date(), rn);
+        name.setText(currentDoggo.getName());
+        breed.setText(currentDoggo.getBreed());
+        gender.setText(currentDoggo.getSex().toString());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
+        birthdate.setText(currentDoggo.getBirth_date().format(formatter));
+        walkdate.setText(currentDoggo.getLast_walk_date().format(formatter));
+        vetdate.setText(currentDoggo.getLast_vet_date().format(formatter));
+        bathdate.setText(currentDoggo.getLast_bath_date().format(formatter));
+        String plural = (monthOld == 1) ? " month old" : " months old";
+        String mo = monthOld + "";
+        age.setText(mo.concat(plural));
+        setImage();
     }
 
     @Override
@@ -186,20 +285,23 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    private void setValues() {
-        ZonedDateTime rn = ZonedDateTime.now(ZoneId.systemDefault());
-        long monthOld = ChronoUnit.MONTHS.between(currentDoggo.getBirth_date(), rn);
-        name.setText(currentDoggo.getName());
-        breed.setText(currentDoggo.getBreed());
-        gender.setText(currentDoggo.getSex().toString());
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
-        birthdate.setText(currentDoggo.getBirth_date().format(formatter));
-        String plural = (monthOld == 1) ? " month old" : " months old";
-        String mo = monthOld + "";
-        age.setText(mo.concat(plural));
-        setImage();
+    private void setBars() {
+        double daysSinceLastWalk = zonedDateTimeDifference(currentDoggo.getLast_walk_date(), ZonedDateTime.now(ZoneId.systemDefault())).getDays();
+        int walkProg = (int) (daysSinceLastWalk / 14.0 * 100);
+        if (walkProg > 100) walkProg = 100;
+        double monthsSinceLastVetVisit = zonedDateTimeDifference(currentDoggo.getLast_vet_date(), ZonedDateTime.now(ZoneId.systemDefault())).getMonths();
+        int vetProg = (int) (monthsSinceLastVetVisit / 6.0 * 100);
+        if (vetProg > 100) vetProg = 100;
+        double monthsSinceLastBath = zonedDateTimeDifference(currentDoggo.getLast_vet_date(), ZonedDateTime.now(ZoneId.systemDefault())).getMonths();
+        int bathProg = (int) (monthsSinceLastBath / 3.0 * 100);
+        if (bathProg > 100) bathProg = 100;
+
+        walkbar.setProgress(walkProg);
+        vetbar.setProgress(vetProg);
+        bathbar.setProgress(bathProg);
     }
 
+    private enum action {walk, bath, vet}
     private void setImage() {
         String path = getExternalFilesDir(Environment.DIRECTORY_DCIM) + "/" + currentDoggo.getName() + ".jpg";
         try {
@@ -237,4 +339,5 @@ public class MainActivity extends AppCompatActivity
             e.printStackTrace();
         }
     }
+
 }
