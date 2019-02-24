@@ -88,6 +88,11 @@ public class MapActivity extends FragmentActivity
 
   private Button resetButton, genPathButton, startRouteButton, limited;
 
+  //statistics of the active route
+  private long timePassed; // in seconds
+  private float metersPassed; // in meters
+  private double averageSpeed; // in meters/seconds
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -282,12 +287,16 @@ public class MapActivity extends FragmentActivity
               coordinates, legColors, estimatedMinutes);
       currRoute.setTitle(currTitle);
       copyRoute = new RouteRecord(currRoute); // Checkpoint the current state of the route
+      //reset statistics for the active route
+      timePassed = 0;
+      metersPassed = 0;
+      averageSpeed = 0.0;
       cdt = new CountDownTimer(20000, 10000) {
         public void onTick(long millisUntilFinished) {
           System.out.println("Timer heartbeat per 10 seconds.");
         }
         public void onFinish() {
-          updateRoute();
+          updateRoute(20000);
         }
       }.start();
     }else{
@@ -302,6 +311,7 @@ public class MapActivity extends FragmentActivity
       startRouteButton.setText(R.string.start_route);
       // TODO ask users to review their newly traversed path here
 
+      // TODO: save the statistics
       // For now we just push the newly created route
       RestPusher rp = new RestPusher(copyRoute);
       rp.start();
@@ -342,19 +352,27 @@ public class MapActivity extends FragmentActivity
   }
 
   @SuppressWarnings("ConstantConditions")
-  private void updateRoute()
+  private void updateRoute(long timeSpent)
   {
     // Few tasks to implement here,
-    // 1 - Did the user pass through any waypoints
+    // 1 - Update the statistics
+    // 2 - Did the user pass through any waypoints
     // if so we need to remove them
-    // 2 - Do we have an updated location of the user
+    // 3 - Do we have an updated location of the user
     // if we do not, we might need to set a smaller countdown
     // to pick up the next update earlier
     LatLng oldStartLoc = currRoute.getStartLocation();
     boolean userMoved = !oldStartLoc.equals(cur_location);
-    long countdownMillis = userMoved ? 20000 : 5000;
+    final long countdownMillis = userMoved ? 20000 : 5000;
     if(userMoved)
     {
+      // Updating the distance statistic
+      float[] passed = new float[3];
+      Location.distanceBetween(oldStartLoc.latitude, oldStartLoc.longitude,
+                cur_location.latitude, cur_location.longitude, passed);
+      metersPassed += passed[0];
+
+      // Other tasks
       ArrayList<LatLng> coords = currRoute.getWaypoints();
       LatLng firstWaypoint;
       if(coords.size() > 0)
@@ -389,13 +407,17 @@ public class MapActivity extends FragmentActivity
               .transportMode(TransportMode.WALKING)
               .execute(this);
     }
-    // Restart counter with each update call
+    //update the statistics
+    timePassed += timeSpent / 1000; // adding to total seconds on this active route
+    averageSpeed = metersPassed / timePassed;
+    
+      // Restart counter with each update call
     cdt = new CountDownTimer(countdownMillis, countdownMillis/2) {
       public void onTick(long millisUntilFinished) {
         System.out.println("Timer heartbeat");
       }
       public void onFinish() {
-        updateRoute();
+        updateRoute(countdownMillis);
       }
     }.start();
   }
@@ -524,13 +546,15 @@ public class MapActivity extends FragmentActivity
     String outline = "";
     int estTime = 0;
     int legCount = route.getLegList().size();
-    outline += "Next Stops:\n";
+    outline += "Your average speed: " + averageSpeed + "\n";
+    outline += "time passed: " + timePassed + "\n";
+    outline += "Next Stops:\n\n";
     for (int index = 0; index < legCount; index++) {
       Leg leg = route.getLegList().get(index);
       estTime += Integer.parseInt(leg.getDuration().getValue());
-      outline = outline.concat(leg.getEndAddress() + "\n\n");
-      outline += "distance: " + leg.getDistance().getText() + "\n" + leg.getDistance().getValue() + "\n";
-      outline += "duration: " + leg.getDuration().getText() + "\n" + leg.getDuration().getText() + "\n";
+      outline = outline.concat(leg.getEndAddress() + "\n");
+      outline += "distance: " + leg.getDistance().getText() + "\n";
+      outline += "duration: " + leg.getDuration().getText() + "\n\n";
     }
     int sec = estTime % 60;
     int hour = estTime / 3600;
