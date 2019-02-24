@@ -18,6 +18,8 @@ import android.text.InputType;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -81,6 +83,9 @@ public class MapActivity extends FragmentActivity
   private int timeLimit = 0;
   private HashMap<LatLng,Double> backupMarkers;
 
+  private CheckBox parksOnly;
+  private boolean weightParks;
+
   private Button resetButton, genPathButton, startRouteButton, limited;
 
   @Override
@@ -107,6 +112,20 @@ public class MapActivity extends FragmentActivity
     // A route is currently being displayed on the map
     // if this is true
     displayDirection = false;
+
+    // For limited time option you can choose routes going to/through parks
+    // if this is checked
+
+    weightParks = false;
+    parksOnly = findViewById(R.id.parksonly);
+    parksOnly.setVisibility(View.VISIBLE);
+    parksOnly.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            weightParks = isChecked;
+        }
+    });
+
 
     // "Reset Button" will remove all markers from
     // the screen and clear the coordinates list
@@ -171,17 +190,12 @@ public class MapActivity extends FragmentActivity
         AlertDialog.Builder  alertDialogBuilder = new AlertDialog.Builder(MapActivity.this);
         alertDialogBuilder.setMessage("How much time do you have: (in minutes)");
         final EditText timeInput= new EditText(MapActivity.this);
-        timeInput.setInputType(InputType.TYPE_CLASS_TEXT); //TODO: change this back to integer when park input issue resolved.
+        timeInput.setInputType(InputType.TYPE_CLASS_NUMBER);
         alertDialogBuilder.setView(timeInput);
         alertDialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface arg0, int arg1) {
             String t_input = timeInput.getText().toString();
-            boolean weightParks = false;
-            if(t_input.contains("p") || t_input.contains("P")) { //TODO: this is the worst way to get this input.
-              weightParks = true;
-              t_input = t_input.replaceAll("p","");
-            }
             int mins = Integer.parseInt(t_input)/2; // round-trip
             int calculated_distance = (int)Math.ceil(mins * speed);
             final DirectionsHandler requester = new DirectionsHandler(apikey,calculated_distance,"",cur_location);
@@ -193,8 +207,7 @@ public class MapActivity extends FragmentActivity
               } catch (InterruptedException e) {
                   e.printStackTrace();
               }
-              //Toast.makeText(MapActivity.this,"You clicked OK",Toast.LENGTH_LONG).show();
-            Toast.makeText(MapActivity.this,"OK: "+timeInput.getText() + " distance: " + calculated_distance + "returned:" + requester.getResult(),Toast.LENGTH_LONG).show();
+            Toast.makeText(MapActivity.this,"Generating a beautiful route for you and your dog.",Toast.LENGTH_LONG).show();
             coordinates.clear();
             backupMarkers = new HashMap<>(requester.getMarkerMap());
             limitedTime = true;

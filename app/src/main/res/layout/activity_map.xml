@@ -57,4 +57,15 @@
         android:scrollbars="vertical"
         android:textSize="15sp" />
 
+    <CheckBox android:id="@+id/parksonly"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|top"
+        android:padding="10dp"
+        android:layout_marginTop="100dp"
+        android:background="@color/common_google_signin_btn_text_light_default"
+        android:text="Parks (limited time only)"
+        tools:ignore="HardcodedText" />
+
+
 </fragment>
