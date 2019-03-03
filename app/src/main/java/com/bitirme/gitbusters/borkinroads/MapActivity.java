@@ -328,10 +328,12 @@ public class MapActivity extends FragmentActivity
     if(routeActive) {
       resetButton.setVisibility(View.VISIBLE);
       genPathButton.setVisibility(View.VISIBLE);
+      limited.setVisibility(View.VISIBLE);
+      parksOnly.setVisibility(View.VISIBLE);
       startRouteButton.setText(R.string.start_route);
       // TODO ask users to review their newly traversed path here
 
-      // TODO: save the statistics
+      // TODO: send the statistics
       // For now we just push the newly created route
       RestPusher rp = new RestPusher(copyRoute);
       rp.start();
@@ -339,6 +341,8 @@ public class MapActivity extends FragmentActivity
     else {
       genPathButton.setVisibility(View.INVISIBLE);
       resetButton.setVisibility(View.INVISIBLE);
+      limited.setVisibility(View.INVISIBLE);
+      parksOnly.setVisibility(View.INVISIBLE);
       startRouteButton.setText(R.string.stop);
     }
     routeActive = !routeActive;
