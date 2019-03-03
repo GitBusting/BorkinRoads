@@ -1,6 +1,4 @@
-package com.bitirme.gitbusters.borkinroads;
-
-import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
+package com.bitirme.gitbusters.borkinroads.data;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -10,8 +8,8 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
-public class Doggo extends RestRecordImpl {
-    static final ArrayList<Doggo> doggos = new ArrayList<>();
+public class DoggoRecord extends RestRecordImpl {
+    public static final ArrayList<DoggoRecord> doggos = new ArrayList<>();
     private String name;
     private String breed;
     private ZonedDateTime birth_date;
@@ -21,16 +19,16 @@ public class Doggo extends RestRecordImpl {
     private int entryID;
 
 
-    public Doggo() {
+    public DoggoRecord() {
         super();
     }
 
-    public Doggo(JSONObject jso) {
+    public DoggoRecord(JSONObject jso) {
         super(jso);
         parseRecordFromJSON(jso);
     }
 
-    Doggo(String name, String breed, ZonedDateTime birth_date, gender sex) {
+    public DoggoRecord(String name, String breed, ZonedDateTime birth_date, gender sex) {
         this.name = name;
         this.breed = breed;
         this.birth_date = birth_date;
@@ -40,7 +38,7 @@ public class Doggo extends RestRecordImpl {
         this.last_vet_date = ZonedDateTime.now(ZoneId.systemDefault());
     }
 
-    ZonedDateTime getBirth_date() {
+    public ZonedDateTime getBirth_date() {
         return birth_date;
     }
 
@@ -62,7 +60,7 @@ public class Doggo extends RestRecordImpl {
         this.name = name;
     }
 
-    String getBreed() {
+    public String getBreed() {
         return breed;
     }
 
@@ -70,7 +68,7 @@ public class Doggo extends RestRecordImpl {
         this.breed = breed;
     }
 
-    gender getSex() {
+    public gender getSex() {
         return sex;
     }
 
@@ -82,7 +80,7 @@ public class Doggo extends RestRecordImpl {
         this.last_walk_date = last_walk_date;
     }
 
-    protected enum gender {Male, Female, Gender}
+    public enum gender {Male, Female, Gender}
 
     public ZonedDateTime getLast_bath_date() {
         return last_bath_date;

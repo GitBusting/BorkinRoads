@@ -6,6 +6,8 @@ import android.content.Context;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 
+import com.bitirme.gitbusters.borkinroads.data.DoggoRecord;
+
 import java.time.Period;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -18,35 +20,35 @@ public class Notifications {
         return Period.between(d1.toLocalDate(), d2.toLocalDate());
     }
 
-    public void checkEverthing(Doggo doggo, Context context) {
+    public void checkEverthing(DoggoRecord doggo, Context context) {
         this.context = context;
         checkLastWalk(doggo);
         checkLastVetVisit(doggo);
         checkLastBath(doggo);
     }
 
-    private void checkLastWalk(Doggo doggo) {
+    private void checkLastWalk(DoggoRecord doggo) {
         int daysSinceLastWalk = zonedDateTimeDifference(doggo.getLast_walk_date(), ZonedDateTime.now(ZoneId.systemDefault())).getDays();
         if (daysSinceLastWalk >= 14) {
             assembleNotification(reason.walk, doggo, daysSinceLastWalk);
         }
     }
 
-    private void checkLastVetVisit(Doggo doggo) {
+    private void checkLastVetVisit(DoggoRecord doggo) {
         int monthsSinceLastVetVisit = zonedDateTimeDifference(doggo.getLast_vet_date(), ZonedDateTime.now(ZoneId.systemDefault())).getMonths();
         if (monthsSinceLastVetVisit >= 6) {
             assembleNotification(reason.vet, doggo, monthsSinceLastVetVisit);
         }
     }
 
-    private void checkLastBath(Doggo doggo) {
+    private void checkLastBath(DoggoRecord doggo) {
         int monthsSinceLastBath = zonedDateTimeDifference(doggo.getLast_vet_date(), ZonedDateTime.now(ZoneId.systemDefault())).getMonths();
         if (monthsSinceLastBath >= 3) {
             assembleNotification(reason.bath, doggo, monthsSinceLastBath);
         }
     }
 
-    private void assembleNotification(reason reason, Doggo doggo, int forHowMany) {
+    private void assembleNotification(reason reason, DoggoRecord doggo, int forHowMany) {
         String textTitle = "";
         String textContent = "";
 
@@ -56,7 +58,7 @@ public class Notifications {
                 textContent = "Your " + doggo.getBreed() + " " + doggo.getName() + " " + "hasn't walked for " + forHowMany + " days.";
                 break;
             case vet:
-                textTitle = doggo.getName() + " should visit" + ((doggo.getSex().equals(Doggo.gender.Male)) ? " his" : " her") + " vet soon!";
+                textTitle = doggo.getName() + " should visit" + ((doggo.getSex().equals(DoggoRecord.gender.Male)) ? " his" : " her") + " vet soon!";
                 textContent = "Your " + doggo.getBreed() + " " + doggo.getName() + " " + "hasn't gone to vet for " + forHowMany + " months.";
                 break;
             case bath:

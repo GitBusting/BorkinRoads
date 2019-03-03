@@ -29,6 +29,8 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.bitirme.gitbusters.borkinroads.data.DoggoRecord;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -61,6 +63,10 @@ public class MainActivity extends AppCompatActivity
     private ImageButton vetbutton;
     private ImageButton bathbutton;
 
+    private DoggoRecord currentDoggo;
+
+    private DogButtonAdapter adapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,7 +74,7 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        for (Doggo doggo : Doggo.doggos) {
+        for (DoggoRecord doggo : DoggoRecord.doggos) {
             Notifications tmp = new Notifications();
             tmp.checkEverthing(doggo, this);
         }
@@ -160,13 +166,13 @@ public class MainActivity extends AppCompatActivity
                 startActivityForResult(new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI), GET_FROM_GALLERY);
             }
         });
-        if (Doggo.doggos.size() == 0) {
-            Doggo temp = new Doggo("Add New Pet", "Breed", ZonedDateTime.now(ZoneId.systemDefault()), Doggo.gender.Gender);
-            Doggo.doggos.add(temp);
+        if (DoggoRecord.doggos.size() == 0) {
+            DoggoRecord temp = new DoggoRecord("Add New Pet", "Breed", ZonedDateTime.now(ZoneId.systemDefault()), DoggoRecord.gender.Gender);
+            DoggoRecord.doggos.add(temp);
             Log.v(TAG, "did it!");
         }
 
-        currentDoggo = Doggo.doggos.get(0);
+        currentDoggo = DoggoRecord.doggos.get(0);
 
         setValues();
         setBars();
@@ -181,9 +187,6 @@ public class MainActivity extends AppCompatActivity
         recyclerView.setAdapter(adapter);
 
     }
-
-    private DogButtonAdapter adapter;
-    private Doggo currentDoggo;
 
     private void setValues() {
         ZonedDateTime rn = ZonedDateTime.now(ZoneId.systemDefault());
@@ -280,7 +283,7 @@ public class MainActivity extends AppCompatActivity
     public void onItemClick(View view, int position) {
         currentDoggo = adapter.getItem(position);
         Log.v(TAG, "You clicked " + adapter.getItem(position) + " on row number " + position);
-        currentDoggo = Doggo.doggos.get(position);
+        currentDoggo = DoggoRecord.doggos.get(position);
         setValues();
 
     }

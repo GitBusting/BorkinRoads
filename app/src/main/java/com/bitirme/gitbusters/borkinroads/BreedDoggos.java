@@ -12,6 +12,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.bitirme.gitbusters.borkinroads.data.DoggoRecord;
+
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -78,11 +80,11 @@ public class BreedDoggos extends AppCompatActivity {
                     warning.setText(R.string.warning);
                 } else {
                     ZonedDateTime zdt = ZonedDateTime.ofInstant(myCalendar.toInstant(), ZoneId.systemDefault());
-                    Doggo newPet = new Doggo(nameText.getText().toString(), breedText.getText().toString(), zdt, gender.isChecked() ? Doggo.gender.Male : Doggo.gender.Female);
-                    if (Doggo.doggos.get(0).getName().equals("Add New Pet")) {
-                        Doggo.doggos.remove(0);
+                    DoggoRecord newPet = new DoggoRecord(nameText.getText().toString(), breedText.getText().toString(), zdt, gender.isChecked() ? DoggoRecord.gender.Male : DoggoRecord.gender.Female);
+                    if (DoggoRecord.doggos.get(0).getName().equals("Add New Pet")) {
+                        DoggoRecord.doggos.remove(0);
                     }
-                    Doggo.doggos.add(newPet);
+                    DoggoRecord.doggos.add(newPet);
                     Toast.makeText(BreedDoggos.this, "Pet Added!", Toast.LENGTH_SHORT).show();
                     Intent i = new Intent(view.getContext(), MainActivity.class);
                     startActivity(i);
