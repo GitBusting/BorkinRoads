@@ -63,7 +63,7 @@ public class RouteDetailsActivity extends AppCompatActivity implements OnMapRead
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        for (RestRecordImpl rec : rp.getFetchedRoutes()) {
+        for (RestRecordImpl rec : rp.getFetchedRecords()) {
             RouteRecord rr = (RouteRecord) rec;
             if (rr.getEntryID() == id) {
                 routeRow = rr;
@@ -80,7 +80,7 @@ public class RouteDetailsActivity extends AppCompatActivity implements OnMapRead
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        for(RestRecordImpl rec : rp.getFetchedRoutes()) {
+        for(RestRecordImpl rec : rp.getFetchedRecords()) {
             RouteDetailsRecord rdr = (RouteDetailsRecord) rec;
             if(rdr.getRoute_id() == id)
             routeDetails.add(rdr);

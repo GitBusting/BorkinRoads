@@ -40,14 +40,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-
-import okhttp3.Route;
 
 public class DisplayRoutesActivity extends Activity {
 
@@ -94,7 +90,7 @@ public class DisplayRoutesActivity extends Activity {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        for(RestRecordImpl rec : rp.getFetchedRoutes()) {
+        for(RestRecordImpl rec : rp.getFetchedRecords()) {
             RouteRecord rr = (RouteRecord) rec;
             routeList.add(rr);
             rr.prettyPrint();

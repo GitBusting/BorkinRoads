@@ -31,9 +31,12 @@ import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.model.Step;
 import com.akexorcist.googledirection.util.DirectionConverter;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestPusher;
+import com.bitirme.gitbusters.borkinroads.routeutilities.FriendMarker;
+import com.bitirme.gitbusters.borkinroads.routeutilities.FriendRouteHandler;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -56,14 +59,19 @@ public class MapActivity extends FragmentActivity
 
   private GoogleMap mMap;
 
+  private FriendRouteHandler frh;
+
   private boolean displayDirection;
+
+  private ArrayList<Marker>   friendMarkers;
+  private ArrayList<Polyline> friendsRoutes;
 
   private ArrayList<Marker> markers;
   private ArrayList<LatLng> coordinates;
   private ArrayList<Polyline> routes;
   private ArrayList<Integer> legColors;
 
-  private boolean routeActive;
+  private boolean routeActive, overrideCurrentLocation;
   private String currTitle;
   private RouteRecord currRoute, copyRoute;
   private int estimatedMinutes;
@@ -108,6 +116,8 @@ public class MapActivity extends FragmentActivity
     coordinates = new ArrayList<>();
     routes = new ArrayList<>();
     legColors = new ArrayList<>();
+    friendsRoutes = new ArrayList<>();
+    friendMarkers = new ArrayList<>();
     resetButton = findViewById(R.id.resetButton);
     resetButton.setOnClickListener(new View.OnClickListener() {
       @Override
@@ -119,6 +129,7 @@ public class MapActivity extends FragmentActivity
       }
     });
 
+    // Initialize button that will request a route from google
     genPathButton = findViewById(R.id.generatePathButton);
     genPathButton.setOnClickListener(new View.OnClickListener() {
       @Override
@@ -126,10 +137,11 @@ public class MapActivity extends FragmentActivity
         if(displayDirection)
           Toast.makeText(view.getContext(),"Path already present!", Toast.LENGTH_SHORT).show();
         else
-          requestDirection();
+          requestDirection(coordinates);
       }
     });
 
+    // Pressing this will start the route and generate statistics
     startRouteButton = findViewById(R.id.startRouteButton);
     startRouteButton.setOnClickListener(new View.OnClickListener() {
       @Override
@@ -137,6 +149,10 @@ public class MapActivity extends FragmentActivity
         startEndRoute();
       }
     });
+
+    // This thread is responsible for fetching friends' routes
+    frh = new FriendRouteHandler();
+    FriendRouteHandler.setMapReference(this);
 
     SupportMapFragment mapFragment =
             (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
@@ -191,7 +207,7 @@ public class MapActivity extends FragmentActivity
             Toast.makeText(MapActivity.this,"OK: "+timeInput.getText() + " distance: " + calculated_distance + "returned:" + requester.getResult(),Toast.LENGTH_LONG).show();
             coordinates.clear();
             coordinates.add(requester.getResult());
-            requestDirection();
+            requestDirection(coordinates);
           }
         });
 
@@ -239,6 +255,24 @@ public class MapActivity extends FragmentActivity
         coordinates.add(latLng);
       }
     });
+    overrideCurrentLocation = false;
+
+    // Indicates that we've been instantiated by another activity with
+    // non-usual purpose. Call this here so that nothing breaks down.
+    if(getIntent().getExtras() != null)
+    {
+      RouteRecord oldRoute = (RouteRecord)
+              getIntent().getSerializableExtra("ROUTE");
+      coordinates.add(oldRoute.getStartCoords());
+      for(LatLng ll : oldRoute.getWaypoints())
+        coordinates.add(ll);
+      coordinates.add(oldRoute.getEndCoords());
+      overrideCurrentLocation = true;
+      requestDirection(coordinates);
+    }
+
+    // Let friend route handler fetch friends' routes
+    frh.start();
   }
 
   @Override
@@ -292,11 +326,15 @@ public class MapActivity extends FragmentActivity
     routeActive = !routeActive;
   }
 
-  @SuppressWarnings("ConstantConditions")
-  private void requestDirection() {
-    ArrayList<LatLng> coords = new ArrayList<>(coordinates);
+  private void requestDirection(ArrayList<LatLng> coords) {
     LatLng start = cur_location;
     LatLng end   = cur_location;
+    if(overrideCurrentLocation)
+    {
+      start = coords.get(0);
+      end = coords.get(1);
+      overrideCurrentLocation = false;
+    }
     if(cur_location == null)
       throw new AssertionError("Location was null when a direction request was made");
     if (apikey.isEmpty())
@@ -493,6 +531,57 @@ public class MapActivity extends FragmentActivity
     outline = "Estimated time: " + overall_time + "\n" + outline;
     return outline;
   }
+
+  public void displayFriendRoute(Direction direction)
+  {
+    if (direction.isOK()) {
+      Route route = direction.getRouteList().get(0);
+      int legCount = route.getLegList().size();
+      for (int index = 0; index < legCount; index++) {
+        Leg leg = route.getLegList().get(index);
+        List<Step> stepList = leg.getStepList();
+        // Form & display polylines according to our route on the map
+        ArrayList<PolylineOptions> polylineOptionList = new ArrayList<>();
+        int r = (int) (Math.random()*256);
+        int g = (int) (Math.random()*256);
+        int b = (int) (Math.random()*256);
+        int lineColor = Color.argb(127,r,g,b);
+        for (Step s : stepList) {
+          polylineOptionList.add(DirectionConverter.createPolyline(this,
+                  (ArrayList<LatLng>) s.getPolyline().getPointList(), 3, lineColor));
+        }
+        for (PolylineOptions polylineOption : polylineOptionList) {
+          friendsRoutes.add(mMap.addPolyline(polylineOption));
+        }
+      }
+    } else { System.out.println("Could not find a valid route"); }
+  }
+
+  public void displayFriendMarkers(ArrayList<FriendMarker> fms)
+  {
+    for (Marker m : friendMarkers)
+      m.remove();
+    friendMarkers.clear();
+
+    for (FriendMarker fm : fms)
+      friendMarkers.add(mMap.addMarker(new MarkerOptions()
+            .position(fm.getPosition())
+            .title("Marker added by user")
+            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))));
+  }
+
+  public void clearFriendRoutes()
+  {
+    for(Polyline p : friendsRoutes)
+      p.remove();
+    friendsRoutes.clear();
+  }
+
+  public String getApiKey()
+  {
+    return apikey;
+  }
+
   @Override
   public void onDirectionFailure(Throwable t) {t.printStackTrace();}
 

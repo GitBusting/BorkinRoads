@@ -22,19 +22,19 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class RestPuller extends Thread {
 
-  private ArrayList<RestRecordImpl> fetchedRoutes;
+  private ArrayList<RestRecordImpl> fetchedRecords;
   private RestRecord templateReference;
   private String DB_URL;
 
   public RestPuller(RestRecordImpl template)
   {
-    this.fetchedRoutes = new ArrayList<>();
+    this.fetchedRecords = new ArrayList<>();
     this.templateReference = template;
     DB_URL = template.getURL() + ".json";
   }
 
-  public ArrayList<RestRecordImpl> getFetchedRoutes() {
-    return fetchedRoutes;
+  public ArrayList<RestRecordImpl> getFetchedRecords() {
+    return fetchedRecords;
   }
 
   @Override
@@ -73,7 +73,7 @@ public class RestPuller extends Thread {
         }
         JSONArray jsa = new JSONArray(total.toString());
         for(int i = 0 ; i < jsa.length() ; i++)
-          fetchedRoutes.add((RestRecordImpl) recordConstructor.newInstance(jsa.getJSONObject(i)));
+          fetchedRecords.add((RestRecordImpl) recordConstructor.newInstance(jsa.getJSONObject(i)));
       } else {
         // Unable to connect
         System.out.println("a very bad thing happened.");
