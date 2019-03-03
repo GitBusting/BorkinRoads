@@ -90,8 +90,18 @@ public class MapActivity extends FragmentActivity
 
   //statistics of the active route
   private long timePassed; // in seconds
+  private long movingTime;
   private float metersPassed; // in meters
-  private double averageSpeed; // in meters/seconds
+
+  //speed statistics (in meters/seconds)
+  private double averageSpeed;
+  private double maxSpeed;
+  private double movingSpeed; // doesn't include when user waits/stops
+
+  //pace statistics
+  private double averagePace;
+  private double maxPace;
+  private double movingPace;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -287,10 +297,20 @@ public class MapActivity extends FragmentActivity
               coordinates, legColors, estimatedMinutes);
       currRoute.setTitle(currTitle);
       copyRoute = new RouteRecord(currRoute); // Checkpoint the current state of the route
+
       //reset statistics for the active route
       timePassed = 0;
+      movingTime = 0;
       metersPassed = 0;
+
       averageSpeed = 0.0;
+      maxSpeed = 0.0;
+      movingSpeed = 0.0;
+
+      averagePace = 0.0;
+      maxPace = 0.0;
+      movingPace = 0.0;
+
       cdt = new CountDownTimer(20000, 10000) {
         public void onTick(long millisUntilFinished) {
           System.out.println("Timer heartbeat per 10 seconds.");
@@ -371,6 +391,13 @@ public class MapActivity extends FragmentActivity
       Location.distanceBetween(oldStartLoc.latitude, oldStartLoc.longitude,
                 cur_location.latitude, cur_location.longitude, passed);
       metersPassed += passed[0];
+      movingTime += (timeSpent/1000); // should be updated when user moves
+      double cur_speed = passed[0]/(double)(timeSpent/1000);
+      if(cur_speed > maxSpeed)
+          maxSpeed = cur_speed;
+      double cur_pace = ((double)(timeSpent/1000)) / passed[0];
+      if(cur_pace > maxPace)
+          maxPace = cur_pace;
 
       // Other tasks
       ArrayList<LatLng> coords = currRoute.getWaypoints();
@@ -407,10 +434,28 @@ public class MapActivity extends FragmentActivity
               .transportMode(TransportMode.WALKING)
               .execute(this);
     }
+
     //update the statistics
     timePassed += timeSpent / 1000; // adding to total seconds on this active route
     averageSpeed = metersPassed / timePassed;
-    
+    movingSpeed = metersPassed / movingTime;
+
+    averagePace = timePassed / metersPassed;
+    movingPace = movingTime / metersPassed;
+
+    //debug prints (will be deleted later)
+    String outline = "";
+    outline += "Your average speed: " + averageSpeed + "\n";
+    outline += "Your max speed: " + maxSpeed + "\n";
+    outline += "Your moving speed: " + movingSpeed + "\n";
+    outline += "Your average pace: " + averagePace + "\n";
+    outline += "Your max pace: " + maxPace + "\n";
+    outline += "Your moving pace: " + movingPace + "\n";
+    outline += "Time passed: " + timePassed + "\n";
+    outline += "Moving time: " + movingTime + "\n";
+    outline += "Meters passed: " + metersPassed + "\n";
+    System.out.println(outline);
+
       // Restart counter with each update call
     cdt = new CountDownTimer(countdownMillis, countdownMillis/2) {
       public void onTick(long millisUntilFinished) {
@@ -547,7 +592,14 @@ public class MapActivity extends FragmentActivity
     int estTime = 0;
     int legCount = route.getLegList().size();
     outline += "Your average speed: " + averageSpeed + "\n";
-    outline += "time passed: " + timePassed + "\n";
+    outline += "Your max speed: " + maxSpeed + "\n";
+    outline += "Your moving speed: " + movingSpeed + "\n";
+    outline += "Your average pace: " + averagePace + "\n";
+    outline += "Your max pace: " + maxPace + "\n";
+    outline += "Your moving pace: " + movingPace + "\n";
+    outline += "Time passed: " + timePassed + "\n";
+    outline += "Moving time: " + movingTime + "\n";
+    outline += "Meters passed: " + metersPassed + "\n";
     outline += "Next Stops:\n\n";
     for (int index = 0; index < legCount; index++) {
       Leg leg = route.getLegList().get(index);
