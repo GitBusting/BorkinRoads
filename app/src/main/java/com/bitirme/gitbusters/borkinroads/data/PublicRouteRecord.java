@@ -7,6 +7,7 @@ import com.google.android.gms.maps.model.LatLng;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class PublicRouteRecord extends RestRecordImpl implements Comparable<PublicRouteRecord>{
@@ -31,15 +32,17 @@ public class PublicRouteRecord extends RestRecordImpl implements Comparable<Publ
     return location;
   }
 
-  public PublicRouteRecord() {
-    super();
+  public PublicRouteRecord(int userID, int petID, ArrayList<LatLng> waypoints, LatLng location) {
+    this.userID = userID;
+    this.petID  = petID;
+    this.waypoints = waypoints;
+    this.location = location;
   }
 
   public PublicRouteRecord(JSONObject jso) {
     if(URL.equals("Still Empty"))
       throw new AssertionError("PublicRouteRecord class does not" +
             "have a valid URL yet!");
-
     try {
       this.userID    = jso.getInt("userID");
       this.petID     = jso.getInt("petID");

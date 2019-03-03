@@ -50,4 +50,5 @@
         <item>@string/using_time</item>
         <item>@string/estimated_time</item>
     </string-array>
+    <string name="title_activity_friend_list">FriendListActivity</string>
 </resources>
