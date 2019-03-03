@@ -32,6 +32,10 @@ import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.model.Step;
 import com.akexorcist.googledirection.util.DirectionConverter;
+import com.bitirme.gitbusters.borkinroads.data.RestRecord;
+import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
+import com.bitirme.gitbusters.borkinroads.data.RouteDetailsRecord;
+import com.bitirme.gitbusters.borkinroads.dbinterface.RestPuller;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestPusher;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -87,6 +91,9 @@ public class MapActivity extends FragmentActivity
   private boolean weightParks;
 
   private Button resetButton, genPathButton, startRouteButton, limited;
+
+  //Active route details
+  private RouteDetailsRecord detailsRecord;
 
   //statistics of the active route
   private long timePassed; // in seconds
@@ -333,10 +340,35 @@ public class MapActivity extends FragmentActivity
       startRouteButton.setText(R.string.start_route);
       // TODO ask users to review their newly traversed path here
 
-      // TODO: send the statistics
       // For now we just push the newly created route
       RestPusher rp = new RestPusher(copyRoute);
       rp.start();
+      try {
+        rp.join();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+
+      // Get route id
+      RestPuller puller = new RestPuller(copyRoute);
+      puller.start();
+      try {
+        puller.join();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      ArrayList<RestRecordImpl> routeRecords = puller.getFetchedRoutes();
+      int routeId = getRouteId(routeRecords);
+      if(routeId == -1) {
+        System.out.println("This shouldn't happen.");
+      }
+      //Route details record for statistics collected during the walk.
+      detailsRecord = new RouteDetailsRecord(-1,routeId,maxPace,
+              averagePace,movingPace,maxSpeed,averageSpeed,movingSpeed,metersPassed,
+              timePassed,movingTime,copyRoute.getDate(),copyRoute.getTime());
+      //send the statistics
+      RestPusher detailPusher = new RestPusher(detailsRecord);
+      detailPusher.start();
     }
     else {
       genPathButton.setVisibility(View.INVISIBLE);
@@ -579,7 +611,16 @@ public class MapActivity extends FragmentActivity
         estimated.setAlpha((float) 0.75);
     } else { System.out.println("Could not find a valid route"); }
   }
-
+  private int getRouteId(ArrayList<RestRecordImpl> records) {
+    for (RestRecordImpl record : records) {
+        RouteRecord route = (RouteRecord) record;
+        String routeTime = copyRoute.getTime().replace(".000Z","");
+        if(route.getDate().equals(copyRoute.getDate()) && route.getTime().equals(routeTime)) {
+          return route.getEntryID();
+        }
+    }
+    return -1;
+  }
   private void updateEstimatedMinutesUntilEnd(Route route)
   {
     int estTime = 0;

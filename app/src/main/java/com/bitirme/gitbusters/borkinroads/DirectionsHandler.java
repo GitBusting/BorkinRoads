@@ -77,7 +77,6 @@ public class DirectionsHandler extends Thread {
             double lat=currentLocation.latitude, lng=currentLocation.longitude;
             while ((result = br.readLine()) != null) {
                 sb.append(result);
-                Logger.getGlobal().log(Level.INFO,result);
                 if(result.contains("location")) {
                     loc = true;
                 }
@@ -94,7 +93,6 @@ public class DirectionsHandler extends Thread {
             }
             LatLng furthest = getFurthestMarker();
             setMarker(furthest.latitude, furthest.longitude);
-            Logger.getGlobal().log(Level.INFO,marker_lat + "," + marker_lng);
             System.out.println(sb.toString());
         } catch (IOException e) {
             e.printStackTrace();
