@@ -12,6 +12,8 @@ import java.util.Date;
 public class UserStatusRecord extends RestRecordImpl {
     private int entryId;
     private int userId;
+    private int petId;
+    //private int routeId;
     private boolean isActive;
     private LatLng currentPosition;
     private ArrayList<LatLng> waypoints;
@@ -21,9 +23,10 @@ public class UserStatusRecord extends RestRecordImpl {
     //Probably will not be used
     public UserStatusRecord(){super();}
 
-    public UserStatusRecord(int userId, boolean isActive, LatLng currentPosition, ArrayList<LatLng> waypoints,LatLng startPoint, LatLng endPoint) {
+    public UserStatusRecord(int userId, int petId, boolean isActive, LatLng currentPosition, ArrayList<LatLng> waypoints,LatLng startPoint, LatLng endPoint) {
         this.entryId = -1;
         this.userId = userId;
+        this.petId = petId;
         this.isActive = isActive;
         this.currentPosition = new LatLng(currentPosition.latitude, currentPosition.longitude);
         this.waypoints = new ArrayList<>(waypoints);
@@ -40,6 +43,7 @@ public class UserStatusRecord extends RestRecordImpl {
     public UserStatusRecord(UserStatusRecord cp) {
         this.entryId = cp.entryId;
         this.userId = cp.userId;
+        this.petId = cp.petId;
         this.isActive = cp.isActive;
         this.currentPosition = new LatLng(cp.currentPosition.latitude, cp.currentPosition.longitude);
         this.waypoints = new ArrayList<>(cp.waypoints);
@@ -56,6 +60,8 @@ public class UserStatusRecord extends RestRecordImpl {
     public int getEntryID() { return entryId; }
 
     public int getUserId() { return userId; }
+
+    public int getPetId() { return petId; }
 
     public boolean isActive() { return isActive; }
 
@@ -75,10 +81,16 @@ public class UserStatusRecord extends RestRecordImpl {
 
     public void setCurrentPosition(LatLng cur) { currentPosition = new LatLng(cur.latitude,cur.longitude); }
 
+    public void setEntryId(int id) {entryId = id; }
+
+    public void setWaypoints(ArrayList<LatLng> pts) { waypoints = new ArrayList<>(pts); }
+
     private void parseRecordFromJSON(JSONObject jso)
     {
         try {
             this.entryId = jso.getInt("id");
+            this.userId = jso.getInt("userID");
+            this.petId = jso.getInt("petID");
             this.waypoints = this.stringToWaypoints(jso.getString("path"));
             this.startPoint = waypoints.remove(0);
             this.endPoint = waypoints.remove(waypoints.size()-1);
@@ -107,6 +119,7 @@ public class UserStatusRecord extends RestRecordImpl {
         try {
             //jso.put("entryID",this.entryId);
             jso.put("userID",this.userId);
+            jso.put("petID",this.petId);
             jso.put("isActive", this.isActive);
             jso.put("currentPosition", this.currentPosition.latitude +","+this.currentPosition.longitude);
             jso.put("path",this.waypointsToString());

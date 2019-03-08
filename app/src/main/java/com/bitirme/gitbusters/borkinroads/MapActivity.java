@@ -35,8 +35,10 @@ import com.akexorcist.googledirection.util.DirectionConverter;
 import com.bitirme.gitbusters.borkinroads.data.RestRecord;
 import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
 import com.bitirme.gitbusters.borkinroads.data.RouteDetailsRecord;
+import com.bitirme.gitbusters.borkinroads.data.UserStatusRecord;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestPuller;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestPusher;
+import com.bitirme.gitbusters.borkinroads.dbinterface.RestUpdater;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -94,6 +96,8 @@ public class MapActivity extends FragmentActivity
 
   //Active route details
   private RouteDetailsRecord detailsRecord;
+
+  private UserStatusRecord statusRecord;
 
   //statistics of the active route
   private long timePassed; // in seconds
@@ -318,6 +322,12 @@ public class MapActivity extends FragmentActivity
       maxPace = 0.0;
       movingPace = 0.0;
 
+      // Create a User Status Record to update while the route is active
+      //TODO: add userID and petID
+      statusRecord = new UserStatusRecord(-1,-1,true,cur_location,coordinates,cur_location,cur_location);
+      RestPusher stPusher = new RestPusher(statusRecord);
+      //stPusher.start();
+
       cdt = new CountDownTimer(20000, 10000) {
         public void onTick(long millisUntilFinished) {
           System.out.println("Timer heartbeat per 10 seconds.");
@@ -349,7 +359,16 @@ public class MapActivity extends FragmentActivity
         e.printStackTrace();
       }
 
+      /* To add details about the created route we need to
+       *  1. Get route id
+       *     a. Pull the routes
+       *     b. Find the newly created route using the date and time
+       *  2. Use the route id to create a new Detail Record
+       *  3. Push the detail record
+       */
+
       // Get route id
+      // a. pull the routes
       RestPuller puller = new RestPuller(copyRoute);
       puller.start();
       try {
@@ -358,17 +377,26 @@ public class MapActivity extends FragmentActivity
         e.printStackTrace();
       }
       ArrayList<RestRecordImpl> routeRecords = puller.getFetchedRoutes();
+
+      // b. find the newly created route
       int routeId = getRouteId(routeRecords);
+
+      // couldn't find the route should not happen if we sent the route correctly
       if(routeId == -1) {
-        System.out.println("This shouldn't happen.");
+        System.out.println("Couldn't find the entry.");
       }
-      //Route details record for statistics collected during the walk.
+
+      // Creating route details record for statistics collected during the walk.
       detailsRecord = new RouteDetailsRecord(-1,routeId,maxPace,
               averagePace,movingPace,maxSpeed,averageSpeed,movingSpeed,metersPassed,
               timePassed,movingTime,copyRoute.getDate(),copyRoute.getTime());
-      //send the statistics
+
+      // Send the statistics
       RestPusher detailPusher = new RestPusher(detailsRecord);
       detailPusher.start();
+
+      // Update user status in DB
+      updateDBStatus(true);
     }
     else {
       genPathButton.setVisibility(View.INVISIBLE);
@@ -479,7 +507,7 @@ public class MapActivity extends FragmentActivity
     averagePace = timePassed / metersPassed;
     movingPace = movingTime / metersPassed;
 
-    //debug prints (will be deleted later)
+    //debug prints (TODO: delete later)
     String outline = "";
     outline += "Your average speed: " + averageSpeed + "\n";
     outline += "Your max speed: " + maxSpeed + "\n";
@@ -491,6 +519,9 @@ public class MapActivity extends FragmentActivity
     outline += "Moving time: " + movingTime + "\n";
     outline += "Meters passed: " + metersPassed + "\n";
     System.out.println(outline);
+
+    // Update the user status
+    updateDBStatus(false);
 
       // Restart counter with each update call
     cdt = new CountDownTimer(countdownMillis, countdownMillis/2) {
@@ -621,6 +652,37 @@ public class MapActivity extends FragmentActivity
     }
     return -1;
   }
+  private void updateDBStatus(boolean isDone){
+    /* We have few tasks here to update the DB with the new status
+     * 1. Pull entries
+     * 2. Find the entry corresponding to the user
+     * 3a. If the user completed the route, update the entry and set isActive to false
+     * 3b. If not, update the entry with new location and waypoint info.
+     */
+    RestPuller puller = new RestPuller(statusRecord);
+    //puller.start();
+    UserStatusRecord us = null;
+    ArrayList<RestRecordImpl> records = puller.getFetchedRoutes();
+    for (RestRecordImpl record : records) {
+      us = (UserStatusRecord) record;
+      if (us.getUserId() == statusRecord.getUserId())
+        break;
+    }
+    if(us==null) {
+      System.out.println("Couldn't find corresponding user status entry. Can't update the DB.");
+      return;
+    }
+    statusRecord.setCurrentPosition(cur_location);
+    statusRecord.setEntryId(us.getEntryID());
+    statusRecord.setWaypoints(coordinates);
+    if(isDone) {
+      statusRecord.setActive(false);
+    }
+    RestUpdater updater = new RestUpdater(statusRecord);
+    //updater.start();
+
+  }
+
   private void updateEstimatedMinutesUntilEnd(Route route)
   {
     int estTime = 0;
@@ -664,6 +726,7 @@ public class MapActivity extends FragmentActivity
     outline = "Estimated time: " + overall_time + "\n" + outline;
     return outline;
   }
+
   @Override
   public void onDirectionFailure(Throwable t) {t.printStackTrace();}
 
