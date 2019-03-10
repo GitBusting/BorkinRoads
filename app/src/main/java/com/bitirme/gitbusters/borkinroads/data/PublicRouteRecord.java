@@ -18,6 +18,7 @@ public class PublicRouteRecord extends RestRecordImpl implements Comparable<Publ
   private int petID;
   private ArrayList<LatLng> waypoints;
   private LatLng location;
+
   private int entryID;
 
   public int getPetID() {
@@ -30,6 +31,11 @@ public class PublicRouteRecord extends RestRecordImpl implements Comparable<Publ
 
   public LatLng getLocation() {
     return location;
+  }
+
+  public PublicRouteRecord()
+  {
+
   }
 
   public PublicRouteRecord(int userID, int petID, ArrayList<LatLng> waypoints, LatLng location) {
