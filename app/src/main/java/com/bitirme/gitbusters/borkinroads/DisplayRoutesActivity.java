@@ -83,7 +83,7 @@ public class DisplayRoutesActivity extends Activity {
 
         // fetch all the routes from our database
         routeList = new ArrayList<>();
-        RestPuller rp = new RestPuller(new RouteRecord());
+        RestPuller rp = new RestPuller(new RouteRecord(), getApplicationContext());
         rp.start();
         try {
             rp.join();
@@ -416,7 +416,7 @@ public class DisplayRoutesActivity extends Activity {
                         System.out.println("Favourite button pressed!");
                         RouteRecord rr = routeList.get(pos);
                         rr.toggleFavorite();
-                        RestUpdater ru = new RestUpdater(rr);
+                        RestUpdater ru = new RestUpdater(rr, getApplicationContext());
                         ru.start();
 
 
@@ -435,7 +435,7 @@ public class DisplayRoutesActivity extends Activity {
                         System.out.println("Rating  bar is pressed!");
                         RouteRecord rr  = mFilteredRouteList.get(pos);
                         rr.setRating(rating);
-                        RestUpdater ru = new RestUpdater(rr);
+                        RestUpdater ru = new RestUpdater(rr, getApplicationContext());
                         ru.start();
                     }
                 });

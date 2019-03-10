@@ -3,6 +3,9 @@ package com.bitirme.gitbusters.borkinroads;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -28,6 +31,8 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+
+import com.auth0.android.jwt.JWT;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -75,6 +80,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     private View mProgressView;
     private View mLoginFormView;
 
+    private SharedPreferences shared;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -105,6 +112,27 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+
+        if (validateToken()) {
+            startMainActivity();
+        }
+
+    }
+
+    private void startMainActivity() {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
+
+    private boolean validateToken() {
+        shared = getSharedPreferences("auth", MODE_PRIVATE);
+        String token = shared.getString("token", "invalid");
+        if (!token.equals("invalid")) {
+            JWT jwt = new JWT(token);
+            return !jwt.isExpired(60);
+        }
+
+        return false;
     }
 
     private void populateAutoComplete() {
@@ -201,6 +229,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             mAuthTask = new UserLoginTask(email, password);
             mAuthTask.execute((Void) null);
         }
+
+
     }
 
     private boolean isEmailValid(String email) {
@@ -349,13 +379,18 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                     String message = jsonObject.getString("message");
                     if (message.equals("Login Successful")) {
                         String token = jsonObject.getString("access_token");
+
+                        SharedPreferences shared = getSharedPreferences("auth", Context.MODE_PRIVATE);
+                        final SharedPreferences.Editor editor = shared.edit();
+                        editor.putString("token", token);
+                        editor.commit();
+                        return true;
+
                     }
                 }
 
                 // Simulate network access.
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                return false;
+//                Thread.sleep(2000);
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
@@ -364,16 +399,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 e.printStackTrace();
             }
 
-            for (String credential : DUMMY_CREDENTIALS) {
-                String[] pieces = credential.split(":");
-                if (pieces[0].equals(mEmail)) {
-                    // Account exists, return true if the password matches.
-                    return pieces[1].equals(mPassword);
-                }
-            }
-
-            // TODO: register the new account here.
-            return true;
+            return false;
         }
 
         @Override
@@ -382,13 +408,13 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             showProgress(false);
 
             if (success) {
-                finish();
+                startMainActivity();
             } else {
                 mPasswordView.setError(getString(R.string.error_incorrect_password));
                 mPasswordView.requestFocus();
             }
 
-            // Go to Main activity
+
         }
 
         @Override

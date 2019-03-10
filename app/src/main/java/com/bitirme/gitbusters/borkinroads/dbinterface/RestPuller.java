@@ -1,5 +1,12 @@
 package com.bitirme.gitbusters.borkinroads.dbinterface;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
+
+import com.auth0.android.jwt.JWT;
+import com.bitirme.gitbusters.borkinroads.LoginActivity;
 import com.bitirme.gitbusters.borkinroads.data.RestRecord;
 import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
 
@@ -13,6 +20,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.logging.Level;
@@ -25,12 +33,15 @@ public class RestPuller extends Thread {
   private ArrayList<RestRecordImpl> fetchedRecords;
   private RestRecord templateReference;
   private String DB_URL;
+  private Context context;
 
-  public RestPuller(RestRecordImpl template)
+  public RestPuller(RestRecordImpl template, Context context)
   {
     this.fetchedRecords = new ArrayList<>();
     this.templateReference = template;
     DB_URL = template.getURL() + ".json";
+    this.context = context;
+
   }
 
   public ArrayList<RestRecordImpl> getFetchedRecords() {
@@ -50,18 +61,22 @@ public class RestPuller extends Thread {
       e.printStackTrace();
     }
 
-    HttpsURLConnection conn = null;
+    HttpURLConnection conn = null;
     try {
       Logger.getGlobal().log(Level.INFO,"Requesting routes from " + DB_URL);
 
       URL webServerUrl = new URL(DB_URL);
-      conn =
-              (HttpsURLConnection) webServerUrl.openConnection();
+      conn = (HttpURLConnection) webServerUrl.openConnection();
       conn.setReadTimeout(10000 /* milliseconds */);
       conn.setConnectTimeout(15000 /* milliseconds */);
 
       conn.setRequestMethod("GET");
       conn.setRequestProperty("Content-type", "application/json");
+
+      AuthenticationValidator av = new AuthenticationValidator(context);
+      String token = av.getAuthenticationToken();
+
+      conn.addRequestProperty("Authorization", "Bearer " + token);
       conn.connect();
 
       if (conn.getResponseCode() == 200) {

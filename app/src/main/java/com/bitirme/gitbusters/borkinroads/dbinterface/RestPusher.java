@@ -1,5 +1,7 @@
 package com.bitirme.gitbusters.borkinroads.dbinterface;
 
+import android.content.Context;
+
 import com.bitirme.gitbusters.borkinroads.data.RestRecord;
 import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
 
@@ -14,18 +16,21 @@ public class RestPusher extends Thread {
 
   public ArrayList<RestRecordImpl> toBePushed;
   private String DB_URL;
+  private Context context;
 
-  public RestPusher(ArrayList<RestRecordImpl> rr)
+  public RestPusher(ArrayList<RestRecordImpl> rr, Context context)
   {
     toBePushed = rr;
     DB_URL = rr.get(0).getURL();
+    this.context = context;
   }
 
-  public RestPusher(RestRecordImpl rr)
+  public RestPusher(RestRecordImpl rr, Context context)
   {
     DB_URL = rr.getURL() + ".json";
     toBePushed = new ArrayList<>();
     toBePushed.add(rr);
+    this.context = context;
   }
 
   /**
@@ -46,8 +51,14 @@ public class RestPusher extends Thread {
 
       connPut.setRequestMethod("POST");
       connPut.setRequestProperty("Content-type", "application/json");
+      AuthenticationValidator authenticationValidator = new AuthenticationValidator(context);
+      String token = authenticationValidator.getAuthenticationToken();
+      connPut.addRequestProperty("Authorization", "Bearer " + token);
       connPut.connect();
       OutputStreamWriter out = new OutputStreamWriter(connPut.getOutputStream());
+
+
+
 
       for(RestRecord rr : toBePushed)
       {

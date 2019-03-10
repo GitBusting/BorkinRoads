@@ -315,7 +315,7 @@ public class MapActivity extends FragmentActivity
       // TODO ask users to review their newly traversed path here
 
       // For now we just push the newly created route
-      RestPusher rp = new RestPusher(copyRoute);
+      RestPusher rp = new RestPusher(copyRoute, getApplicationContext());
       rp.start();
     }
     else {
