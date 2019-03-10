@@ -170,6 +170,9 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_my_routes) {
             Intent i = new Intent(this, DisplayRoutesActivity.class);
             startActivity(i);
+        }else if (id == R.id.nav_friend_list) {
+            Intent i = new Intent(this, FriendListActivity.class);
+            startActivity(i);
         }
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);

@@ -65,8 +65,7 @@
             android:label="@string/title_activity_main" />
         <activity
             android:name=".FriendListActivity"
-            android:label="@string/title_activity_friend_list"
-            android:theme="@style/AppTheme" />
+            android:label="@string/title_activity_friend_list" />
     </application>
 
 </manifest>

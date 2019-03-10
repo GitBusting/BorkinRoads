@@ -32,7 +32,6 @@ import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.model.Step;
 import com.akexorcist.googledirection.util.DirectionConverter;
-import com.bitirme.gitbusters.borkinroads.data.RestRecord;
 import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
 import com.bitirme.gitbusters.borkinroads.data.RouteDetailsRecord;
 import com.bitirme.gitbusters.borkinroads.data.UserStatusRecord;
@@ -55,6 +54,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.bitirme.gitbusters.borkinroads.data.RouteRecord;
 
@@ -70,6 +72,8 @@ public class MapActivity extends FragmentActivity
   private GoogleMap mMap;
 
   private FriendRouteHandler frh;
+  private ConcurrentLinkedQueue<Direction> friendDirectionsFromHandler;
+  private ConcurrentLinkedQueue<FriendMarker> friendMarkersFromHandler;
 
   private boolean displayDirection;
 
@@ -86,6 +90,7 @@ public class MapActivity extends FragmentActivity
   private RouteRecord currRoute, copyRoute;
   private int estimatedMinutes;
   private CountDownTimer cdt; // try to update route on finish
+  private CountDownTimer friendCdt; // update friend routes by polling concurrent queues
 
   private LatLng cur_location;
 
@@ -170,6 +175,9 @@ public class MapActivity extends FragmentActivity
     legColors = new ArrayList<>();
     friendsRoutes = new ArrayList<>();
     friendMarkers = new ArrayList<>();
+    // Not the best way to solve "Not on the main thread" exception
+    friendDirectionsFromHandler = new ConcurrentLinkedQueue<>();
+    friendMarkersFromHandler = new ConcurrentLinkedQueue<>();
     resetButton = findViewById(R.id.resetButton);
     resetButton.setOnClickListener(new View.OnClickListener() {
       @Override
@@ -321,6 +329,33 @@ public class MapActivity extends FragmentActivity
 
     // Let friend route handler fetch friends' routes
     frh.start();
+    friendCdt = new CountDownTimer(4000, 2000) {
+      @Override
+      public void onTick(long millisUntilFinished) { }
+      @Override
+      public void onFinish() { friendCdtLoop(); }
+    }.start();
+  }
+
+  private void friendCdtLoop()
+  {
+    for(Direction dir : friendDirectionsFromHandler)
+    {
+      displayFriendRoute(dir);
+    }
+    ArrayList<FriendMarker> fmlist = new ArrayList<>();
+    for(FriendMarker fm : friendMarkersFromHandler)
+    {
+      fmlist.add(fm);
+    }
+    displayFriendMarkers(fmlist);
+
+    friendCdt = new CountDownTimer(4000, 2000) {
+      @Override
+      public void onTick(long millisUntilFinished) {}
+      @Override
+      public void onFinish() { friendCdtLoop(); }
+    }.start();
   }
 
   @Override
@@ -409,7 +444,7 @@ public class MapActivity extends FragmentActivity
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
-      ArrayList<RestRecordImpl> routeRecords = puller.getFetchedRoutes();
+      ArrayList<RestRecordImpl> routeRecords = puller.getFetchedRecords();
 
       // b. find the newly created route
       int routeId = getRouteId(routeRecords);
@@ -647,7 +682,7 @@ public class MapActivity extends FragmentActivity
               coordinates.clear();
               coordinates.add(max);
               System.out.println("added: " +coordinates.get(0));
-              requestDirection();
+              requestDirection(coordinates);
               return;
           }
           curEstTime = 0;
@@ -698,7 +733,7 @@ public class MapActivity extends FragmentActivity
     RestPuller puller = new RestPuller(statusRecord);
     //puller.start();
     UserStatusRecord us = null;
-    ArrayList<RestRecordImpl> records = puller.getFetchedRoutes();
+    ArrayList<RestRecordImpl> records = puller.getFetchedRecords();
     for (RestRecordImpl record : records) {
       us = (UserStatusRecord) record;
       if (us.getUserId() == statusRecord.getUserId())
@@ -728,7 +763,7 @@ public class MapActivity extends FragmentActivity
     RestPuller puller = new RestPuller(statusRecord);
     //puller.start();
     UserStatusRecord us = null;
-    ArrayList<RestRecordImpl> records = puller.getFetchedRoutes();
+    ArrayList<RestRecordImpl> records = puller.getFetchedRecords();
     for (RestRecordImpl record : records) {
       us = (UserStatusRecord) record;
       if (us.getUserId() == statusRecord.getUserId())
@@ -793,8 +828,19 @@ public class MapActivity extends FragmentActivity
     return outline;
   }
 
+  public void putFriendDirection(Direction dir)
+  {
+    friendDirectionsFromHandler.add(dir);
+  }
+
+  public void putFriendMarker(FriendMarker fm)
+  {
+    friendMarkersFromHandler.add(fm);
+  }
+
   public void displayFriendRoute(Direction direction)
   {
+    Logger.getGlobal().log(Level.INFO, "displayFriendRoute() called");
     if (direction.isOK()) {
       Route route = direction.getRouteList().get(0);
       int legCount = route.getLegList().size();
@@ -820,6 +866,7 @@ public class MapActivity extends FragmentActivity
 
   public void displayFriendMarkers(ArrayList<FriendMarker> fms)
   {
+    Logger.getGlobal().log(Level.INFO, "displayFriendMarkers() called");
     for (Marker m : friendMarkers)
       m.remove();
     friendMarkers.clear();
@@ -850,6 +897,7 @@ public class MapActivity extends FragmentActivity
   // the updated location info
   @Override
   public void onLocationChanged(Location location) {
+    Logger.getGlobal().log(Level.INFO, "Location changed!");
     cur_location = new LatLng(location.getLatitude(), location.getLongitude());
   }
   @Override

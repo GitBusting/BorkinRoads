@@ -1,5 +1,7 @@
 package com.bitirme.gitbusters.borkinroads.data;
 
+import android.location.Location;
+
 import com.google.android.gms.maps.model.LatLng;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -9,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
-public class UserStatusRecord extends RestRecordImpl {
+public class UserStatusRecord extends RestRecordImpl implements Comparable<UserStatusRecord>{
     private int entryId;
     private int userId;
     private int petId;
@@ -23,7 +25,7 @@ public class UserStatusRecord extends RestRecordImpl {
     //Probably will not be used
     public UserStatusRecord(){super();}
 
-    public UserStatusRecord(int userId, int petId, boolean isActive, LatLng currentPosition, ArrayList<LatLng> waypoints,LatLng startPoint, LatLng endPoint) {
+    public UserStatusRecord(int userId, int petId, boolean isActive, LatLng currentPosition, ArrayList<LatLng> waypoints, LatLng startPoint, LatLng endPoint) {
         this.entryId = -1;
         this.userId = userId;
         this.petId = petId;
@@ -54,6 +56,10 @@ public class UserStatusRecord extends RestRecordImpl {
         String strDate = dateFormat.format(currentTime);
         date = strDate.split(" ")[0] + "T";
         time = strDate.split(" ")[1] + ".000Z";
+    }
+
+    public UserStatusRecord(JSONObject jso) {
+        parseRecordFromJSON(jso);
     }
 
     @Override
@@ -157,6 +163,53 @@ public class UserStatusRecord extends RestRecordImpl {
             ret.add(new LatLng(latitude,longtitude));
         }
         return ret;
+    }
+
+    /*
+     * This piece of code is copied from
+     * https://www.geeksforgeeks.org/overriding-equals-method-in-java/
+     */
+    /**
+     * @param o Object to compare against
+     * @return true if entries' locations differ 20 meters from each other.
+     */
+    @Override
+    public boolean equals(Object o) {
+
+        // If the object is compared with itself then return true
+        if (o == this) {
+            return true;
+        }
+
+    /* Check if o is an instance of Complex or not
+    "null instanceof [type]" also returns false */
+        if (!(o instanceof UserStatusRecord)) {
+            return false;
+        }
+
+        // typecast o to Complex so that we can compare data members
+        UserStatusRecord usr = (UserStatusRecord) o;
+
+        if(usr.entryId == this.entryId)
+        {
+            float[] distanceVec = new float[3];
+            Location.distanceBetween(usr.currentPosition.latitude, usr.currentPosition.longitude,
+                usr.currentPosition.latitude, usr.currentPosition.longitude, distanceVec);
+
+            if(distanceVec[0] < 20.0)
+                return false;
+            else
+                return true;
+        }
+
+        return false;
+    }
+
+    @Override
+    public int compareTo(UserStatusRecord other)
+    {
+        return other.entryId < this.entryId ? 1 :
+            other.entryId == this.entryId ? 0 : -1;
     }
 
 }

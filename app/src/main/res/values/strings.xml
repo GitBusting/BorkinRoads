@@ -19,16 +19,16 @@
     <string name="pet_button">petButton</string>
     <string name="add_new_pet">Add New Pet</string>
     <string name="go_on_a_walk">Go On A Walk</string>
-    <string name="my_routes">My Routes</string>d
+    <string name="my_routes">My Routes</string>
     <string name="warning">You need to fill all the input spaces</string>
     <string name="favourites">Favourites</string>
     <string name="lake_river_sea">Lake/River/Sea</string>
     <string name="park_forest">Park/Forest</string>
 
     <string name="rating">Rating</string>
-    <string name="route_used">No times route is used</string>
-    <string name="using_time">Last time usedd</string>
-    <string name="estimated_time">Est. duration of route</string>
+    <string name="route_used">Number Of times Route is used</string>
+    <string name="using_time">Last time when route is used</string>
+    <string name="estimated_time">Estimated duration of route</string>
     <string name="descending">DESCENDING</string>
     <string name="ascending">ASCENDING</string>
     <string name="estimated_route_duration">Estimated Route Duration:</string>
@@ -64,4 +64,8 @@
     <string name="permission_rationale">"Contacts permissions are needed for providing email
         completions."
     </string>
+    <string name="search_friend_text">Search For a Friend</string>
+    <string name="friend_list">Friend List</string>
+    <string name="search_for_a_friend_text_hint">Search for a friend...</string>
+    <string name="your_friends_title">Your Friends</string>
 </resources>
