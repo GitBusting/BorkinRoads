@@ -325,8 +325,7 @@ public class MapActivity extends FragmentActivity
       // Create a User Status Record to update while the route is active
       //TODO: add userID and petID
       statusRecord = new UserStatusRecord(-1,-1,true,cur_location,coordinates,cur_location,cur_location);
-      RestPusher stPusher = new RestPusher(statusRecord);
-      //stPusher.start();
+      initializeUserStatus();
 
       cdt = new CountDownTimer(20000, 10000) {
         public void onTick(long millisUntilFinished) {
@@ -651,6 +650,35 @@ public class MapActivity extends FragmentActivity
         }
     }
     return -1;
+  }
+  private void initializeUserStatus() {
+    /* We want to set user active in user status table
+     * Check whether the user has an entry in the table already
+     * If the user has an entry update it
+     * Else send a record to the table
+     */
+    RestPuller puller = new RestPuller(statusRecord);
+    //puller.start();
+    UserStatusRecord us = null;
+    ArrayList<RestRecordImpl> records = puller.getFetchedRoutes();
+    for (RestRecordImpl record : records) {
+      us = (UserStatusRecord) record;
+      if (us.getUserId() == statusRecord.getUserId())
+        break;
+    }
+    //table doesn't have an entry for the current user
+    if(us==null) {
+      RestPusher stPusher = new RestPusher(statusRecord);
+      //stPusher.start();
+    }
+    //table has an entry for the user, update it
+    else {
+      statusRecord.setCurrentPosition(cur_location);
+      statusRecord.setEntryId(us.getEntryID());
+      statusRecord.setWaypoints(coordinates);
+      RestUpdater updater = new RestUpdater(statusRecord);
+      //updater.start();
+    }
   }
   private void updateDBStatus(boolean isDone){
     /* We have few tasks here to update the DB with the new status
