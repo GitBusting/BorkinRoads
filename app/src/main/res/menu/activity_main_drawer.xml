@@ -16,6 +16,10 @@
             android:id="@+id/nav_my_routes"
             android:icon="@android:drawable/btn_star"
             android:title="@string/my_routes" />
+        <item
+            android:id="@+id/nav_friend_list"
+            android:icon="@android:drawable/presence_online"
+            android:title="@string/friend_list" />
     </group>
 
 </menu>

@@ -10,21 +10,28 @@ public class UserRecord extends RestRecordImpl {
   private String URL = "Still Empty";
 
   private int userID;
+  private String name;
   private ArrayList<Integer> petIDs;
 
-  public UserRecord(int userID, ArrayList<Integer> petIDs) {
+  public UserRecord(){};
+
+  public UserRecord(String name, int userID, ArrayList<Integer> petIDs) {
+    this.name   = name;
     this.userID = userID;
     this.petIDs = petIDs;
   }
 
   public UserRecord(JSONObject jso) {
     if(URL.equals("Still Empty"))
-      throw new AssertionError("PublicRouteRecord class does not" +
+      throw new AssertionError("UserRecord class does not" +
               "have a valid URL yet!");
 
     try {
+      this.name      = jso.getString("name");
       this.userID    = jso.getInt("userID");
-
+      this.petIDs    = new ArrayList<>();
+      for(String pet : jso.getString("petID").split(","))
+        this.petIDs.add(Integer.parseInt(pet));
     } catch (JSONException e) {
       e.printStackTrace();
     }
@@ -44,4 +51,6 @@ public class UserRecord extends RestRecordImpl {
   public int getEntryID() {
     return 0;
   }
+
+  public String getName() { return this.name; }
 }
