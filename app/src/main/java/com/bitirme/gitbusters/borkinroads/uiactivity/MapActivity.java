@@ -1,4 +1,4 @@
-package com.bitirme.gitbusters.borkinroads;
+package com.bitirme.gitbusters.borkinroads.uiactivity;
 
 import android.Manifest;
 import android.app.AlertDialog;
@@ -32,6 +32,8 @@ import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.model.Step;
 import com.akexorcist.googledirection.util.DirectionConverter;
+import com.bitirme.gitbusters.borkinroads.routeutilities.DirectionsHandler;
+import com.bitirme.gitbusters.borkinroads.R;
 import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
 import com.bitirme.gitbusters.borkinroads.data.RouteDetailsRecord;
 import com.bitirme.gitbusters.borkinroads.data.UserStatusRecord;

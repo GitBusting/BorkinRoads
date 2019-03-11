@@ -1,4 +1,4 @@
-package com.bitirme.gitbusters.borkinroads;
+package com.bitirme.gitbusters.borkinroads.uiactivity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -29,7 +29,10 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.bitirme.gitbusters.borkinroads.R;
 import com.bitirme.gitbusters.borkinroads.data.DoggoRecord;
+import com.bitirme.gitbusters.borkinroads.uihelpers.DogButtonAdapter;
+import com.bitirme.gitbusters.borkinroads.uihelpers.Notifications;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -40,7 +43,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 
-import static com.bitirme.gitbusters.borkinroads.Notifications.zonedDateTimeDifference;
+import static com.bitirme.gitbusters.borkinroads.uihelpers.Notifications.zonedDateTimeDifference;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, DogButtonAdapter.ItemClickListener {

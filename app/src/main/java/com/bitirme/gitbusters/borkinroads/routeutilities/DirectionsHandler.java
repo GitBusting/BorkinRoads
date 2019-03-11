@@ -1,4 +1,4 @@
-package com.bitirme.gitbusters.borkinroads;
+package com.bitirme.gitbusters.borkinroads.routeutilities;
 
 import com.google.android.gms.maps.model.LatLng;
 

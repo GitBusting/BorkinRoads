@@ -1,4 +1,4 @@
-package com.bitirme.gitbusters.borkinroads;
+package com.bitirme.gitbusters.borkinroads.uihelpers;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 
+import com.bitirme.gitbusters.borkinroads.R;
 import com.bitirme.gitbusters.borkinroads.data.DoggoRecord;
 
 import java.io.File;
@@ -26,7 +27,7 @@ public class DogButtonAdapter extends RecyclerView.Adapter<DogButtonAdapter.View
     private final Context _context;
 
     // data is passed into the constructor
-    DogButtonAdapter(Context context) {
+    public DogButtonAdapter(Context context) {
         this.mInflater = LayoutInflater.from(context);
         this.doggobarlist = DoggoRecord.doggos;
         _context = context;

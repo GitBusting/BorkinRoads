@@ -1,9 +1,11 @@
-package com.bitirme.gitbusters.borkinroads;
+package com.bitirme.gitbusters.borkinroads.uihelpers;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.ImageButton;
+
+import com.bitirme.gitbusters.borkinroads.R;
 
 class DoggoBar extends RecyclerView.ViewHolder implements View.OnClickListener {
 

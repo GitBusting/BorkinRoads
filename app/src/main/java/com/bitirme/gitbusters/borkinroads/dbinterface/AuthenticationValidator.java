@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.auth0.android.jwt.JWT;
-import com.bitirme.gitbusters.borkinroads.LoginActivity;
+import com.bitirme.gitbusters.borkinroads.uiactivity.LoginActivity;
 
 public class AuthenticationValidator {
     private Context context;

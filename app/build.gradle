@@ -9,6 +9,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders = [auth0Domain: "@string/com_auth0_domain", auth0Scheme: "demo"]
     }
     buildTypes {
         release {
@@ -36,4 +37,5 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation 'com.github.aakira:expandable-layout:1.6.0@aar'
     implementation 'com.auth0.android:jwtdecode:1.2.0'
+    implementation 'com.auth0.android:auth0:1.15.1'
 }

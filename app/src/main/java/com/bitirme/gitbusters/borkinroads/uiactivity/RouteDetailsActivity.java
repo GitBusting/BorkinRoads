@@ -1,4 +1,4 @@
-package com.bitirme.gitbusters.borkinroads;
+package com.bitirme.gitbusters.borkinroads.uiactivity;
 
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +14,8 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.auth0.android.jwt.JWT;
+import com.bitirme.gitbusters.borkinroads.R;
+import com.bitirme.gitbusters.borkinroads.uihelpers.RouteDetailsAdapter;
 import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
 import com.bitirme.gitbusters.borkinroads.data.RouteDetailsRecord;
 import com.bitirme.gitbusters.borkinroads.data.RouteRecord;

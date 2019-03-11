@@ -1,4 +1,4 @@
-package com.bitirme.gitbusters.borkinroads;
+package com.bitirme.gitbusters.borkinroads.uiactivity;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -26,10 +26,12 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import com.bitirme.gitbusters.borkinroads.R;
 import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
 import com.bitirme.gitbusters.borkinroads.data.RouteRecord;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestPuller;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestUpdater;
+import com.bitirme.gitbusters.borkinroads.uihelpers.FilterPreferences;
 import com.github.aakira.expandablelayout.ExpandableRelativeLayout;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -93,7 +95,7 @@ public class DisplayRoutesActivity extends Activity {
         for(RestRecordImpl rec : rp.getFetchedRecords()) {
             RouteRecord rr = (RouteRecord) rec;
             routeList.add(rr);
-            rr.prettyPrint();
+//            rr.prettyPrint();
         }
 
         System.out.println("Number of previous routes: " + routeList.size());

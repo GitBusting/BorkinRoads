@@ -1,4 +1,4 @@
-package com.bitirme.gitbusters.borkinroads;
+package com.bitirme.gitbusters.borkinroads.uiactivity;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
@@ -12,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.bitirme.gitbusters.borkinroads.R;
 import com.bitirme.gitbusters.borkinroads.data.DoggoRecord;
 
 import java.text.SimpleDateFormat;

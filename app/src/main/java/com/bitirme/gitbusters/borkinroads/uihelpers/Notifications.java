@@ -1,4 +1,4 @@
-package com.bitirme.gitbusters.borkinroads;
+package com.bitirme.gitbusters.borkinroads.uihelpers;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -6,6 +6,7 @@ import android.content.Context;
 import android.os.Build;
 import android.support.v4.app.NotificationCompat;
 
+import com.bitirme.gitbusters.borkinroads.R;
 import com.bitirme.gitbusters.borkinroads.data.DoggoRecord;
 
 import java.time.Period;
@@ -16,7 +17,7 @@ public class Notifications {
 
     private Context context;
 
-    static Period zonedDateTimeDifference(ZonedDateTime d1, ZonedDateTime d2) {
+    public static Period zonedDateTimeDifference(ZonedDateTime d1, ZonedDateTime d2) {
         return Period.between(d1.toLocalDate(), d2.toLocalDate());
     }
 

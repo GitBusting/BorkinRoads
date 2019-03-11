@@ -1,11 +1,11 @@
-package com.bitirme.gitbusters.borkinroads;
+package com.bitirme.gitbusters.borkinroads.uihelpers;
 
 import android.support.annotation.NonNull;
 
 /*
 * Class for representing the filtering preferences
 */
-class FilterPreferences {
+public class FilterPreferences {
     private final boolean favourite;
     private final boolean isNearWater;
     private final boolean nearPark;

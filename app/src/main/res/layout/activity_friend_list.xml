@@ -8,7 +8,7 @@
     android:weightSum="100"
     android:focusable="false"
     android:focusableInTouchMode="true"
-    tools:context=".FriendListActivity">
+    tools:context=".uiactivity.FriendListActivity">
 
     <TextView
         android:id="@+id/textView"

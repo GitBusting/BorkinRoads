@@ -6,7 +6,7 @@ import com.akexorcist.googledirection.DirectionCallback;
 import com.akexorcist.googledirection.GoogleDirection;
 import com.akexorcist.googledirection.constant.TransportMode;
 import com.akexorcist.googledirection.model.Direction;
-import com.bitirme.gitbusters.borkinroads.MapActivity;
+import com.bitirme.gitbusters.borkinroads.uiactivity.MapActivity;
 import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
 import com.bitirme.gitbusters.borkinroads.data.UserStatusRecord;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestPuller;

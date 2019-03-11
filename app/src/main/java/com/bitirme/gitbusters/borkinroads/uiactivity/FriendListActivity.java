@@ -1,4 +1,4 @@
-package com.bitirme.gitbusters.borkinroads;
+package com.bitirme.gitbusters.borkinroads.uiactivity;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -11,6 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.bitirme.gitbusters.borkinroads.R;
 import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
 import com.bitirme.gitbusters.borkinroads.data.UserRecord;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestPuller;
