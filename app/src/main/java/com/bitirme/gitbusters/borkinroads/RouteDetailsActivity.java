@@ -1,5 +1,6 @@
 package com.bitirme.gitbusters.borkinroads;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
@@ -12,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import com.auth0.android.jwt.JWT;
 import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
 import com.bitirme.gitbusters.borkinroads.data.RouteDetailsRecord;
 import com.bitirme.gitbusters.borkinroads.data.RouteRecord;
@@ -55,15 +57,21 @@ public class RouteDetailsActivity extends AppCompatActivity implements OnMapRead
         System.out.println("id = " + id);
 
 
+        String token = getSharedPreferences("auth", Context.MODE_PRIVATE).getString("token", "invalid");
+        JWT jwt = new JWT(token);
+        if (jwt.isExpired(10)) {
+            Intent intent2 = new Intent(this, LoginActivity.class);
+            startActivity(intent2);
+        }
 
-        RestPuller rp = new RestPuller(new RouteRecord());
+        RestPuller rp = new RestPuller(new RouteRecord(), getApplicationContext());
         rp.start();
         try {
             rp.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        for (RestRecordImpl rec : rp.getFetchedRoutes()) {
+        for (RestRecordImpl rec : rp.getFetchedRecords()) {
             RouteRecord rr = (RouteRecord) rec;
             if (rr.getEntryID() == id) {
                 routeRow = rr;
@@ -73,14 +81,14 @@ public class RouteDetailsActivity extends AppCompatActivity implements OnMapRead
         }
 
         routeDetails = new ArrayList<>();
-        rp = new RestPuller(new RouteDetailsRecord());
+        rp = new RestPuller(new RouteDetailsRecord(), getApplicationContext());
         rp.start();
         try {
             rp.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        for(RestRecordImpl rec : rp.getFetchedRoutes()) {
+        for(RestRecordImpl rec : rp.getFetchedRecords()) {
             RouteDetailsRecord rdr = (RouteDetailsRecord) rec;
             if(rdr.getRoute_id() == id)
             routeDetails.add(rdr);

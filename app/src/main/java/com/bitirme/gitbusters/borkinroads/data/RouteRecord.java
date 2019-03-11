@@ -5,6 +5,7 @@ import com.google.android.gms.maps.model.LatLng;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-public class RouteRecord extends RestRecordImpl {
+public class RouteRecord extends RestRecordImpl{
 
   private String title;
   private ArrayList<LatLng> waypoints;
@@ -143,7 +144,6 @@ public class RouteRecord extends RestRecordImpl {
             "First Waypoint: " + waypoints.get(0)
     );
   }
-
 
   @Override
   public String getURL() {

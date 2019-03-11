@@ -6,6 +6,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -16,6 +20,18 @@ public class DirectionsHandler extends Thread {
     private String keyword="";
     private boolean isLimitedTime = true;
     private int radius = 500; //default value
+    private HashMap<LatLng,Double> markerMap;
+    public DirectionsHandler(String api, int rad, String key, LatLng cl){
+        apikey = api;
+        if(rad>50000) radius = 50000;
+        else radius = rad;
+        keyword = key;
+        currentLocation = new LatLng(cl.latitude,cl.longitude);
+        markerMap = new HashMap<>();
+    }
+    public DirectionsHandler(){
+        markerMap = new HashMap<>();
+    }
     public void setApikey(String api){
         apikey = api;
     }
@@ -33,11 +49,11 @@ public class DirectionsHandler extends Thread {
     public LatLng getResult(){
         return marker;
     }
-    public void setIsLimitedTime(boolean limitedTime){
-        isLimitedTime = limitedTime;
-    }
-    public void setMarker(double lat, double lng){
+    private void setMarker(double lat, double lng){
         marker = new LatLng(lat,lng);
+    }
+    public HashMap<LatLng,Double> getMarkerMap(){
+        return markerMap;
     }
     @Override
     public void run() {
@@ -56,9 +72,10 @@ public class DirectionsHandler extends Thread {
             String result;
             double marker_lat= currentLocation.latitude;
             double marker_lng= currentLocation.longitude;
+            System.out.println(marker_lat + "," + marker_lng);
             boolean loc = false;
+            double lat=currentLocation.latitude, lng=currentLocation.longitude;
             while ((result = br.readLine()) != null) {
-                double lat=marker_lat, lng=marker_lng;
                 sb.append(result);
                 if(result.contains("location")) {
                     loc = true;
@@ -68,30 +85,38 @@ public class DirectionsHandler extends Thread {
                 }
                 if(result.contains("\"lat\"") && loc){
                     lat = cleanText(result);
-
                 }
                 if(result.contains("\"lng\"") && loc) {
                     lng = cleanText(result);
-                    //System.out.println(distance(currentLocation.latitude,currentLocation.longitude, lat,lng)
-                     //       + " - " + distance(currentLocation.latitude,currentLocation.longitude,marker_lat,marker_lng));
-                    if(distance(currentLocation.latitude,currentLocation.longitude, lat,lng) >
-                            distance(currentLocation.latitude,currentLocation.longitude,marker_lat,marker_lng)) {
-                        marker_lat = lat;
-                        marker_lng = lng;
-                    }
+                    insertMarkerMap(lat,lng);
                 }
             }
-            setMarker(marker_lat,marker_lng);
-            System.out.println(marker_lat + "," + marker_lng);
+            LatLng furthest = getFurthestMarker();
+            setMarker(furthest.latitude, furthest.longitude);
             System.out.println(sb.toString());
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-    public double distance(double first_lat, double first_lng, double second_lat, double second_lng) {
+    private void insertMarkerMap(double lat,double lng){
+        double dist = distance(currentLocation.latitude,currentLocation.longitude,lat,lng);
+        markerMap.put(new LatLng(lat,lng),dist);
+    }
+    private LatLng getFurthestMarker(){
+        LatLng maxLatLng = null;
+        double maxDist = Double.MIN_VALUE;
+        for(Map.Entry<LatLng,Double> e : markerMap.entrySet()) {
+            if(e.getValue() > maxDist ) {
+                maxDist = e.getValue();
+                maxLatLng = e.getKey();
+            }
+        }
+        return maxLatLng;
+    }
+    private double distance(double first_lat, double first_lng, double second_lat, double second_lng) {
         return Math.sqrt(Math.pow(first_lat-second_lat,2) + Math.pow(first_lng-second_lng,2));
     }
-    public String buildRequest(String keyword){
+    private String buildRequest(String keyword){
         String parameters = "key=";
         parameters += apikey;
         parameters += "&" + "location=" + currentLocation.latitude +","+ currentLocation.longitude;
@@ -101,7 +126,7 @@ public class DirectionsHandler extends Thread {
         System.out.println("https://maps.googleapis.com/maps/api/place/nearbysearch/json?" + parameters);
         return "https://maps.googleapis.com/maps/api/place/nearbysearch/json?" + parameters;
     }
-    public static Double cleanText(String res){
+    private static Double cleanText(String res){
         res = res.replaceAll(",","");
         res = res.replaceAll(" ","");
         res = res.substring(res.indexOf(":")+1);

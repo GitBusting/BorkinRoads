@@ -18,6 +18,8 @@ import android.text.InputType;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -30,10 +32,18 @@ import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.model.Step;
 import com.akexorcist.googledirection.util.DirectionConverter;
+import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
+import com.bitirme.gitbusters.borkinroads.data.RouteDetailsRecord;
+import com.bitirme.gitbusters.borkinroads.data.UserStatusRecord;
+import com.bitirme.gitbusters.borkinroads.dbinterface.RestPuller;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestPusher;
+import com.bitirme.gitbusters.borkinroads.routeutilities.FriendMarker;
+import com.bitirme.gitbusters.borkinroads.routeutilities.FriendRouteHandler;
+import com.bitirme.gitbusters.borkinroads.dbinterface.RestUpdater;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -41,7 +51,12 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.bitirme.gitbusters.borkinroads.data.RouteRecord;
 
@@ -56,18 +71,26 @@ public class MapActivity extends FragmentActivity
 
   private GoogleMap mMap;
 
+  private FriendRouteHandler frh;
+  private ConcurrentLinkedQueue<Direction> friendDirectionsFromHandler;
+  private ConcurrentLinkedQueue<FriendMarker> friendMarkersFromHandler;
+
   private boolean displayDirection;
+
+  private ArrayList<Marker>   friendMarkers;
+  private ArrayList<Polyline> friendsRoutes;
 
   private ArrayList<Marker> markers;
   private ArrayList<LatLng> coordinates;
   private ArrayList<Polyline> routes;
   private ArrayList<Integer> legColors;
 
-  private boolean routeActive;
+  private boolean routeActive, overrideCurrentLocation;
   private String currTitle;
   private RouteRecord currRoute, copyRoute;
   private int estimatedMinutes;
   private CountDownTimer cdt; // try to update route on finish
+  private CountDownTimer friendCdt; // update friend routes by polling concurrent queues
 
   private LatLng cur_location;
 
@@ -75,13 +98,41 @@ public class MapActivity extends FragmentActivity
   private int curEstTime;
   private TextView estimated;
 
+  private boolean limitedTime;
+  private int timeLimit = 0;
+  private HashMap<LatLng,Double> backupMarkers;
+
+  private CheckBox parksOnly;
+  private boolean weightParks;
+
   private Button resetButton, genPathButton, startRouteButton, limited;
+
+  //Active route details
+  private RouteDetailsRecord detailsRecord;
+
+  private UserStatusRecord statusRecord;
+
+  //statistics of the active route
+  private long timePassed; // in seconds
+  private long movingTime;
+  private float metersPassed; // in meters
+
+  //speed statistics (in meters/seconds)
+  private double averageSpeed;
+  private double maxSpeed;
+  private double movingSpeed; // doesn't include when user waits/stops
+
+  //pace statistics
+  private double averagePace;
+  private double maxPace;
+  private double movingPace;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_map);
     cur_location=null;
+    limitedTime = false;
     LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
       return;
@@ -101,6 +152,20 @@ public class MapActivity extends FragmentActivity
     // if this is true
     displayDirection = false;
 
+    // For limited time option you can choose routes going to/through parks
+    // if this is checked
+
+    weightParks = false;
+    parksOnly = findViewById(R.id.parksonly);
+    parksOnly.setVisibility(View.VISIBLE);
+    parksOnly.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            weightParks = isChecked;
+        }
+    });
+
+
     // "Reset Button" will remove all markers from
     // the screen and clear the coordinates list
     routeActive = false;
@@ -108,6 +173,11 @@ public class MapActivity extends FragmentActivity
     coordinates = new ArrayList<>();
     routes = new ArrayList<>();
     legColors = new ArrayList<>();
+    friendsRoutes = new ArrayList<>();
+    friendMarkers = new ArrayList<>();
+    // Not the best way to solve "Not on the main thread" exception
+    friendDirectionsFromHandler = new ConcurrentLinkedQueue<>();
+    friendMarkersFromHandler = new ConcurrentLinkedQueue<>();
     resetButton = findViewById(R.id.resetButton);
     resetButton.setOnClickListener(new View.OnClickListener() {
       @Override
@@ -116,9 +186,13 @@ public class MapActivity extends FragmentActivity
         estimated.setText("");
         estimated.setVisibility(View.INVISIBLE);
         displayDirection = false;
+        limitedTime = false;
+        backupMarkers = null;
+        timeLimit = 0;
       }
     });
 
+    // Initialize button that will request a route from google
     genPathButton = findViewById(R.id.generatePathButton);
     genPathButton.setOnClickListener(new View.OnClickListener() {
       @Override
@@ -126,10 +200,11 @@ public class MapActivity extends FragmentActivity
         if(displayDirection)
           Toast.makeText(view.getContext(),"Path already present!", Toast.LENGTH_SHORT).show();
         else
-          requestDirection();
+          requestDirection(coordinates);
       }
     });
 
+    // Pressing this will start the route and generate statistics
     startRouteButton = findViewById(R.id.startRouteButton);
     startRouteButton.setOnClickListener(new View.OnClickListener() {
       @Override
@@ -137,6 +212,10 @@ public class MapActivity extends FragmentActivity
         startEndRoute();
       }
     });
+
+    // This thread is responsible for fetching friends' routes
+    frh = new FriendRouteHandler();
+    FriendRouteHandler.setMapReference(this);
 
     SupportMapFragment mapFragment =
             (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
@@ -161,37 +240,30 @@ public class MapActivity extends FragmentActivity
         AlertDialog.Builder  alertDialogBuilder = new AlertDialog.Builder(MapActivity.this);
         alertDialogBuilder.setMessage("How much time do you have: (in minutes)");
         final EditText timeInput= new EditText(MapActivity.this);
-        timeInput.setInputType(InputType.TYPE_CLASS_TEXT); //TODO: change this back to integer when park input issue resolved.
+        timeInput.setInputType(InputType.TYPE_CLASS_NUMBER);
         alertDialogBuilder.setView(timeInput);
         alertDialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface arg0, int arg1) {
             String t_input = timeInput.getText().toString();
-            boolean weightParks = false;
-            if(t_input.contains("p") || t_input.contains("P")) { //TODO: this is the worst way to get this input.
-              weightParks = true;
-              t_input = t_input.replaceAll("p","");
-            }
             int mins = Integer.parseInt(t_input)/2; // round-trip
             int calculated_distance = (int)Math.ceil(mins * speed);
-            final DirectionsHandler requester = new DirectionsHandler();
-            requester.setCurrentLocation(cur_location);
-            requester.setApikey(apikey);
-            requester.setRadius(calculated_distance);
+            final DirectionsHandler requester = new DirectionsHandler(apikey,calculated_distance,"",cur_location);
             if (weightParks)
               requester.setKeyword("park");
-            else requester.setKeyword("");
             requester.start();
               try {
                   requester.join();
               } catch (InterruptedException e) {
                   e.printStackTrace();
               }
-              //Toast.makeText(MapActivity.this,"You clicked OK",Toast.LENGTH_LONG).show();
-            Toast.makeText(MapActivity.this,"OK: "+timeInput.getText() + " distance: " + calculated_distance + "returned:" + requester.getResult(),Toast.LENGTH_LONG).show();
+            Toast.makeText(MapActivity.this,"Generating a beautiful route for you and your dog.",Toast.LENGTH_LONG).show();
             coordinates.clear();
+            backupMarkers = new HashMap<>(requester.getMarkerMap());
+            limitedTime = true;
+            timeLimit = mins * 2; //not round trip
             coordinates.add(requester.getResult());
-            requestDirection();
+            requestDirection(coordinates);
           }
         });
 
@@ -239,6 +311,51 @@ public class MapActivity extends FragmentActivity
         coordinates.add(latLng);
       }
     });
+    overrideCurrentLocation = false;
+
+    // Indicates that we've been instantiated by another activity with
+    // non-usual purpose. Call this here so that nothing breaks down.
+    if(getIntent().getExtras() != null)
+    {
+      RouteRecord oldRoute = (RouteRecord)
+              getIntent().getSerializableExtra("ROUTE");
+      coordinates.add(oldRoute.getStartCoords());
+      for(LatLng ll : oldRoute.getWaypoints())
+        coordinates.add(ll);
+      coordinates.add(oldRoute.getEndCoords());
+      overrideCurrentLocation = true;
+      requestDirection(coordinates);
+    }
+
+    // Let friend route handler fetch friends' routes
+    frh.start();
+    friendCdt = new CountDownTimer(4000, 2000) {
+      @Override
+      public void onTick(long millisUntilFinished) { }
+      @Override
+      public void onFinish() { friendCdtLoop(); }
+    }.start();
+  }
+
+  private void friendCdtLoop()
+  {
+    for(Direction dir : friendDirectionsFromHandler)
+    {
+      displayFriendRoute(dir);
+    }
+    ArrayList<FriendMarker> fmlist = new ArrayList<>();
+    for(FriendMarker fm : friendMarkersFromHandler)
+    {
+      fmlist.add(fm);
+    }
+    displayFriendMarkers(fmlist);
+
+    friendCdt = new CountDownTimer(4000, 2000) {
+      @Override
+      public void onTick(long millisUntilFinished) {}
+      @Override
+      public void onFinish() { friendCdtLoop(); }
+    }.start();
   }
 
   @Override
@@ -260,12 +377,31 @@ public class MapActivity extends FragmentActivity
               coordinates, legColors, estimatedMinutes);
       currRoute.setTitle(currTitle);
       copyRoute = new RouteRecord(currRoute); // Checkpoint the current state of the route
+
+      //reset statistics for the active route
+      timePassed = 0;
+      movingTime = 0;
+      metersPassed = 0;
+
+      averageSpeed = 0.0;
+      maxSpeed = 0.0;
+      movingSpeed = 0.0;
+
+      averagePace = 0.0;
+      maxPace = 0.0;
+      movingPace = 0.0;
+
+      // Create a User Status Record to update while the route is active
+      //TODO: add userID and petID
+      statusRecord = new UserStatusRecord(-1,-1,true,cur_location,coordinates,cur_location,cur_location);
+      initializeUserStatus();
+
       cdt = new CountDownTimer(20000, 10000) {
         public void onTick(long millisUntilFinished) {
           System.out.println("Timer heartbeat per 10 seconds.");
         }
         public void onFinish() {
-          updateRoute();
+          updateRoute(20000);
         }
       }.start();
     }else{
@@ -277,26 +413,78 @@ public class MapActivity extends FragmentActivity
     if(routeActive) {
       resetButton.setVisibility(View.VISIBLE);
       genPathButton.setVisibility(View.VISIBLE);
+      limited.setVisibility(View.VISIBLE);
+      parksOnly.setVisibility(View.VISIBLE);
       startRouteButton.setText(R.string.start_route);
       // TODO ask users to review their newly traversed path here
 
       // For now we just push the newly created route
-      RestPusher rp = new RestPusher(copyRoute);
+      RestPusher rp = new RestPusher(copyRoute, getApplicationContext());
       rp.start();
+      try {
+        rp.join();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+
+      /* To add details about the created route we need to
+       *  1. Get route id
+       *     a. Pull the routes
+       *     b. Find the newly created route using the date and time
+       *  2. Use the route id to create a new Detail Record
+       *  3. Push the detail record
+       */
+
+      // Get route id
+      // a. pull the routes
+      RestPuller puller = new RestPuller(copyRoute, this);
+      puller.start();
+      try {
+        puller.join();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      ArrayList<RestRecordImpl> routeRecords = puller.getFetchedRecords();
+
+      // b. find the newly created route
+      int routeId = getRouteId(routeRecords);
+
+      // couldn't find the route should not happen if we sent the route correctly
+      if(routeId == -1) {
+        System.out.println("Couldn't find the entry.");
+      }
+
+      // Creating route details record for statistics collected during the walk.
+      detailsRecord = new RouteDetailsRecord(-1,routeId,maxPace,
+              averagePace,movingPace,maxSpeed,averageSpeed,movingSpeed,metersPassed,
+              timePassed,movingTime,copyRoute.getDate(),copyRoute.getTime());
+
+      // Send the statistics
+      RestPusher detailPusher = new RestPusher(detailsRecord, this);
+      detailPusher.start();
+
+      // Update user status in DB
+      updateDBStatus(true);
     }
     else {
       genPathButton.setVisibility(View.INVISIBLE);
       resetButton.setVisibility(View.INVISIBLE);
+      limited.setVisibility(View.INVISIBLE);
+      parksOnly.setVisibility(View.INVISIBLE);
       startRouteButton.setText(R.string.stop);
     }
     routeActive = !routeActive;
   }
 
-  @SuppressWarnings("ConstantConditions")
-  private void requestDirection() {
-    ArrayList<LatLng> coords = new ArrayList<>(coordinates);
+  private void requestDirection(ArrayList<LatLng> coords) {
     LatLng start = cur_location;
     LatLng end   = cur_location;
+    if(overrideCurrentLocation)
+    {
+      start = coords.get(0);
+      end = coords.get(1);
+      overrideCurrentLocation = false;
+    }
     if(cur_location == null)
       throw new AssertionError("Location was null when a direction request was made");
     if (apikey.isEmpty())
@@ -320,19 +508,34 @@ public class MapActivity extends FragmentActivity
   }
 
   @SuppressWarnings("ConstantConditions")
-  private void updateRoute()
+  private void updateRoute(long timeSpent)
   {
     // Few tasks to implement here,
-    // 1 - Did the user pass through any waypoints
+    // 1 - Update the statistics
+    // 2 - Did the user pass through any waypoints
     // if so we need to remove them
-    // 2 - Do we have an updated location of the user
+    // 3 - Do we have an updated location of the user
     // if we do not, we might need to set a smaller countdown
     // to pick up the next update earlier
     LatLng oldStartLoc = currRoute.getStartLocation();
     boolean userMoved = !oldStartLoc.equals(cur_location);
-    long countdownMillis = userMoved ? 20000 : 5000;
+    final long countdownMillis = userMoved ? 20000 : 5000;
     if(userMoved)
     {
+      // Updating the distance statistic
+      float[] passed = new float[3];
+      Location.distanceBetween(oldStartLoc.latitude, oldStartLoc.longitude,
+                cur_location.latitude, cur_location.longitude, passed);
+      metersPassed += passed[0];
+      movingTime += (timeSpent/1000); // should be updated when user moves
+      double cur_speed = passed[0]/(double)(timeSpent/1000);
+      if(cur_speed > maxSpeed)
+          maxSpeed = cur_speed;
+      double cur_pace = ((double)(timeSpent/1000)) / passed[0];
+      if(cur_pace > maxPace)
+          maxPace = cur_pace;
+
+      // Other tasks
       ArrayList<LatLng> coords = currRoute.getWaypoints();
       LatLng firstWaypoint;
       if(coords.size() > 0)
@@ -367,13 +570,38 @@ public class MapActivity extends FragmentActivity
               .transportMode(TransportMode.WALKING)
               .execute(this);
     }
-    // Restart counter with each update call
+
+    //update the statistics
+    timePassed += timeSpent / 1000; // adding to total seconds on this active route
+    averageSpeed = metersPassed / timePassed;
+    movingSpeed = metersPassed / movingTime;
+
+    averagePace = timePassed / metersPassed;
+    movingPace = movingTime / metersPassed;
+
+    //debug prints (TODO: delete later)
+    String outline = "";
+    outline += "Your average speed: " + averageSpeed + "\n";
+    outline += "Your max speed: " + maxSpeed + "\n";
+    outline += "Your moving speed: " + movingSpeed + "\n";
+    outline += "Your average pace: " + averagePace + "\n";
+    outline += "Your max pace: " + maxPace + "\n";
+    outline += "Your moving pace: " + movingPace + "\n";
+    outline += "Time passed: " + timePassed + "\n";
+    outline += "Moving time: " + movingTime + "\n";
+    outline += "Meters passed: " + metersPassed + "\n";
+    System.out.println(outline);
+
+    // Update the user status
+    updateDBStatus(false);
+
+      // Restart counter with each update call
     cdt = new CountDownTimer(countdownMillis, countdownMillis/2) {
       public void onTick(long millisUntilFinished) {
         System.out.println("Timer heartbeat");
       }
       public void onFinish() {
-        updateRoute();
+        updateRoute(countdownMillis);
       }
     }.start();
   }
@@ -423,7 +651,17 @@ public class MapActivity extends FragmentActivity
       estimated.setAlpha((float) 0.75);
     } else { System.out.println("Could not find a valid route"); }
   }
-
+  private LatLng getMax(HashMap<LatLng, Double> markerMap) {
+      LatLng maxLatLng = null;
+      double maxDist = Double.MIN_VALUE;
+      for(Map.Entry<LatLng,Double> e : markerMap.entrySet()) {
+          if(e.getValue() > maxDist ) {
+              maxDist = e.getValue();
+              maxLatLng = e.getKey();
+          }
+      }
+      return maxLatLng;
+  }
   private void handleInitialRouting(Direction direction)
   {
     if (direction.isOK()) {
@@ -431,6 +669,24 @@ public class MapActivity extends FragmentActivity
       Route route = direction.getRouteList().get(0);
       int legCount = route.getLegList().size();
       curEstTime=0;
+      if(limitedTime) {
+          for (int index = 0; index < legCount ; index++){
+              Leg leg = route.getLegList().get(index);
+              curEstTime+=Integer.parseInt(leg.getDuration().getValue());
+          }
+          if(curEstTime > ((timeLimit + 5 /*its okay to have 5 extra minutes, also may change*/ ) * 60)) { //we are comparing seconds
+              System.out.println("requesting direction again.\nlimit: " + timeLimit + " route estimate: " + curEstTime/60);
+              backupMarkers.remove(coordinates.get(0));
+              System.out.println("deleted: " +coordinates.get(0));
+              LatLng max = getMax(backupMarkers);
+              coordinates.clear();
+              coordinates.add(max);
+              System.out.println("added: " +coordinates.get(0));
+              requestDirection(coordinates);
+              return;
+          }
+          curEstTime = 0;
+      }
       for (int index = 0; index < legCount; index++) {
         Leg leg = route.getLegList().get(index);
         System.out.println("index: " + index + " duration: " + leg.getDuration().getText() + " value: " + leg.getDuration().getValue());
@@ -458,6 +714,75 @@ public class MapActivity extends FragmentActivity
         estimated.setAlpha((float) 0.75);
     } else { System.out.println("Could not find a valid route"); }
   }
+  private int getRouteId(ArrayList<RestRecordImpl> records) {
+    for (RestRecordImpl record : records) {
+        RouteRecord route = (RouteRecord) record;
+        String routeTime = copyRoute.getTime().replace(".000Z","");
+        if(route.getDate().equals(copyRoute.getDate()) && route.getTime().equals(routeTime)) {
+          return route.getEntryID();
+        }
+    }
+    return -1;
+  }
+  private void initializeUserStatus() {
+    /* We want to set user active in user status table
+     * Check whether the user has an entry in the table already
+     * If the user has an entry update it
+     * Else send a record to the table
+     */
+    RestPuller puller = new RestPuller(statusRecord, this);
+    //puller.start();
+    UserStatusRecord us = null;
+    ArrayList<RestRecordImpl> records = puller.getFetchedRecords();
+    for (RestRecordImpl record : records) {
+      us = (UserStatusRecord) record;
+      if (us.getUserId() == statusRecord.getUserId())
+        break;
+    }
+    //table doesn't have an entry for the current user
+    if(us==null) {
+      RestPusher stPusher = new RestPusher(statusRecord, this);
+      //stPusher.start();
+    }
+    //table has an entry for the user, update it
+    else {
+      statusRecord.setCurrentPosition(cur_location);
+      statusRecord.setEntryId(us.getEntryID());
+      statusRecord.setWaypoints(coordinates);
+      RestUpdater updater = new RestUpdater(statusRecord, this);
+      //updater.start();
+    }
+  }
+  private void updateDBStatus(boolean isDone){
+    /* We have few tasks here to update the DB with the new status
+     * 1. Pull entries
+     * 2. Find the entry corresponding to the user
+     * 3a. If the user completed the route, update the entry and set isActive to false
+     * 3b. If not, update the entry with new location and waypoint info.
+     */
+    RestPuller puller = new RestPuller(statusRecord, this);
+    //puller.start();
+    UserStatusRecord us = null;
+    ArrayList<RestRecordImpl> records = puller.getFetchedRecords();
+    for (RestRecordImpl record : records) {
+      us = (UserStatusRecord) record;
+      if (us.getUserId() == statusRecord.getUserId())
+        break;
+    }
+    if(us==null) {
+      System.out.println("Couldn't find corresponding user status entry. Can't update the DB.");
+      return;
+    }
+    statusRecord.setCurrentPosition(cur_location);
+    statusRecord.setEntryId(us.getEntryID());
+    statusRecord.setWaypoints(coordinates);
+    if(isDone) {
+      statusRecord.setActive(false);
+    }
+    RestUpdater updater = new RestUpdater(statusRecord, this);
+    //updater.start();
+
+  }
 
   private void updateEstimatedMinutesUntilEnd(Route route)
   {
@@ -474,13 +799,22 @@ public class MapActivity extends FragmentActivity
     String outline = "";
     int estTime = 0;
     int legCount = route.getLegList().size();
-    outline += "Next Stops:\n";
+    outline += "Your average speed: " + averageSpeed + "\n";
+    outline += "Your max speed: " + maxSpeed + "\n";
+    outline += "Your moving speed: " + movingSpeed + "\n";
+    outline += "Your average pace: " + averagePace + "\n";
+    outline += "Your max pace: " + maxPace + "\n";
+    outline += "Your moving pace: " + movingPace + "\n";
+    outline += "Time passed: " + timePassed + "\n";
+    outline += "Moving time: " + movingTime + "\n";
+    outline += "Meters passed: " + metersPassed + "\n";
+    outline += "Next Stops:\n\n";
     for (int index = 0; index < legCount; index++) {
       Leg leg = route.getLegList().get(index);
       estTime += Integer.parseInt(leg.getDuration().getValue());
-      outline = outline.concat(leg.getEndAddress() + "\n\n");
-      outline += "distance: " + leg.getDistance().getText() + "\n" + leg.getDistance().getValue() + "\n";
-      outline += "duration: " + leg.getDuration().getText() + "\n" + leg.getDuration().getText() + "\n";
+      outline = outline.concat(leg.getEndAddress() + "\n");
+      outline += "distance: " + leg.getDistance().getText() + "\n";
+      outline += "duration: " + leg.getDuration().getText() + "\n\n";
     }
     int sec = estTime % 60;
     int hour = estTime / 3600;
@@ -493,6 +827,69 @@ public class MapActivity extends FragmentActivity
     outline = "Estimated time: " + overall_time + "\n" + outline;
     return outline;
   }
+
+  public void putFriendDirection(Direction dir)
+  {
+    friendDirectionsFromHandler.add(dir);
+  }
+
+  public void putFriendMarker(FriendMarker fm)
+  {
+    friendMarkersFromHandler.add(fm);
+  }
+
+  public void displayFriendRoute(Direction direction)
+  {
+    Logger.getGlobal().log(Level.INFO, "displayFriendRoute() called");
+    if (direction.isOK()) {
+      Route route = direction.getRouteList().get(0);
+      int legCount = route.getLegList().size();
+      for (int index = 0; index < legCount; index++) {
+        Leg leg = route.getLegList().get(index);
+        List<Step> stepList = leg.getStepList();
+        // Form & display polylines according to our route on the map
+        ArrayList<PolylineOptions> polylineOptionList = new ArrayList<>();
+        int r = (int) (Math.random()*256);
+        int g = (int) (Math.random()*256);
+        int b = (int) (Math.random()*256);
+        int lineColor = Color.argb(127,r,g,b);
+        for (Step s : stepList) {
+          polylineOptionList.add(DirectionConverter.createPolyline(this,
+                  (ArrayList<LatLng>) s.getPolyline().getPointList(), 3, lineColor));
+        }
+        for (PolylineOptions polylineOption : polylineOptionList) {
+          friendsRoutes.add(mMap.addPolyline(polylineOption));
+        }
+      }
+    } else { System.out.println("Could not find a valid route"); }
+  }
+
+  public void displayFriendMarkers(ArrayList<FriendMarker> fms)
+  {
+    Logger.getGlobal().log(Level.INFO, "displayFriendMarkers() called");
+    for (Marker m : friendMarkers)
+      m.remove();
+    friendMarkers.clear();
+
+    for (FriendMarker fm : fms)
+      friendMarkers.add(mMap.addMarker(new MarkerOptions()
+            .position(fm.getPosition())
+            .title("Marker added by user")
+            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))));
+  }
+
+  public void clearFriendRoutes()
+  {
+    for(Polyline p : friendsRoutes)
+      p.remove();
+    friendsRoutes.clear();
+  }
+
+  public String getApiKey()
+  {
+    return apikey;
+  }
+
   @Override
   public void onDirectionFailure(Throwable t) {t.printStackTrace();}
 
@@ -500,6 +897,7 @@ public class MapActivity extends FragmentActivity
   // the updated location info
   @Override
   public void onLocationChanged(Location location) {
+    Logger.getGlobal().log(Level.INFO, "Location changed!");
     cur_location = new LatLng(location.getLatitude(), location.getLongitude());
   }
   @Override

@@ -9,6 +9,7 @@
     tools:showIn="@layout/app_bar_main">
 
     <TableRow
+        android:id="@+id/tableRow"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -104,5 +105,104 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <ProgressBar
+        android:id="@+id/walkBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="8dp"
+        android:max="100"
+        app:layout_constraintBottom_toBottomOf="@+id/walkButton"
+        app:layout_constraintStart_toEndOf="@+id/walkButton" />
+
+    <ProgressBar
+        android:id="@+id/vetBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="8dp"
+        android:max="100"
+        app:layout_constraintBottom_toBottomOf="@+id/vetButton"
+        app:layout_constraintStart_toEndOf="@+id/vetButton" />
+
+    <ProgressBar
+        android:id="@+id/bathBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="8dp"
+        android:max="100"
+        app:layout_constraintBottom_toBottomOf="@+id/bathButton"
+        app:layout_constraintStart_toEndOf="@+id/bathButton" />
+
+    <ImageButton
+        android:id="@+id/walkButton"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginStart="43dp"
+        android:layout_marginTop="44dp"
+        android:layout_marginEnd="8dp"
+        android:contentDescription="@string/walkbutton"
+        android:cropToPadding="false"
+        android:scaleType="centerInside"
+        app:layout_constraintEnd_toStartOf="@+id/walkBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tableRow"
+        app:srcCompat="@drawable/walkingicon" />
+
+    <ImageButton
+        android:id="@+id/vetButton"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginStart="43dp"
+        android:layout_marginTop="20dp"
+        android:contentDescription="@string/vetbutton"
+        android:scaleType="centerInside"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/walkButton"
+        app:srcCompat="@drawable/veticon" />
+
+    <ImageButton
+        android:id="@+id/bathButton"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginStart="43dp"
+        android:layout_marginTop="20dp"
+        android:contentDescription="@string/bathbutton"
+        android:scaleType="centerInside"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/vetButton"
+        app:srcCompat="@drawable/bathingicon" />
+
+    <TextView
+        android:id="@+id/walkDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="1dp"
+        app:layout_constraintBottom_toTopOf="@+id/walkBar"
+        app:layout_constraintStart_toEndOf="@+id/walkButton" />
+
+    <TextView
+        android:id="@+id/vetDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="1dp"
+        app:layout_constraintBottom_toTopOf="@+id/vetBar"
+        app:layout_constraintStart_toEndOf="@+id/vetButton" />
+
+    <TextView
+        android:id="@+id/bathDate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginBottom="1dp"
+        app:layout_constraintBottom_toTopOf="@+id/bathBar"
+        app:layout_constraintStart_toEndOf="@+id/bathButton" />
 
 </android.support.constraint.ConstraintLayout>
