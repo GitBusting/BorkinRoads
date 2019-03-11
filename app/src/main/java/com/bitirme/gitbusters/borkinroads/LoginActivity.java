@@ -125,14 +125,16 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
     private boolean validateToken() {
-        shared = getSharedPreferences("auth", MODE_PRIVATE);
-        String token = shared.getString("token", "invalid");
-        if (!token.equals("invalid")) {
-            JWT jwt = new JWT(token);
-            return !jwt.isExpired(60);
-        }
-
-        return false;
+        return true;
+//
+//        shared = getSharedPreferences("auth", MODE_PRIVATE);
+//        String token = shared.getString("token", "invalid");
+//        if (!token.equals("invalid")) {
+//            JWT jwt = new JWT(token);
+//            return !jwt.isExpired(60);
+//        }
+//
+//        return false;
     }
 
     private void populateAutoComplete() {

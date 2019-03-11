@@ -16,8 +16,6 @@ import com.bitirme.gitbusters.borkinroads.data.UserRecord;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestPuller;
 
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class FriendListActivity extends AppCompatActivity {
 
@@ -60,7 +58,8 @@ public class FriendListActivity extends AppCompatActivity {
     if(!SANDBOX)
     {
       // Initialize user list
-      RestPuller rp = new RestPuller(new UserRecord());
+      // TODO potential buggy behavior
+      RestPuller rp = new RestPuller(new UserRecord(),this);
       rp.start();
       try {
         rp.join();

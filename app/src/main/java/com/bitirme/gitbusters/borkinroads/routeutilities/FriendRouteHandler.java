@@ -65,7 +65,7 @@ public class FriendRouteHandler extends Thread implements DirectionCallback {
 
   private final void frhLoop()
   {
-    RestPuller rp = new RestPuller(new UserStatusRecord());
+    RestPuller rp = new RestPuller(new UserStatusRecord(),mapReference.getApplicationContext());
     if(!SANDBOX)
       rp.start();
     // Get new records from the database
