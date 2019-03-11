@@ -13,12 +13,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 
+import com.bitirme.gitbusters.borkinroads.data.DoggoRecord;
+
 import java.io.File;
 import java.util.List;
 
 public class DogButtonAdapter extends RecyclerView.Adapter<DogButtonAdapter.ViewHolder> {
 
-    private final List<Doggo> doggobarlist;
+    private final List<DoggoRecord> doggobarlist;
     private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
     private final Context _context;
@@ -26,7 +28,7 @@ public class DogButtonAdapter extends RecyclerView.Adapter<DogButtonAdapter.View
     // data is passed into the constructor
     DogButtonAdapter(Context context) {
         this.mInflater = LayoutInflater.from(context);
-        this.doggobarlist = Doggo.doggos;
+        this.doggobarlist = DoggoRecord.doggos;
         _context = context;
     }
 
@@ -41,7 +43,7 @@ public class DogButtonAdapter extends RecyclerView.Adapter<DogButtonAdapter.View
     // binds the data to the view and text view in each row
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Doggo tempDoggo = doggobarlist.get(position);
+        DoggoRecord tempDoggo = doggobarlist.get(position);
         String path = _context.getExternalFilesDir(Environment.DIRECTORY_DCIM) + "/" + tempDoggo.getName() + ".jpg";
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.ARGB_8888;
@@ -67,7 +69,7 @@ public class DogButtonAdapter extends RecyclerView.Adapter<DogButtonAdapter.View
     }
 
     // convenience method for getting data at click position
-    public Doggo getItem(int id) {
+    public DoggoRecord getItem(int id) {
         return doggobarlist.get(id);
     }
 
