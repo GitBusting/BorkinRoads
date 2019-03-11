@@ -437,7 +437,7 @@ public class MapActivity extends FragmentActivity
 
       // Get route id
       // a. pull the routes
-      RestPuller puller = new RestPuller(copyRoute);
+      RestPuller puller = new RestPuller(copyRoute, this);
       puller.start();
       try {
         puller.join();
@@ -460,7 +460,7 @@ public class MapActivity extends FragmentActivity
               timePassed,movingTime,copyRoute.getDate(),copyRoute.getTime());
 
       // Send the statistics
-      RestPusher detailPusher = new RestPusher(detailsRecord);
+      RestPusher detailPusher = new RestPusher(detailsRecord, this);
       detailPusher.start();
 
       // Update user status in DB
@@ -730,7 +730,7 @@ public class MapActivity extends FragmentActivity
      * If the user has an entry update it
      * Else send a record to the table
      */
-    RestPuller puller = new RestPuller(statusRecord);
+    RestPuller puller = new RestPuller(statusRecord, this);
     //puller.start();
     UserStatusRecord us = null;
     ArrayList<RestRecordImpl> records = puller.getFetchedRecords();
@@ -741,7 +741,7 @@ public class MapActivity extends FragmentActivity
     }
     //table doesn't have an entry for the current user
     if(us==null) {
-      RestPusher stPusher = new RestPusher(statusRecord);
+      RestPusher stPusher = new RestPusher(statusRecord, this);
       //stPusher.start();
     }
     //table has an entry for the user, update it
@@ -749,7 +749,7 @@ public class MapActivity extends FragmentActivity
       statusRecord.setCurrentPosition(cur_location);
       statusRecord.setEntryId(us.getEntryID());
       statusRecord.setWaypoints(coordinates);
-      RestUpdater updater = new RestUpdater(statusRecord);
+      RestUpdater updater = new RestUpdater(statusRecord, this);
       //updater.start();
     }
   }
@@ -760,7 +760,7 @@ public class MapActivity extends FragmentActivity
      * 3a. If the user completed the route, update the entry and set isActive to false
      * 3b. If not, update the entry with new location and waypoint info.
      */
-    RestPuller puller = new RestPuller(statusRecord);
+    RestPuller puller = new RestPuller(statusRecord, this);
     //puller.start();
     UserStatusRecord us = null;
     ArrayList<RestRecordImpl> records = puller.getFetchedRecords();
@@ -779,7 +779,7 @@ public class MapActivity extends FragmentActivity
     if(isDone) {
       statusRecord.setActive(false);
     }
-    RestUpdater updater = new RestUpdater(statusRecord);
+    RestUpdater updater = new RestUpdater(statusRecord, this);
     //updater.start();
 
   }

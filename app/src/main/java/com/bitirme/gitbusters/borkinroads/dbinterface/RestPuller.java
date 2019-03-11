@@ -1,12 +1,7 @@
 package com.bitirme.gitbusters.borkinroads.dbinterface;
 
-import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
-import android.util.Log;
 
-import com.auth0.android.jwt.JWT;
-import com.bitirme.gitbusters.borkinroads.LoginActivity;
 import com.bitirme.gitbusters.borkinroads.data.RestRecord;
 import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
 
@@ -26,7 +21,6 @@ import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.net.ssl.HttpsURLConnection;
 
 public class RestPuller extends Thread {
 
