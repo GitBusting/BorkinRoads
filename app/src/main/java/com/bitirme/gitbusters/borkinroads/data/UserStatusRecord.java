@@ -97,7 +97,7 @@ public class UserStatusRecord extends RestRecordImpl implements Comparable<UserS
             this.entryId = jso.getInt("id");
             this.userId = jso.getInt("userID");
             this.petId = jso.getInt("petID");
-            this.waypoints = this.stringToWaypoints(jso.getString("path"));
+            this.waypoints = this.stringToWaypoints(jso.getString("route"));
             this.startPoint = waypoints.remove(0);
             this.endPoint = waypoints.remove(waypoints.size()-1);
             String dateTime = jso.getString("date");
@@ -105,7 +105,7 @@ public class UserStatusRecord extends RestRecordImpl implements Comparable<UserS
             this.date = tokens[0] + "T";
             this.time = tokens[1].substring(0, tokens[1].indexOf('.'));
             this.isActive = jso.getBoolean("isActive");
-            String pos = jso.getString("currentPosition");
+            String pos = jso.getString("location");
             double lat = Double.parseDouble(pos.substring(0,pos.indexOf(",")));
             double lng = Double.parseDouble(pos.substring(pos.indexOf(",")));
             this.currentPosition = new LatLng(lat,lng);
@@ -116,7 +116,7 @@ public class UserStatusRecord extends RestRecordImpl implements Comparable<UserS
 
     @Override
     public String getURL() {
-        return "https://shielded-cliffs-47552.herokuapp.com/CHANGEDIS"; // TODO: CHANGE THIS.
+        return "https://shielded-cliffs-47552.herokuapp.com/public_route_records.json";
     }
 
     @Override
@@ -127,8 +127,8 @@ public class UserStatusRecord extends RestRecordImpl implements Comparable<UserS
             jso.put("userID",this.userId);
             jso.put("petID",this.petId);
             jso.put("isActive", this.isActive);
-            jso.put("currentPosition", this.currentPosition.latitude +","+this.currentPosition.longitude);
-            jso.put("path",this.waypointsToString());
+            jso.put("location", this.currentPosition.latitude +","+this.currentPosition.longitude);
+            jso.put("route",this.waypointsToString());
             jso.put("date", this.date + this.time);
         } catch (JSONException e) {
             e.printStackTrace();

@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class UserRecord extends RestRecordImpl {
 
-  private String URL = "Still Empty";
+  private String URL = "https://shielded-cliffs-47552.herokuapp.com/users.json";
 
   private int userID;
   private String name;
