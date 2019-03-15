@@ -35,7 +35,9 @@ import android.widget.TextView;
 import com.auth0.android.jwt.Claim;
 import com.auth0.android.jwt.JWT;
 import com.bitirme.gitbusters.borkinroads.R;
+import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
 import com.bitirme.gitbusters.borkinroads.data.UserRecord;
+import com.bitirme.gitbusters.borkinroads.dbinterface.RestPuller;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -134,7 +136,20 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                 String userID = shared.getString("userID", "invalid");
                 if (userID == null || userID.equals("invalid"))
                     return false;
-                UserRecord.setActiveUser(Integer.parseInt(userID));
+
+                RestPuller rp = new RestPuller(new UserRecord(), getApplicationContext());
+                rp.start();
+                try {
+                    rp.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                for(RestRecordImpl rec : rp.getFetchedRecords()) {
+                    UserRecord rr = (UserRecord) rec;
+                    if (rr.getEntryID() == Integer.parseInt(userID))
+                        UserRecord.activeUser = new UserRecord(rr);
+
+                }
             }
             return true;
         }
@@ -395,8 +410,23 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                         Claim userIDClaim = jwt.getClaim("user_id");
                         String userID = userIDClaim.asString();
                         editor.putString("userID", userID);
-                        UserRecord.setActiveUser(Integer.parseInt(userID));
                         editor.commit();
+
+                        RestPuller rp = new RestPuller(new UserRecord(), getApplicationContext());
+                        rp.start();
+                        try {
+                            rp.join();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        for(RestRecordImpl rec : rp.getFetchedRecords()) {
+                            UserRecord rr = (UserRecord) rec;
+                            if (rr.getEntryID() == Integer.parseInt(userID))
+                                UserRecord.activeUser = new UserRecord(rr);
+
+                        }
+
+//                        UserRecord.setActiveUser(Integer.parseInt(userID));
                         return true;
 
                     }
