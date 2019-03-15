@@ -55,6 +55,7 @@ public class UserRecord extends RestRecordImpl {
   public String getName() { return this.name; }
 
   public static void setActiveUser(int id) {
+    activeUser = new UserRecord();
     activeUser.userID = id;
   }
 }
