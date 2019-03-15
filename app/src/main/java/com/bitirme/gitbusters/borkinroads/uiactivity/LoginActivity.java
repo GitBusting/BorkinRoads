@@ -32,7 +32,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.auth0.android.jwt.Claim;
+import com.auth0.android.jwt.JWT;
 import com.bitirme.gitbusters.borkinroads.R;
+import com.bitirme.gitbusters.borkinroads.data.UserRecord;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -123,16 +126,20 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
     private boolean validateToken() {
-        return true;
-//
-//        shared = getSharedPreferences("auth", MODE_PRIVATE);
-//        String token = shared.getString("token", "invalid");
-//        if (!token.equals("invalid")) {
-//            JWT jwt = new JWT(token);
-//            return !jwt.isExpired(60);
-//        }
-//
-//        return false;
+        shared = getSharedPreferences("auth", MODE_PRIVATE);
+        String token = shared.getString("token", "invalid");
+        if (!token.equals("invalid")) {
+            JWT jwt = new JWT(token);
+            if (!jwt.isExpired(60)) {
+                String userID = shared.getString("userID", "invalid");
+                if (userID == null || userID.equals("invalid"))
+                    return false;
+                UserRecord.setActiveUser(Integer.parseInt(userID));
+            }
+            return true;
+        }
+
+        return false;
     }
 
     private void populateAutoComplete() {
@@ -235,7 +242,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     private boolean isEmailValid(String email) {
         //TODO: Replace this with your own logic
-        return email.contains("@");
+        return true;
+//        return email.contains("@");
     }
 
     private boolean isPasswordValid(String password) {
@@ -353,7 +361,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             //Create post request
 
             try {
-                URL url = new URL("http://10.0.2.2:3000/auth/login");
+                URL url = new URL("https://shielded-cliffs-47552.herokuapp.com/auth/login");
                 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                 connection.setRequestMethod("POST");
                 connection.setDoOutput(true);
@@ -383,6 +391,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                         SharedPreferences shared = getSharedPreferences("auth", Context.MODE_PRIVATE);
                         final SharedPreferences.Editor editor = shared.edit();
                         editor.putString("token", token);
+                        JWT jwt = new JWT(token);
+                        Claim userIDClaim = jwt.getClaim("user_id");
+                        String userID = userIDClaim.asString();
+                        editor.putString("userID", userID);
+                        UserRecord.setActiveUser(Integer.parseInt(userID));
                         editor.commit();
                         return true;
 

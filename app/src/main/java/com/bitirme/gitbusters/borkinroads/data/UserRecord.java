@@ -7,8 +7,8 @@ import java.util.ArrayList;
 
 public class UserRecord extends RestRecordImpl {
 
-  private String URL = "https://shielded-cliffs-47552.herokuapp.com/users.json";
-
+  private String URL = "https://shielded-cliffs-47552.herokuapp.com/users";
+  public static UserRecord activeUser;
   private int userID;
   private String name;
   private ArrayList<Integer> petIDs;
@@ -53,4 +53,8 @@ public class UserRecord extends RestRecordImpl {
   }
 
   public String getName() { return this.name; }
+
+  public static void setActiveUser(int id) {
+    activeUser.userID = id;
+  }
 }
