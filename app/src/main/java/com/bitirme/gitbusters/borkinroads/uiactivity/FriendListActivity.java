@@ -75,7 +75,7 @@ public class FriendListActivity extends AppCompatActivity {
       ArrayList<Integer> petIDs = new ArrayList<>();
       petIDs.add(1);
       petIDs.add(3);
-      allUsers.add(new UserRecord("Ataberk", -1, petIDs));
+//      allUsers.add(new UserRecord("Ataberk", -1, petIDs)); //TODO: give paths if neccesary 
     }
 
     // Display user's friends on the scrollview layout
