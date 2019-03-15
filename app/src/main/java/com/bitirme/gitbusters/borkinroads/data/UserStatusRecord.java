@@ -116,7 +116,7 @@ public class UserStatusRecord extends RestRecordImpl implements Comparable<UserS
 
     @Override
     public String getURL() {
-        return "https://shielded-cliffs-47552.herokuapp.com/public_route_records.json";
+        return "https://shielded-cliffs-47552.herokuapp.com/public_route_records";
     }
 
     @Override

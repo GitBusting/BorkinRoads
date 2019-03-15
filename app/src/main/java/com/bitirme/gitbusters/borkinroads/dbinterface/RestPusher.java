@@ -52,8 +52,8 @@ public class RestPusher extends Thread {
       connPut.setRequestMethod("POST");
       connPut.setRequestProperty("Content-type", "application/json");
       AuthenticationValidator authenticationValidator = new AuthenticationValidator(context);
-//      String token = authenticationValidator.getAuthenticationToken();
-//      connPut.addRequestProperty("Authorization", "Bearer " + token);
+      String token = authenticationValidator.getAuthenticationToken();
+      connPut.addRequestProperty("Authorization", "Bearer " + token);
       connPut.connect();
       OutputStreamWriter out = new OutputStreamWriter(connPut.getOutputStream());
 

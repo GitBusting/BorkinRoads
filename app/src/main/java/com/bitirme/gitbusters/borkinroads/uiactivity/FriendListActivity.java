@@ -60,7 +60,7 @@ public class FriendListActivity extends AppCompatActivity {
     {
       // Initialize user list
       // TODO potential buggy behavior
-      RestPuller rp = new RestPuller(new UserRecord(),this);
+      RestPuller rp = new RestPuller(new UserRecord(),getApplicationContext());
       rp.start();
       try {
         rp.join();

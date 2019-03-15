@@ -68,9 +68,9 @@ public class RestPuller extends Thread {
       conn.setRequestProperty("Content-type", "application/json");
 
       AuthenticationValidator av = new AuthenticationValidator(context);
-//      String token = av.getAuthenticationToken();
+      String token = av.getAuthenticationToken();
 
-//      conn.addRequestProperty("Authorization", "Bearer " + token);
+      conn.addRequestProperty("Authorization", "Bearer " + token);
       conn.connect();
 
       if (conn.getResponseCode() == 200) {
