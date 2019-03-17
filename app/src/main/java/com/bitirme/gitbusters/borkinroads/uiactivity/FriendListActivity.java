@@ -1,18 +1,20 @@
 package com.bitirme.gitbusters.borkinroads.uiactivity;
 
 import android.os.Bundle;
+
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.akexorcist.googledirection.model.Line;
 import com.bitirme.gitbusters.borkinroads.R;
 import com.bitirme.gitbusters.borkinroads.data.DoggoRecord;
 import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
@@ -43,6 +45,13 @@ public class FriendListActivity extends AppCompatActivity {
     et.setOnFocusChangeListener(new View.OnFocusChangeListener() {
       @Override
       public void onFocusChange(View v, boolean hasFocus) {
+        if(hasFocus)
+          resetLayout();
+        else
+        {
+          resetLayout();
+          displayUsersOnLayout(friends);
+        }
       }
     });
 
@@ -55,10 +64,31 @@ public class FriendListActivity extends AppCompatActivity {
 
       @Override
       public void afterTextChanged(Editable s) {
-
+        resetLayout();
+        String search = s.toString();
+        ArrayList<UserRecord> fitting = searchUser(search);
+        if(s.equals(""))
+          resetLayout();
+        else
+          displayUsersOnLayout(fitting);
       }
     });
 
+    // Force lose focus when keyboard is hidden
+    // https://stackoverflow.com/questions/11981740/how-to-lose-the
+    // -focus-of-a-edittext-when-done-button-in-the-soft-keyboard-is-p
+    et.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+      @Override
+      public boolean onEditorAction(TextView textView, int actionId, KeyEvent keyEvent) {
+        if(actionId== EditorInfo.IME_ACTION_DONE){
+          //Clear focus here from edittext
+          et.clearFocus();
+        }
+        return false;
+      }
+    });
+
+    friends = new ArrayList<>();
     allUsers = new ArrayList<>();
     if(!SANDBOX)
     {
@@ -84,18 +114,24 @@ public class FriendListActivity extends AppCompatActivity {
 
     // Display user's friends on the scrollview layout
     ll = findViewById(R.id.linear_layout);
-    // displayUsersOnScreen(allUsers);
+    // displayUsersOnLayout(allUsers);
   }
 
-  private void searchUser()
+  private ArrayList<UserRecord> searchUser(String s)
   {
-
+    ArrayList<UserRecord> ret = new ArrayList<>();
+    for(UserRecord potentialFriend : allUsers){
+      String uName = potentialFriend.getName();
+      if(uName.contains(s))
+        ret.add(potentialFriend);
+    }
+    return ret;
   }
 
 
-  private void displayUsersOnScreen(ArrayList<UserRecord> users)
+  private void displayUsersOnLayout(ArrayList<UserRecord> users)
   {
-    for(UserRecord ur : allUsers)
+    for(UserRecord ur : users)
     {
       LinearLayout newLL = new LinearLayout(this);
       TextView tv = new TextView(this);
@@ -109,6 +145,13 @@ public class FriendListActivity extends AppCompatActivity {
       newLL.addView(rmButton);
       ll.addView(newLL);
     }
+  }
+
+  private void resetLayout()
+  {
+    ViewGroup allEntries = ll;
+    while(allEntries.getChildCount()>0)
+      allEntries.removeViewAt(0);
   }
 
 }
