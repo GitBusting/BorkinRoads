@@ -14,6 +14,8 @@ import android.widget.ToggleButton;
 
 import com.bitirme.gitbusters.borkinroads.R;
 import com.bitirme.gitbusters.borkinroads.data.DoggoRecord;
+import com.bitirme.gitbusters.borkinroads.data.UserRecord;
+import com.bitirme.gitbusters.borkinroads.dbinterface.RestPusher;
 
 import java.text.SimpleDateFormat;
 import java.time.ZoneId;
@@ -82,16 +84,25 @@ public class BreedDoggos extends AppCompatActivity {
                 } else {
                     ZonedDateTime zdt = ZonedDateTime.ofInstant(myCalendar.toInstant(), ZoneId.systemDefault());
                     DoggoRecord newPet = new DoggoRecord(nameText.getText().toString(), breedText.getText().toString(), zdt, gender.isChecked() ? DoggoRecord.gender.Male : DoggoRecord.gender.Female);
-                    if (DoggoRecord.doggos.get(0).getName().equals("Add New Pet")) {
-                        DoggoRecord.doggos.remove(0);
-                    }
-                    DoggoRecord.doggos.add(newPet);
+//                    if (DoggoRecord.doggos.get(0).getName().equals("Add New Pet")) {
+//                        DoggoRecord.doggos.remove(0);
+//                    }
+//                    DoggoRecord.doggos.add(newPet);
+                    pushNewDogToDatabase(newPet);
                     Toast.makeText(BreedDoggos.this, "Pet Added!", Toast.LENGTH_SHORT).show();
                     Intent i = new Intent(view.getContext(), MainActivity.class);
                     startActivity(i);
                 }
             }
         });
+
+    }
+
+    private void pushNewDogToDatabase(DoggoRecord newPet) {
+        RestPusher rp = new RestPusher(newPet, getApplicationContext());
+        rp.start();
+        UserRecord.activeUser.getPets().add(newPet);
+
 
     }
 }
