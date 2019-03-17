@@ -29,7 +29,7 @@ public class RouteRecord extends RestRecordImpl{
   private boolean nearPark;
   private int noUsed;
   private int entryID;
-
+  private int userID;
   /**
    * Practically useless, can be used to generate
    * template routerecords.
@@ -61,11 +61,15 @@ public class RouteRecord extends RestRecordImpl{
     date = strDate.split(" ")[0] + "T";
     time = strDate.split(" ")[1] + ".000Z";
     entryID = -1;
+    userID = UserRecord.activeUser.getEntryID(); //may want to change this
   }
 
   public RouteRecord(RouteRecord copy)
   {
-    this.colors = new ArrayList<>(copy.colors);
+    if (copy.colors == null)
+      this.colors = null;
+    else
+      this.colors = new ArrayList<>(copy.colors);
     this.waypoints = new ArrayList<>(copy.waypoints);
     this.startCoords = copy.startCoords;
     this.endCoords = copy.endCoords;
@@ -79,6 +83,7 @@ public class RouteRecord extends RestRecordImpl{
     this.date = copy.date;
     this.time = copy.time;
     this.entryID = copy.entryID;
+    this.userID = copy.userID;
   }
 
   public RouteRecord(JSONObject jso)
@@ -128,6 +133,7 @@ public class RouteRecord extends RestRecordImpl{
       this.nearPark = jso.getBoolean("nearPark");
       this.isFavorite = jso.getBoolean("favourite");
       this.noUsed = jso.getInt("numberOfTimesUsed");
+      this.userID = jso.getInt("user_id");
     } catch(JSONException jse){
       jse.printStackTrace();
     }
@@ -163,6 +169,7 @@ public class RouteRecord extends RestRecordImpl{
       jso.put("nearPark", this.nearPark);
       jso.put("favourite", this.isFavorite);
       jso.put("numberOfTimesUsed", this.noUsed);
+      jso.put("user_id", userID);
     } catch (JSONException e) {
       e.printStackTrace();
     }

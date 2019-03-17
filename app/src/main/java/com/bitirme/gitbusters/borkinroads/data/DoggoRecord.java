@@ -17,6 +17,7 @@ public class DoggoRecord extends RestRecordImpl {
     private ZonedDateTime last_bath_date;
     private ZonedDateTime last_vet_date;
     private int entryID;
+    private int userID;
 
 
     public DoggoRecord() {
@@ -28,6 +29,17 @@ public class DoggoRecord extends RestRecordImpl {
         parseRecordFromJSON(jso);
     }
 
+    public DoggoRecord(DoggoRecord copy) {
+        this.name = copy.name;
+        this.breed = copy.breed;
+        this.birth_date = copy.birth_date;
+        this.last_bath_date = copy.last_bath_date;
+        this.last_walk_date = copy.last_walk_date;
+        this.last_vet_date = copy.last_vet_date;
+        this.entryID = copy.entryID;
+        this.userID = copy.userID;
+    }
+
     public DoggoRecord(String name, String breed, ZonedDateTime birth_date, gender sex) {
         this.name = name;
         this.breed = breed;
@@ -36,6 +48,7 @@ public class DoggoRecord extends RestRecordImpl {
         this.last_walk_date = ZonedDateTime.now(ZoneId.systemDefault());
         this.last_bath_date = ZonedDateTime.now(ZoneId.systemDefault());
         this.last_vet_date = ZonedDateTime.now(ZoneId.systemDefault());
+        this.userID = UserRecord.activeUser.getEntryID(); //may want to change this
     }
 
     public ZonedDateTime getBirth_date() {
@@ -112,6 +125,7 @@ public class DoggoRecord extends RestRecordImpl {
             this.last_walk_date = parseSTRtoZTD(jso.getString("lastWalkDate"));
             this.last_bath_date = parseSTRtoZTD(jso.getString("lastBathDate"));
             this.last_vet_date = parseSTRtoZTD(jso.getString("lastVetDate"));
+            this.userID = jso.getInt("user_id");
         } catch (JSONException jse) {
             jse.printStackTrace();
         }
@@ -148,6 +162,7 @@ public class DoggoRecord extends RestRecordImpl {
             jso.put("lastWalkDate", parseZTDtoSTR(this.last_walk_date));
             jso.put("lastBathDate", parseZTDtoSTR(this.last_bath_date));
             jso.put("lastVetDate", parseZTDtoSTR(this.last_vet_date));
+            jso.put("user_id", this.userID);
         } catch (JSONException e) {
             e.printStackTrace();
         }
