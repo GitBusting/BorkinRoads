@@ -9,8 +9,10 @@ import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -40,7 +42,6 @@ import com.bitirme.gitbusters.borkinroads.data.UserStatusRecord;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestPuller;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestPusher;
 import com.bitirme.gitbusters.borkinroads.routeutilities.FriendMarker;
-import com.bitirme.gitbusters.borkinroads.routeutilities.FriendRouteHandler;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestUpdater;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -53,9 +54,12 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -73,7 +77,6 @@ public class MapActivity extends FragmentActivity
 
   private GoogleMap mMap;
 
-  private FriendRouteHandler frh;
   private ConcurrentLinkedQueue<Direction> friendDirectionsFromHandler;
   private ConcurrentLinkedQueue<FriendMarker> friendMarkersFromHandler;
 
@@ -81,6 +84,7 @@ public class MapActivity extends FragmentActivity
 
   private ArrayList<Marker>   friendMarkers;
   private ArrayList<Polyline> friendsRoutes;
+  private ArrayList<UserStatusRecord> friendActiveRoutes;
 
   private ArrayList<Marker> markers;
   private ArrayList<LatLng> coordinates;
@@ -177,6 +181,7 @@ public class MapActivity extends FragmentActivity
     legColors = new ArrayList<>();
     friendsRoutes = new ArrayList<>();
     friendMarkers = new ArrayList<>();
+    friendActiveRoutes = new ArrayList<>();
     // Not the best way to solve "Not on the main thread" exception
     friendDirectionsFromHandler = new ConcurrentLinkedQueue<>();
     friendMarkersFromHandler = new ConcurrentLinkedQueue<>();
@@ -214,10 +219,6 @@ public class MapActivity extends FragmentActivity
         startEndRoute();
       }
     });
-
-    // This thread is responsible for fetching friends' routes
-    frh = new FriendRouteHandler();
-    FriendRouteHandler.setMapReference(this);
 
     SupportMapFragment mapFragment =
             (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
@@ -330,13 +331,29 @@ public class MapActivity extends FragmentActivity
     }
 
     // Let friend route handler fetch friends' routes
-    frh.start();
+
+    // https://stackoverflow.com/questions/17032024/how-to-call-asynctasks-periodically
+    final Handler handler = new Handler();
+    Timer timer = new Timer();
+    TimerTask task = new TimerTask() {
+      @Override
+      public void run() {
+        handler.post(new Runnable() {
+          public void run() {
+            new FriendRouteHandlerTask().execute();
+          }
+        });
+      }
+    };
+    timer.schedule(task, 0, 20000); //it executes this every 1000ms
+
     friendCdt = new CountDownTimer(4000, 2000) {
       @Override
       public void onTick(long millisUntilFinished) { }
       @Override
       public void onFinish() { friendCdtLoop(); }
     }.start();
+
   }
 
   private void friendCdtLoop()
@@ -345,11 +362,12 @@ public class MapActivity extends FragmentActivity
     {
       displayFriendRoute(dir);
     }
+    friendDirectionsFromHandler.clear();
+
     ArrayList<FriendMarker> fmlist = new ArrayList<>();
     for(FriendMarker fm : friendMarkersFromHandler)
-    {
       fmlist.add(fm);
-    }
+
     displayFriendMarkers(fmlist);
 
     friendCdt = new CountDownTimer(4000, 2000) {
@@ -491,6 +509,7 @@ public class MapActivity extends FragmentActivity
       throw new AssertionError("Location was null when a direction request was made");
     if (apikey.isEmpty())
       throw new AssertionError("API key not found");
+
     GoogleDirection.withServerKey(apikey)
             .from(start)
             .and(coords)
@@ -880,11 +899,9 @@ public class MapActivity extends FragmentActivity
             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))));
   }
 
-  public void clearFriendRoutes()
+  public void clearFriendMarkers()
   {
-    for(Polyline p : friendsRoutes)
-      p.remove();
-    friendsRoutes.clear();
+    friendMarkersFromHandler.clear();
   }
 
   public String getApiKey()
@@ -908,4 +925,71 @@ public class MapActivity extends FragmentActivity
   public void onProviderEnabled(String s) {}
   @Override
   public void onProviderDisabled(String s) {}
+
+  private class FriendRouteHandlerTask extends AsyncTask<Void,Void,Void> implements DirectionCallback{
+
+    @Override
+    protected Void doInBackground(Void... params) {
+
+      // Initialize rest puller & fetch active routes
+      RestPuller rp = new RestPuller(new UserStatusRecord(), getApplicationContext());
+      rp.start();
+      try {
+        rp.join();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      // Get new records from the database
+      ArrayList<UserStatusRecord> newRecords = new ArrayList<>();
+      for (RestRecordImpl rri : rp.getFetchedRecords()) {
+        newRecords.add((UserStatusRecord) rri);
+        Logger.getGlobal().log(Level.INFO, "Successfully fetched a friend route!");
+      }
+      Collections.sort(newRecords);
+
+      // Compare newly fetched routes with already existing ones
+      // if there exists a new route we tell the MapActivity to display it
+      if (friendActiveRoutes.size() != newRecords.size()) {
+        for (UserStatusRecord usr : newRecords) {
+          boolean exists = false;
+          for (UserStatusRecord act : friendActiveRoutes) {
+            if (act.equals(usr)) {
+              exists = true;
+              break;
+            }
+          }
+          if (!exists) {
+            ArrayList<LatLng> ll = usr.getWaypoints();
+            requestDirection(usr.getStartPoint(), usr.getEndPoint(), ll);
+            friendActiveRoutes.add(usr);
+          }
+        }
+      }
+      // TODO update friend indicators on map
+      clearFriendMarkers();
+      for (UserStatusRecord usr : friendActiveRoutes)
+        putFriendMarker(new FriendMarker(usr.getCurrentPosition()));
+      return null;
+    }
+
+    private void requestDirection(LatLng start, LatLng end, ArrayList<LatLng> coords)
+    {
+      GoogleDirection.withServerKey(apikey)
+          .from(start)
+          .and(coords)
+          .to(end)
+          .transportMode(TransportMode.WALKING)
+          .execute(this);
+    }
+
+    @Override
+    public void onDirectionSuccess(Direction direction, String rawBody) {
+      putFriendDirection(direction);
+    }
+
+    @Override
+    public void onDirectionFailure(Throwable t) {
+
+    }
+  }
 }

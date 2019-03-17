@@ -101,13 +101,20 @@ public class UserStatusRecord extends RestRecordImpl implements Comparable<UserS
             this.startPoint = waypoints.remove(0);
             this.endPoint = waypoints.remove(waypoints.size()-1);
             String dateTime = jso.getString("date");
+            System.out.println(dateTime);
+            if(dateTime == "null")
+                dateTime = "indicaTeBroken.Behavior";
             String[] tokens = dateTime.split("T");
             this.date = tokens[0] + "T";
             this.time = tokens[1].substring(0, tokens[1].indexOf('.'));
-            this.isActive = jso.getBoolean("isActive");
+            // TODO this is a temp. fix for isActive field being empty
+            if(jso.getString("isActive") == "null")
+                this.isActive = true;
+            else
+                this.isActive = jso.getBoolean("isActive");
             String pos = jso.getString("location");
-            double lat = Double.parseDouble(pos.substring(0,pos.indexOf(",")));
-            double lng = Double.parseDouble(pos.substring(pos.indexOf(",")));
+            double lat = Double.parseDouble(pos.substring(0,pos.indexOf("_")));
+            double lng = Double.parseDouble(pos.substring(pos.indexOf("_")+1));
             this.currentPosition = new LatLng(lat,lng);
         } catch(JSONException jse){
             jse.printStackTrace();
@@ -127,7 +134,7 @@ public class UserStatusRecord extends RestRecordImpl implements Comparable<UserS
             jso.put("userID",this.userId);
             jso.put("petID",this.petId);
             jso.put("isActive", this.isActive);
-            jso.put("location", this.currentPosition.latitude +","+this.currentPosition.longitude);
+            jso.put("location", this.currentPosition.latitude +"_"+this.currentPosition.longitude);
             jso.put("route",this.waypointsToString());
             jso.put("date", this.date + this.time);
         } catch (JSONException e) {
