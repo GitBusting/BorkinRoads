@@ -745,6 +745,11 @@ public class MapActivity extends FragmentActivity
      */
     RestPuller puller = new RestPuller(statusRecord, this);
     puller.start();
+    try {
+      puller.join();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
     UserStatusRecord us = null;
     ArrayList<RestRecordImpl> records = puller.getFetchedRecords();
     for (RestRecordImpl record : records) {
@@ -777,11 +782,16 @@ public class MapActivity extends FragmentActivity
      */
     RestPuller puller = new RestPuller(statusRecord, this);
     puller.start();
+    try {
+      puller.join();
+    } catch (InterruptedException e) {
+       e.printStackTrace();
+    }
     UserStatusRecord us = null;
     ArrayList<RestRecordImpl> records = puller.getFetchedRecords();
     for (RestRecordImpl record : records) {
       us = (UserStatusRecord) record;
-      if (us.getUserId() == statusRecord.getUserId())
+      if (us.getUserId() == UserRecord.activeUser.getEntryID())
         break;
     }
     if(us==null) {
