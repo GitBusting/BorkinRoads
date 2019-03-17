@@ -41,6 +41,7 @@ public class DoggoRecord extends RestRecordImpl {
         this.last_vet_date = copy.last_vet_date;
         this.entryID = copy.entryID;
         this.userID = copy.userID;
+        this.sex = copy.sex;
     }
 
     public DoggoRecord(String name, String breed, ZonedDateTime birth_date, gender sex) {
