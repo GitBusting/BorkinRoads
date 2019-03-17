@@ -137,10 +137,9 @@ public class DoggoRecord extends RestRecordImpl {
         return ZonedDateTime.parse(date, formatter);
     }
 
-    private String parseZTDtoSTR(ZonedDateTime birthDate) {
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
-        return birthDate.format(formatter);
+    private String parseZTDtoSTR(ZonedDateTime date) {
+        LocalDateTime ldt = LocalDateTime.parse(date, DateTimeFormatter.ofPattern("dd MMM yyyy"));
+        return new ldt.atZone(ZoneId.systemDefault());
     }
 
     @Override
