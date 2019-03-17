@@ -132,16 +132,15 @@ public class DoggoRecord extends RestRecordImpl {
     }
 
     private ZonedDateTime parseSTRtoZTD(String date) {
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
-        return ZonedDateTime.parse(date, formatter);
-    }
-
-    private String parseZTDtoSTR(ZonedDateTime date) {
         LocalDateTime ldt = LocalDateTime.parse(date, DateTimeFormatter.ofPattern("dd MMM yyyy"));
         return ldt.atZone(ZoneId.systemDefault());
     }
-
+    
+    private String parseZTDtoSTR(ZonedDateTime date) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
+        return date.format(formatter);
+    }
+        
     @Override
     public String getURL() {
         return "https://shielded-cliffs-47552.herokuapp.com/doggos";
