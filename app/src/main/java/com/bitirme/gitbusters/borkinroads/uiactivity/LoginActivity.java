@@ -132,25 +132,26 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         String token = shared.getString("token", "invalid");
         if (!token.equals("invalid")) {
             JWT jwt = new JWT(token);
-            if (!jwt.isExpired(60)) {
-                String userID = shared.getString("userID", "invalid");
-                if (userID == null || userID.equals("invalid"))
-                    return false;
+            if (jwt.isExpired(300))
+                return false;
+            String userID = shared.getString("userID", "invalid");
+            if (userID == null || userID.equals("invalid"))
+                return false;
 
-                RestPuller rp = new RestPuller(new UserRecord(), getApplicationContext());
-                rp.start();
-                try {
-                    rp.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                for(RestRecordImpl rec : rp.getFetchedRecords()) {
-                    UserRecord rr = (UserRecord) rec;
-                    if (rr.getEntryID() == Integer.parseInt(userID))
-                        UserRecord.activeUser = new UserRecord(rr);
-
-                }
+            RestPuller rp = new RestPuller(new UserRecord(), getApplicationContext());
+            rp.start();
+            try {
+                rp.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+            for(RestRecordImpl rec : rp.getFetchedRecords()) {
+                UserRecord rr = (UserRecord) rec;
+                if (rr.getEntryID() == Integer.parseInt(userID))
+                    UserRecord.activeUser = new UserRecord(rr);
+
+            }
+
             return true;
         }
 

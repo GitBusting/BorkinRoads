@@ -29,6 +29,7 @@ import android.widget.ToggleButton;
 import com.bitirme.gitbusters.borkinroads.R;
 import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
 import com.bitirme.gitbusters.borkinroads.data.RouteRecord;
+import com.bitirme.gitbusters.borkinroads.data.UserRecord;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestPuller;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestUpdater;
 import com.bitirme.gitbusters.borkinroads.uihelpers.FilterPreferences;
@@ -82,21 +83,7 @@ public class DisplayRoutesActivity extends Activity {
         GridLayoutManager mGridLayoutManager = new GridLayoutManager(this, 2);
         LinearLayoutManager mLinearLayoutManager = new LinearLayoutManager(this);
 
-
-        // fetch all the routes from our database
-        routeList = new ArrayList<>();
-        RestPuller rp = new RestPuller(new RouteRecord(), getApplicationContext());
-        rp.start();
-        try {
-            rp.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        for(RestRecordImpl rec : rp.getFetchedRecords()) {
-            RouteRecord rr = (RouteRecord) rec;
-            routeList.add(rr);
-//            rr.prettyPrint();
-        }
+        routeList  = UserRecord.activeUser.getRoutes();
 
         System.out.println("Number of previous routes: " + routeList.size());
 
@@ -116,11 +103,6 @@ public class DisplayRoutesActivity extends Activity {
 
 
 
-        /* Below code is to test the update functionality */
-        //RouteRecord rr = routeList.get(0);
-        //rr.toggleFavorite();
-        //RestUpdater ru = new RestUpdater(rr);
-        //ru.start();
 
         ImageButton expand_button = findViewById(R.id.expanded_button);
         expand_button.setOnClickListener(new View.OnClickListener() {
