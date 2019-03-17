@@ -132,8 +132,9 @@ public class DoggoRecord extends RestRecordImpl {
     }
 
     private ZonedDateTime parseSTRtoZTD(String date) {
-        LocalDateTime ldt = LocalDateTime.parse(date, DateTimeFormatter.ofPattern("dd MMM yyyy"));
-        return ldt.atZone(ZoneId.systemDefault());
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
+        LocalDate dt = LocalDate.parse(date, formatter);
+        return dt.atStartOfDay(ZoneId.systemDefault())
     }
     
     private String parseZTDtoSTR(ZonedDateTime date) {
