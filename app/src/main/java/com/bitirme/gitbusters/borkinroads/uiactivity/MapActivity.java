@@ -32,6 +32,8 @@ import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.model.Step;
 import com.akexorcist.googledirection.util.DirectionConverter;
+import com.bitirme.gitbusters.borkinroads.data.DoggoRecord;
+import com.bitirme.gitbusters.borkinroads.data.UserRecord;
 import com.bitirme.gitbusters.borkinroads.routeutilities.DirectionsHandler;
 import com.bitirme.gitbusters.borkinroads.R;
 import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
@@ -394,8 +396,14 @@ public class MapActivity extends FragmentActivity
       movingPace = 0.0;
 
       // Create a User Status Record to update while the route is active
-      //TODO: add userID and petID
-      statusRecord = new UserStatusRecord(-1,-1,true,cur_location,coordinates,cur_location,cur_location);
+      //TODO: select a pet
+      UserRecord user = UserRecord.activeUser;
+      DoggoRecord pet = user.getPets().get(0);
+      int petId = pet.getEntryID();
+      if (pet == null) {
+        petId = -1;
+      }
+      statusRecord = new UserStatusRecord(user.getEntryID(),petId,true,cur_location,coordinates,cur_location,cur_location);
       initializeUserStatus();
 
       cdt = new CountDownTimer(20000, 10000) {
@@ -733,7 +741,7 @@ public class MapActivity extends FragmentActivity
      * Else send a record to the table
      */
     RestPuller puller = new RestPuller(statusRecord, this);
-    //puller.start();
+    puller.start();
     UserStatusRecord us = null;
     ArrayList<RestRecordImpl> records = puller.getFetchedRecords();
     for (RestRecordImpl record : records) {
@@ -744,7 +752,8 @@ public class MapActivity extends FragmentActivity
     //table doesn't have an entry for the current user
     if(us==null) {
       RestPusher stPusher = new RestPusher(statusRecord, this);
-      //stPusher.start();
+      System.out.println("Couldn't find our record. Sending active route record.");
+      stPusher.start();
     }
     //table has an entry for the user, update it
     else {
@@ -752,7 +761,8 @@ public class MapActivity extends FragmentActivity
       statusRecord.setEntryId(us.getEntryID());
       statusRecord.setWaypoints(coordinates);
       RestUpdater updater = new RestUpdater(statusRecord, this);
-      //updater.start();
+      System.out.println("Could find our record. Updating active route record.");
+      updater.start();
     }
   }
   private void updateDBStatus(boolean isDone){
@@ -763,7 +773,7 @@ public class MapActivity extends FragmentActivity
      * 3b. If not, update the entry with new location and waypoint info.
      */
     RestPuller puller = new RestPuller(statusRecord, this);
-    //puller.start();
+    puller.start();
     UserStatusRecord us = null;
     ArrayList<RestRecordImpl> records = puller.getFetchedRecords();
     for (RestRecordImpl record : records) {
@@ -782,7 +792,7 @@ public class MapActivity extends FragmentActivity
       statusRecord.setActive(false);
     }
     RestUpdater updater = new RestUpdater(statusRecord, this);
-    //updater.start();
+    updater.start();
 
   }
 
@@ -899,7 +909,7 @@ public class MapActivity extends FragmentActivity
   // the updated location info
   @Override
   public void onLocationChanged(Location location) {
-    Logger.getGlobal().log(Level.INFO, "Location changed!");
+    //Logger.getGlobal().log(Level.INFO, "Location changed!");
     cur_location = new LatLng(location.getLatitude(), location.getLongitude());
   }
   @Override

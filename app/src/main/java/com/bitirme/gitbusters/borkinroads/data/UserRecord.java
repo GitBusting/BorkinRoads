@@ -87,6 +87,10 @@ public class UserRecord extends RestRecordImpl {
     return userID;
   }
 
+  public ArrayList<DoggoRecord> getPets(){
+    return new ArrayList<>(pets);
+  }
+
   public String getName() { return this.name; }
 
   public static void setActiveUser(int id) {
