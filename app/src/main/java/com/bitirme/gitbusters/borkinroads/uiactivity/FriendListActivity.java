@@ -6,12 +6,15 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.akexorcist.googledirection.model.Line;
 import com.bitirme.gitbusters.borkinroads.R;
+import com.bitirme.gitbusters.borkinroads.data.DoggoRecord;
 import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
 import com.bitirme.gitbusters.borkinroads.data.UserRecord;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestPuller;
@@ -20,12 +23,14 @@ import java.util.ArrayList;
 
 public class FriendListActivity extends AppCompatActivity {
 
-  private static final boolean SANDBOX = true;
+  private static final boolean SANDBOX = false;
 
   private ScrollView   sv;
   private EditText     et;
 
   private ArrayList<UserRecord> allUsers;
+  private ArrayList<UserRecord> friends;
+  private LinearLayout ll;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +43,6 @@ public class FriendListActivity extends AppCompatActivity {
     et.setOnFocusChangeListener(new View.OnFocusChangeListener() {
       @Override
       public void onFocusChange(View v, boolean hasFocus) {
-
       }
     });
 
@@ -79,20 +83,32 @@ public class FriendListActivity extends AppCompatActivity {
     }
 
     // Display user's friends on the scrollview layout
-    LinearLayout ll = (LinearLayout) ((ViewGroup) sv).getChildAt(0);
-
-    for(UserRecord ur : allUsers)
-    {
-      TextView tv = new TextView(this);
-      tv.setText(ur.getName());
-      ll.addView(tv);
-    }
-
+    ll = findViewById(R.id.linear_layout);
+    // displayUsersOnScreen(allUsers);
   }
 
   private void searchUser()
   {
 
+  }
+
+
+  private void displayUsersOnScreen(ArrayList<UserRecord> users)
+  {
+    for(UserRecord ur : allUsers)
+    {
+      LinearLayout newLL = new LinearLayout(this);
+      TextView tv = new TextView(this);
+      String petText = "";
+      for(DoggoRecord dr : ur.getPets())
+        petText += dr.getName() + " ";
+      tv.setText(ur.getName()+ ": " + petText);
+      newLL.addView(tv);
+      Button rmButton = new Button(this);
+      rmButton.setText("-");
+      newLL.addView(rmButton);
+      ll.addView(newLL);
+    }
   }
 
 }

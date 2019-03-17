@@ -58,6 +58,11 @@ public class UserRecord extends RestRecordImpl {
     }
   }
 
+  public ArrayList<DoggoRecord> getPets()
+  {
+    return pets;
+  }
+
   @Override
   public String getURL() {
     return URL;
