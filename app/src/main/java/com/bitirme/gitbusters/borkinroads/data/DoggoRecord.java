@@ -116,7 +116,7 @@ public class DoggoRecord extends RestRecordImpl {
             this.entryID = jso.getInt("id");
             this.name = jso.getString("name");
             this.breed = jso.getString("breed");
-            String jsoGender = jso.getString("gender");
+            String jsoGender = jso.getString("sex");
             if (jsoGender.equals("female"))
                 this.sex = gender.Female;
             else
@@ -155,9 +155,9 @@ public class DoggoRecord extends RestRecordImpl {
             jso.put("name", this.name);
             jso.put("breed", this.breed);
             if (this.sex == gender.Female)
-                jso.put("gender", "female");
+                jso.put("sex", "female");
             else
-                jso.put("gender", "male");
+                jso.put("sex", "male");
             jso.put("birthDate", parseZTDtoSTR(this.birth_date));
             jso.put("lastWalkDate", parseZTDtoSTR(this.last_walk_date));
             jso.put("lastBathDate", parseZTDtoSTR(this.last_bath_date));

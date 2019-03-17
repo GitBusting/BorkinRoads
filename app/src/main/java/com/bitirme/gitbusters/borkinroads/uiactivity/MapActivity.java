@@ -429,6 +429,7 @@ public class MapActivity extends FragmentActivity
       // TODO ask users to review their newly traversed path here
 
       // For now we just push the newly created route
+      copyRoute.setUserID(UserRecord.activeUser.getEntryID());
       RestPusher rp = new RestPusher(copyRoute, getApplicationContext());
       rp.start();
       try {
@@ -436,6 +437,7 @@ public class MapActivity extends FragmentActivity
       } catch (InterruptedException e) {
         e.printStackTrace();
       }
+      UserRecord.activeUser.getRoutes().add(copyRoute);
 
       /* To add details about the created route we need to
        *  1. Get route id
@@ -447,7 +449,7 @@ public class MapActivity extends FragmentActivity
 
       // Get route id
       // a. pull the routes
-      RestPuller puller = new RestPuller(copyRoute, this);
+      RestPuller puller = new RestPuller(copyRoute, getApplicationContext());
       puller.start();
       try {
         puller.join();
