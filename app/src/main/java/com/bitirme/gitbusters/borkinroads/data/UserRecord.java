@@ -98,9 +98,6 @@ public class UserRecord extends RestRecordImpl {
     activeUser.userID = id;
   }
 
-    public ArrayList<DoggoRecord> getPets() {
-        return pets;
-    }
 
     public ArrayList<RouteRecord> getRoutes() {
         return routes;

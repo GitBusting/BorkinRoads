@@ -398,10 +398,11 @@ public class MapActivity extends FragmentActivity
       // Create a User Status Record to update while the route is active
       //TODO: select a pet
       UserRecord user = UserRecord.activeUser;
-      DoggoRecord pet = user.getPets().get(0);
-      int petId = pet.getEntryID();
-      if (pet == null) {
-        petId = -1;
+      ArrayList<DoggoRecord> pets = user.getPets();
+      int petId = -1;
+      if (pets != null) {
+          DoggoRecord pet = pets.get(0);
+          petId = pet.getEntryID();
       }
       statusRecord = new UserStatusRecord(user.getEntryID(),petId,true,cur_location,coordinates,cur_location,cur_location);
       initializeUserStatus();
