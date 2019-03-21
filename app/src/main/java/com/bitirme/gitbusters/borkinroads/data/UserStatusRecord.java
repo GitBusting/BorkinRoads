@@ -74,6 +74,8 @@ public class UserStatusRecord extends RestRecordImpl implements Comparable<UserS
 
     public void setEntryId(int id) {entryId = id; }
 
+    public void setPetId(int id) {petId = id; }
+
     public void setWaypoints(ArrayList<LatLng> pts) { waypoints = new ArrayList<>(pts); }
 
     private void parseRecordFromJSON(JSONObject jso)
@@ -88,7 +90,7 @@ public class UserStatusRecord extends RestRecordImpl implements Comparable<UserS
             this.isActive = jso.getBoolean("isActive");
             String pos = jso.getString("location");
             double lat = Double.parseDouble(pos.substring(0,pos.indexOf(",")));
-            double lng = Double.parseDouble(pos.substring(pos.indexOf(",")));
+            double lng = Double.parseDouble(pos.substring(pos.indexOf(",")+1));
             this.currentPosition = new LatLng(lat,lng);
         } catch(JSONException jse){
             jse.printStackTrace();
