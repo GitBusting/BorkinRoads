@@ -451,6 +451,7 @@ public class MapActivity extends FragmentActivity
       cdt.cancel();
       cdt = null;
       clearMap();
+      displayDirection = false;
     }
     if(routeActive) {
       resetButton.setVisibility(View.VISIBLE);
