@@ -111,6 +111,8 @@ public class MainActivity extends AppCompatActivity
         walkbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (currentDoggo.getName().equals("Add New Pet"))
+                    return;
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
                 builder.setTitle("Gone for a walk?");
@@ -139,6 +141,8 @@ public class MainActivity extends AppCompatActivity
         vetbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (currentDoggo.getName().equals("Add New Pet"))
+                    return;
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
                 builder.setTitle("Vet Visit");
@@ -167,6 +171,8 @@ public class MainActivity extends AppCompatActivity
         bathbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (currentDoggo.getName().equals("Add New Pet"))
+                    return;
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 
                 builder.setTitle("Bath Time");
@@ -195,7 +201,11 @@ public class MainActivity extends AppCompatActivity
         ppbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivityForResult(new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI), GET_FROM_GALLERY);
+                if (currentDoggo.getName().equals("Add New Pet")) {
+                    Intent i = new Intent(MainActivity.this, BreedDoggos.class);
+                    startActivity(i);
+                } else
+                    startActivityForResult(new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI), GET_FROM_GALLERY);
             }
         });
         if (UserRecord.activeUser.getPets().size() == 0) {
