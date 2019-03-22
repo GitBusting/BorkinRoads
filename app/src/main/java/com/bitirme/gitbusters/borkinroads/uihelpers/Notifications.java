@@ -85,7 +85,7 @@ public class Notifications {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             String CHANNEL_ID = "default";
             CharSequence name = "default";
-            String description = "TODO"; //TODO name them
+            String description = "default"; 
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);
