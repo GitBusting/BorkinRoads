@@ -50,7 +50,6 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, DogButtonAdapter.ItemClickListener {
     private final int GET_FROM_GALLERY = 4;
     private static final String TAG = "MainActivity";
-    private action last = null;
     private TextView walkdate;
     private ImageButton ppbutton;
     private TextView name;
@@ -94,37 +93,8 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
-        builder.setTitle("Confirmation");
-        builder.setMessage("Do you wanna renew the " + last + " date?");
 
-        builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
-
-            public void onClick(DialogInterface dialog, int which) {
-                // Do nothing but close the dialog
-                switch (last) {
-                    case walk:
-                        currentDoggo.setLast_walk_date(ZonedDateTime.now());
-                        break;
-                    case bath:
-                        currentDoggo.setLast_bath_date(ZonedDateTime.now());
-                        break;
-                    case vet:
-                        currentDoggo.setLast_vet_date(ZonedDateTime.now());
-                        break;
-                }
-                setValues();
-                dialog.dismiss();
-            }
-        });
-
-        builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
 
         name = findViewById(R.id.name);
         breed = findViewById(R.id.breed);
@@ -141,7 +111,26 @@ public class MainActivity extends AppCompatActivity
         walkbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                last = action.walk;
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+
+                builder.setTitle("Gone for a walk?");
+                builder.setMessage("Have you walked " + currentDoggo.getName() + "?");
+
+                builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int which) {
+                        currentDoggo.setLast_walk_date(ZonedDateTime.now());
+                        setValues();
+                        setBars();
+                        dialog.dismiss();
+                    }
+                });
+                builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
                 AlertDialog alert = builder.create();
                 alert.show();
             }
@@ -150,7 +139,26 @@ public class MainActivity extends AppCompatActivity
         vetbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                last = action.vet;
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+
+                builder.setTitle("Vet Visit");
+                builder.setMessage("Have you visited the vet?");
+
+                builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int which) {
+                        currentDoggo.setLast_vet_date(ZonedDateTime.now());
+                        setValues();
+                        setBars();
+                        dialog.dismiss();
+                    }
+                });
+                builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
                 AlertDialog alert = builder.create();
                 alert.show();
             }
@@ -159,7 +167,26 @@ public class MainActivity extends AppCompatActivity
         bathbutton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                last = action.bath;
+                AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+
+                builder.setTitle("Bath Time");
+                builder.setMessage("Has " + currentDoggo.getName() + "taken a bath?");
+
+                builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
+
+                    public void onClick(DialogInterface dialog, int which) {
+                        currentDoggo.setLast_bath_date(ZonedDateTime.now());
+                        setValues();
+                        setBars();
+                        dialog.dismiss();
+                    }
+                });
+                builder.setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
                 AlertDialog alert = builder.create();
                 alert.show();
             }
@@ -293,6 +320,7 @@ public class MainActivity extends AppCompatActivity
         Log.v(TAG, "You clicked " + adapter.getItem(position) + " on row number " + position);
         currentDoggo = UserRecord.activeUser.getPets().get(position);
         setValues();
+        setBars();
 
     }
 
@@ -300,11 +328,11 @@ public class MainActivity extends AppCompatActivity
         double daysSinceLastWalk = zonedDateTimeDifference(currentDoggo.getLast_walk_date(), ZonedDateTime.now(ZoneId.systemDefault())).getDays();
         int walkProg = (int) (daysSinceLastWalk / 14.0 * 100);
         if (walkProg > 100) walkProg = 100;
-        double monthsSinceLastVetVisit = zonedDateTimeDifference(currentDoggo.getLast_vet_date(), ZonedDateTime.now(ZoneId.systemDefault())).getMonths();
-        int vetProg = (int) (monthsSinceLastVetVisit / 6.0 * 100);
+        double monthsSinceLastVetVisit = zonedDateTimeDifference(currentDoggo.getLast_vet_date(), ZonedDateTime.now(ZoneId.systemDefault())).getDays();
+        int vetProg = (int) (monthsSinceLastVetVisit / 180 * 100);
         if (vetProg > 100) vetProg = 100;
-        double monthsSinceLastBath = zonedDateTimeDifference(currentDoggo.getLast_vet_date(), ZonedDateTime.now(ZoneId.systemDefault())).getMonths();
-        int bathProg = (int) (monthsSinceLastBath / 3.0 * 100);
+        double monthsSinceLastBath = zonedDateTimeDifference(currentDoggo.getLast_vet_date(), ZonedDateTime.now(ZoneId.systemDefault())).getDays();
+        int bathProg = (int) (monthsSinceLastBath / 90 * 100);
         if (bathProg > 100) bathProg = 100;
 
         walkbar.setProgress(walkProg);
@@ -312,7 +340,6 @@ public class MainActivity extends AppCompatActivity
         bathbar.setProgress(bathProg);
     }
 
-    private enum action {walk, bath, vet}
     private void setImage() {
         String path = getExternalFilesDir(Environment.DIRECTORY_DCIM) + "/" + currentDoggo.getName() + ".jpg";
         try {
