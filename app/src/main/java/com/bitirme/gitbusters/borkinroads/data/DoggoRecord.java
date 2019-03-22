@@ -3,13 +3,16 @@ package com.bitirme.gitbusters.borkinroads.data;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.ResolverStyle;
 import java.util.ArrayList;
 
 public class DoggoRecord extends RestRecordImpl {
-    public static final ArrayList<DoggoRecord> doggos = new ArrayList<>();
+//    public static final ArrayList<DoggoRecord> doggos = new ArrayList<>();
     private String name;
     private String breed;
     private ZonedDateTime birth_date;
@@ -38,6 +41,7 @@ public class DoggoRecord extends RestRecordImpl {
         this.last_vet_date = copy.last_vet_date;
         this.entryID = copy.entryID;
         this.userID = copy.userID;
+        this.sex = copy.sex;
     }
 
     public DoggoRecord(String name, String breed, ZonedDateTime birth_date, gender sex) {
@@ -116,7 +120,7 @@ public class DoggoRecord extends RestRecordImpl {
             this.entryID = jso.getInt("id");
             this.name = jso.getString("name");
             this.breed = jso.getString("breed");
-            String jsoGender = jso.getString("gender");
+            String jsoGender = jso.getString("sex");
             if (jsoGender.equals("female"))
                 this.sex = gender.Female;
             else
@@ -132,20 +136,19 @@ public class DoggoRecord extends RestRecordImpl {
     }
 
     private ZonedDateTime parseSTRtoZTD(String date) {
-
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
-        return ZonedDateTime.parse(date, formatter);
+        LocalDate dt = LocalDate.parse(date, formatter);
+        return dt.atStartOfDay(ZoneId.systemDefault());
     }
 
-    private String parseZTDtoSTR(ZonedDateTime birthDate) {
-
+    private String parseZTDtoSTR(ZonedDateTime date) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
-        return birthDate.format(formatter);
+        return date.format(formatter);
     }
 
     @Override
     public String getURL() {
-        return "https://shielded-cliffs-47552.herokuapp.com/doggos";
+        return "https://shielded-cliffs-47552.herokuapp.com/pets";
     }
 
     @Override
@@ -155,9 +158,9 @@ public class DoggoRecord extends RestRecordImpl {
             jso.put("name", this.name);
             jso.put("breed", this.breed);
             if (this.sex == gender.Female)
-                jso.put("gender", "female");
+                jso.put("sex", "female");
             else
-                jso.put("gender", "male");
+                jso.put("sex", "male");
             jso.put("birthDate", parseZTDtoSTR(this.birth_date));
             jso.put("lastWalkDate", parseZTDtoSTR(this.last_walk_date));
             jso.put("lastBathDate", parseZTDtoSTR(this.last_bath_date));

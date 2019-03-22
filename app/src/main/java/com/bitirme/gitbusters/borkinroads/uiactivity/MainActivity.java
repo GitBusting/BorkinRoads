@@ -31,6 +31,7 @@ import android.widget.TextView;
 
 import com.bitirme.gitbusters.borkinroads.R;
 import com.bitirme.gitbusters.borkinroads.data.DoggoRecord;
+import com.bitirme.gitbusters.borkinroads.data.UserRecord;
 import com.bitirme.gitbusters.borkinroads.uihelpers.DogButtonAdapter;
 import com.bitirme.gitbusters.borkinroads.uihelpers.Notifications;
 
@@ -77,10 +78,11 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        for (DoggoRecord doggo : DoggoRecord.doggos) {
-            Notifications tmp = new Notifications();
-            tmp.checkEverthing(doggo, this);
-        }
+        if (UserRecord.activeUser.getPets() != null)
+            for (DoggoRecord doggo : UserRecord.activeUser.getPets()) {
+                Notifications tmp = new Notifications();
+                tmp.checkEverthing(doggo, this);
+            }
 
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
@@ -169,13 +171,13 @@ public class MainActivity extends AppCompatActivity
                 startActivityForResult(new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI), GET_FROM_GALLERY);
             }
         });
-        if (DoggoRecord.doggos.size() == 0) {
+        if (UserRecord.activeUser.getPets().size() == 0) {
             DoggoRecord temp = new DoggoRecord("Add New Pet", "Breed", ZonedDateTime.now(ZoneId.systemDefault()), DoggoRecord.gender.Gender);
-            DoggoRecord.doggos.add(temp);
+            UserRecord.activeUser.getPets().add(temp);
             Log.v(TAG, "did it!");
         }
 
-        currentDoggo = DoggoRecord.doggos.get(0);
+        currentDoggo = UserRecord.activeUser.getPets().get(0);
 
         setValues();
         setBars();
@@ -289,7 +291,7 @@ public class MainActivity extends AppCompatActivity
     public void onItemClick(View view, int position) {
         currentDoggo = adapter.getItem(position);
         Log.v(TAG, "You clicked " + adapter.getItem(position) + " on row number " + position);
-        currentDoggo = DoggoRecord.doggos.get(position);
+        currentDoggo = UserRecord.activeUser.getPets().get(position);
         setValues();
 
     }

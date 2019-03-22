@@ -254,4 +254,12 @@ public class RouteRecord extends RestRecordImpl{
   public void setRating(double rating) {
       this.rating = rating;
   }
+
+    public int getUserID() {
+        return userID;
+    }
+
+    public void setUserID(int userID) {
+        this.userID = userID;
+    }
 }

@@ -15,6 +15,7 @@ import android.widget.ImageButton;
 
 import com.bitirme.gitbusters.borkinroads.R;
 import com.bitirme.gitbusters.borkinroads.data.DoggoRecord;
+import com.bitirme.gitbusters.borkinroads.data.UserRecord;
 
 import java.io.File;
 import java.util.List;
@@ -29,7 +30,7 @@ public class DogButtonAdapter extends RecyclerView.Adapter<DogButtonAdapter.View
     // data is passed into the constructor
     public DogButtonAdapter(Context context) {
         this.mInflater = LayoutInflater.from(context);
-        this.doggobarlist = DoggoRecord.doggos;
+        this.doggobarlist = UserRecord.activeUser.getPets();
         _context = context;
     }
 
