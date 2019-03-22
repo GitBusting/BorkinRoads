@@ -639,7 +639,8 @@ public class MapActivity extends FragmentActivity
     //update the statistics
     timePassed += timeSpent / 1000; // adding to total seconds on this active route
     averageSpeed = metersPassed / timePassed;
-    movingSpeed = metersPassed / movingTime;
+    if( movingTime !=0 )
+      movingSpeed = metersPassed / movingTime;
 
     if(metersPassed != 0) {
       averagePace = timePassed / metersPassed;
