@@ -641,8 +641,10 @@ public class MapActivity extends FragmentActivity
     averageSpeed = metersPassed / timePassed;
     movingSpeed = metersPassed / movingTime;
 
-    averagePace = timePassed / metersPassed;
-    movingPace = movingTime / metersPassed;
+    if(metersPassed != 0) {
+      averagePace = timePassed / metersPassed;
+      movingPace = movingTime / metersPassed;
+    }
 
     //debug prints (TODO: delete later)
     String outline = "";
