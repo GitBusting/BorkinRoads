@@ -113,8 +113,8 @@ public class UserStatusRecord extends RestRecordImpl implements Comparable<UserS
             else
                 this.isActive = jso.getBoolean("isActive");
             String pos = jso.getString("location");
-            double lat = Double.parseDouble(pos.substring(0,pos.indexOf("_")));
-            double lng = Double.parseDouble(pos.substring(pos.indexOf("_")+1));
+            double lat = Double.parseDouble(pos.substring(0,pos.indexOf(",")));
+            double lng = Double.parseDouble(pos.substring(pos.indexOf(",")+1));
             this.currentPosition = new LatLng(lat,lng);
         } catch(JSONException jse){
             jse.printStackTrace();
@@ -134,7 +134,7 @@ public class UserStatusRecord extends RestRecordImpl implements Comparable<UserS
             jso.put("userID",this.userId);
             jso.put("petID",this.petId);
             jso.put("isActive", this.isActive);
-            jso.put("location", this.currentPosition.latitude +"_"+this.currentPosition.longitude);
+            jso.put("location", this.currentPosition.latitude +","+this.currentPosition.longitude);
             jso.put("route",this.waypointsToString());
             jso.put("date", this.date + this.time);
         } catch (JSONException e) {
