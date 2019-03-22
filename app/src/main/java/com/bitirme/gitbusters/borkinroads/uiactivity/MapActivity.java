@@ -383,6 +383,10 @@ public class MapActivity extends FragmentActivity
     UserRecord user = UserRecord.activeUser;
     final ArrayList<DoggoRecord> pets = user.getPets();
     statusRecord = new UserStatusRecord(user.getEntryID(),-1,true,cur_location,coordinates,cur_location,cur_location);
+    if (pets.size() == 0 || pets.get(0).getName().equalsIgnoreCase("Add new Pet")) {
+      updateDBStatus(true,false);
+      return; // dont need to select pet because the user has no pets
+    }
 
     // setup the alert builder
     AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -799,32 +803,31 @@ public class MapActivity extends FragmentActivity
      * 3a. If the user completed the route, update the entry and set isActive to false
      * 3b. If not, update the entry with new location and waypoint info.
      */
+    statusRecord.setCurrentPosition(cur_location);
+    statusRecord.setWaypoints(coordinates);
+    statusRecord.setActive(true);
     RestPuller puller = new RestPuller(statusRecord, this);
     puller.start();
     try {
       puller.join();
     } catch (InterruptedException e) {
-       e.printStackTrace();
+      e.printStackTrace();
     }
     UserStatusRecord us = null;
     ArrayList<RestRecordImpl> records = puller.getFetchedRecords();
     for (RestRecordImpl record : records) {
       us = (UserStatusRecord) record;
-      if (us.getUserId() == UserRecord.activeUser.getEntryID())
+      if (us.getUserId() == UserRecord.activeUser.getEntryID()) {
         break;
+      }
     }
     if(us==null) {
       System.out.println("Couldn't find our record. Sending active route record.");
-      if(isInitialize){
-        RestPusher stPusher = new RestPusher(statusRecord, this);
-        stPusher.start();
-      }
-      else return;
+      RestPusher stPusher = new RestPusher(statusRecord, this);
+      stPusher.start();
+      return;
     }
-    statusRecord.setCurrentPosition(cur_location);
     statusRecord.setEntryId(us.getEntryID());
-    statusRecord.setWaypoints(coordinates);
-    statusRecord.setActive(true);
     if(isDone) {
       statusRecord.setActive(false);
     }
