@@ -12,6 +12,7 @@ public class UserRecord extends RestRecordImpl {
   public static UserRecord activeUser;
   private int userID;
   private String name;
+  private ArrayList<Integer> friendIds;
   private ArrayList<DoggoRecord> pets;
   private ArrayList<RouteRecord> routes;
 
@@ -33,6 +34,9 @@ public class UserRecord extends RestRecordImpl {
     this.routes = new ArrayList<>();
     for (RouteRecord rr: copy.routes)
       this.routes.add(new RouteRecord(rr));
+    this.friendIds = new ArrayList<>();
+    for (int i : copy.friendIds)
+      this.friendIds.add(i);
   }
 
   public UserRecord(JSONObject jso) {
@@ -52,6 +56,12 @@ public class UserRecord extends RestRecordImpl {
       JSONArray petJSONs = jso.getJSONArray("pets");
       for (int i = 0; i < petJSONs.length(); i++)
         this.pets.add(new DoggoRecord(petJSONs.getJSONObject(i)));
+
+      this.friendIds = new ArrayList<>();
+      String friends_str = jso.getString("friend_ids");
+      String[] friends_sp = friends_str.split(",");
+      for(String s : friends_sp)
+        friendIds.add(Integer.parseInt(s));
 
     } catch (JSONException e) {
       e.printStackTrace();
@@ -81,6 +91,10 @@ public class UserRecord extends RestRecordImpl {
       for (DoggoRecord dr : pets)
         petJSONs.put(dr.getJSON());
       jso.put("pets", pets);
+      String friend_str = "";
+      for(int i : friendIds)
+        friend_str += i + ",";
+      jso.put("friend_ids",friend_str.substring(0,friend_str.length()-2));
     } catch (JSONException e) {
       e.printStackTrace();
     }
@@ -99,11 +113,9 @@ public class UserRecord extends RestRecordImpl {
     activeUser.userID = id;
   }
 
-    public ArrayList<DoggoRecord> getPets() {
-        return pets;
-    }
-
-    public ArrayList<RouteRecord> getRoutes() {
+  public ArrayList<RouteRecord> getRoutes() {
         return routes;
     }
+
+  public ArrayList<Integer> getFriendIds() { return friendIds; }
 }

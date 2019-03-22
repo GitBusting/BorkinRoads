@@ -71,6 +71,6 @@
     </string>
     <string name="search_friend_text">Search For a Friend</string>
     <string name="friend_list">Friend List</string>
-    <string name="search_for_a_friend_text_hint">Search for a friend...</string>
+    <string name="search_for_a_friend_text_hint">Search for a user...</string>
     <string name="your_friends_title">Your Friends</string>
 </resources>
