@@ -87,10 +87,6 @@ public class UserRecord extends RestRecordImpl {
     return userID;
   }
 
-  public ArrayList<DoggoRecord> getPets(){
-    return new ArrayList<>(pets);
-  }
-
   public String getName() { return this.name; }
 
   public static void setActiveUser(int id) {
@@ -98,6 +94,9 @@ public class UserRecord extends RestRecordImpl {
     activeUser.userID = id;
   }
 
+  public ArrayList<DoggoRecord> getPets() {
+    return pets;
+  }
 
     public ArrayList<RouteRecord> getRoutes() {
         return routes;

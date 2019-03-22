@@ -408,7 +408,27 @@ public class MapActivity extends FragmentActivity
           return; //no need to update the status record since petId is already -1
         }
         Toast.makeText(MapActivity.this,"You selected : " + animals[checkedItem[0]],Toast.LENGTH_LONG).show();
-        statusRecord.setPetId(pets.get(checkedItem[0]).getEntryID());
+        boolean foundInDB=false;
+        if (pets.get(checkedItem[0]).getEntryID() == 0) { // this is a newly added pet and it's id is not updated for the db yet
+          RestPuller petpuller = new RestPuller(pets.get(checkedItem[0]),getApplicationContext());
+          petpuller.start();
+          try {
+            petpuller.join();
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+          ArrayList<RestRecordImpl> dogs = petpuller.getFetchedRecords();
+          for (RestRecordImpl record : dogs) {
+            DoggoRecord dog = (DoggoRecord) record;
+            if(dog.getName().equals(pets.get(checkedItem[0]).getName()) && dog.getUserID() == UserRecord.activeUser.getEntryID()) {
+              statusRecord.setPetId(dog.getEntryID());
+              foundInDB = true;
+              break;
+            }
+          }
+        }
+        if(!foundInDB)
+          statusRecord.setPetId(pets.get(checkedItem[0]).getEntryID());
       }
     });
 
