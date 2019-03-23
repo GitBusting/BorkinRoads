@@ -168,19 +168,7 @@ public class UserStatusRecord extends RestRecordImpl implements Comparable<UserS
         // typecast o to Complex so that we can compare data members
         UserStatusRecord usr = (UserStatusRecord) o;
 
-        if(usr.entryId == this.entryId)
-        {
-            float[] distanceVec = new float[3];
-            Location.distanceBetween(usr.currentPosition.latitude, usr.currentPosition.longitude,
-                usr.currentPosition.latitude, usr.currentPosition.longitude, distanceVec);
-
-            if(distanceVec[0] < 20.0)
-                return false;
-            else
-                return true;
-        }
-
-        return false;
+        return usr.entryId == this.entryId;
     }
 
     @Override

@@ -1024,20 +1024,20 @@ public class MapActivity extends FragmentActivity
 
       // Compare newly fetched routes with already existing ones
       // if there exists a new route we tell the MapActivity to display it
-      if (friendActiveRoutes.size() != newRecords.size()) {
-        for (UserStatusRecord usr : newRecords) {
-          boolean exists = false;
-          for (UserStatusRecord act : friendActiveRoutes) {
-            if (act.equals(usr)) {
-              exists = true;
-              break;
-            }
+      for (UserStatusRecord usr : newRecords) {
+        boolean exists = false;
+        for (UserStatusRecord act : friendActiveRoutes) {
+          if (act.equals(usr)) {
+            Logger.getGlobal().log(Level.INFO,"Found an equivalent route");
+            act.setCurrentPosition(usr.getCurrentPosition());
+            exists = true;
+            break;
           }
-          if (!exists) {
-            ArrayList<LatLng> ll = usr.getWaypoints();
-            requestDirection(usr.getStartPoint(), usr.getEndPoint(), ll);
-            friendActiveRoutes.add(usr);
-          }
+        }
+        if (!exists) {
+          ArrayList<LatLng> ll = usr.getWaypoints();
+          requestDirection(usr.getStartPoint(), usr.getEndPoint(), ll);
+          friendActiveRoutes.add(usr);
         }
       }
       // TODO update friend indicators on map
