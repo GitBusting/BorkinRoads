@@ -857,8 +857,9 @@ public class MapActivity extends FragmentActivity
     UserStatusRecord us = null;
     ArrayList<RestRecordImpl> records = puller.getFetchedRecords();
     for (RestRecordImpl record : records) {
-      us = (UserStatusRecord) record;
-      if (us.getUserId() == UserRecord.activeUser.getEntryID()) {
+      UserStatusRecord temp = (UserStatusRecord) record;
+      if (temp.getUserId() == UserRecord.activeUser.getEntryID()) {
+        us = temp;
         break;
       }
     }
