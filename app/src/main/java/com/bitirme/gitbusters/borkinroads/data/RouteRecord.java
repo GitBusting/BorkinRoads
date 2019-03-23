@@ -2,6 +2,7 @@ package com.bitirme.gitbusters.borkinroads.data;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -30,6 +31,8 @@ public class RouteRecord extends RestRecordImpl{
   private int noUsed;
   private int entryID;
   private int userID;
+  private ArrayList<RouteDetailsRecord> details;
+
   /**
    * Practically useless, can be used to generate
    * template routerecords.
@@ -134,6 +137,12 @@ public class RouteRecord extends RestRecordImpl{
       this.isFavorite = jso.getBoolean("favourite");
       this.noUsed = jso.getInt("numberOfTimesUsed");
       this.userID = jso.getInt("user_id");
+
+      JSONArray routeDetails = jso.getJSONArray("route_details");
+      this.details = new ArrayList<>();
+      for (int i = 0; i < routeDetails.length(); i++)
+        this.details.add(new RouteDetailsRecord(routeDetails.getJSONObject(i)));
+
     } catch(JSONException jse){
       jse.printStackTrace();
     }
@@ -262,4 +271,8 @@ public class RouteRecord extends RestRecordImpl{
     public void setUserID(int userID) {
         this.userID = userID;
     }
+
+  public ArrayList<RouteDetailsRecord> getDetails() {
+    return details;
+  }
 }
