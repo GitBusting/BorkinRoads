@@ -68,11 +68,6 @@ public class UserRecord extends RestRecordImpl {
     }
   }
 
-  public ArrayList<DoggoRecord> getPets()
-  {
-    return pets;
-  }
-
   @Override
   public String getURL() {
     return URL;
@@ -113,7 +108,11 @@ public class UserRecord extends RestRecordImpl {
     activeUser.userID = id;
   }
 
-  public ArrayList<RouteRecord> getRoutes() {
+    public ArrayList<DoggoRecord> getPets() {
+        return pets;
+    }
+
+    public ArrayList<RouteRecord> getRoutes() {
         return routes;
     }
 

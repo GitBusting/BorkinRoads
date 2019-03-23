@@ -34,6 +34,7 @@ import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.model.Step;
 import com.akexorcist.googledirection.util.DirectionConverter;
+import com.bitirme.gitbusters.borkinroads.data.DoggoRecord;
 import com.bitirme.gitbusters.borkinroads.data.UserRecord;
 import com.bitirme.gitbusters.borkinroads.routeutilities.DirectionsHandler;
 import com.bitirme.gitbusters.borkinroads.R;
@@ -217,6 +218,7 @@ public class MapActivity extends FragmentActivity
     startRouteButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
+        fillUserStatusRecord();
         startEndRoute();
       }
     });
@@ -391,10 +393,76 @@ public class MapActivity extends FragmentActivity
     // (the camera animates to the user's current position).
     return false;
   }
+  private void fillUserStatusRecord(){
+    //If we are ending the route we don't need to fill the user status record
+    //It should be done only at the beginning of the route
+    if(routeActive) return;
+    // Create a User Status Record to update while the route is active
+    UserRecord user = UserRecord.activeUser;
+    final ArrayList<DoggoRecord> pets = user.getPets();
+    statusRecord = new UserStatusRecord(user.getEntryID(),-1,true,cur_location,coordinates,cur_location,cur_location);
+    if (pets.size() == 0 || pets.get(0).getName().equalsIgnoreCase("Add new Pet")) {
+      updateDBStatus(true,false);
+      return; // dont need to select pet because the user has no pets
+    }
 
+    // setup the alert builder
+    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    builder.setTitle("Choose your pet:");
+    final String[] animals = new String[pets.size()];
+    for (int i =0;i<pets.size();i++) {
+      animals[i] = pets.get(i).getName();
+    }
+    final int[] checkedItem = {-1};
+    builder.setSingleChoiceItems(animals, checkedItem[0], new DialogInterface.OnClickListener() {
+      @Override
+      public void onClick(DialogInterface dialog, int which) {
+        checkedItem[0] = which;
+      }
+    });
+
+    // add OK and Cancel buttons
+    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+      @Override
+      public void onClick(DialogInterface dialog, int which) {
+        if(checkedItem[0] == -1) {
+          Toast.makeText(MapActivity.this,"You didn\'t select any pets.",Toast.LENGTH_LONG).show();
+          return; //no need to update the status record since petId is already -1
+        }
+        Toast.makeText(MapActivity.this,"You selected : " + animals[checkedItem[0]],Toast.LENGTH_LONG).show();
+        boolean foundInDB=false;
+        if (pets.get(checkedItem[0]).getEntryID() == 0) { // this is a newly added pet and it's id is not updated for the db yet
+          RestPuller petpuller = new RestPuller(pets.get(checkedItem[0]),getApplicationContext());
+          petpuller.start();
+          try {
+            petpuller.join();
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+          ArrayList<RestRecordImpl> dogs = petpuller.getFetchedRecords();
+          for (RestRecordImpl record : dogs) {
+            DoggoRecord dog = (DoggoRecord) record;
+            if(dog.getName().equals(pets.get(checkedItem[0]).getName()) && dog.getUserID() == UserRecord.activeUser.getEntryID()) {
+              statusRecord.setPetId(dog.getEntryID());
+              foundInDB = true;
+              break;
+            }
+          }
+        }
+        if(!foundInDB)
+          statusRecord.setPetId(pets.get(checkedItem[0]).getEntryID());
+      }
+    });
+
+    // create and show the alert dialog
+    AlertDialog dialog = builder.create();
+    dialog.show();
+
+    updateDBStatus(true,false);
+  }
   private void startEndRoute() {
     if(!routeActive) {
-      currRoute = new RouteRecord(cur_location, cur_location,
+           currRoute = new RouteRecord(cur_location, cur_location,
               coordinates, legColors, estimatedMinutes);
       currRoute.setTitle(currTitle);
       copyRoute = new RouteRecord(currRoute); // Checkpoint the current state of the route
@@ -412,11 +480,6 @@ public class MapActivity extends FragmentActivity
       maxPace = 0.0;
       movingPace = 0.0;
 
-      // Create a User Status Record to update while the route is active
-      //TODO: add userID and petID
-      statusRecord = new UserStatusRecord(-1,-1,true,cur_location,coordinates,cur_location,cur_location);
-      initializeUserStatus();
-
       cdt = new CountDownTimer(20000, 10000) {
         public void onTick(long millisUntilFinished) {
           System.out.println("Timer heartbeat per 10 seconds.");
@@ -430,6 +493,7 @@ public class MapActivity extends FragmentActivity
       cdt.cancel();
       cdt = null;
       clearMap();
+      displayDirection = false;
     }
     if(routeActive) {
       resetButton.setVisibility(View.VISIBLE);
@@ -487,7 +551,7 @@ public class MapActivity extends FragmentActivity
       detailPusher.start();
 
       // Update user status in DB
-      updateDBStatus(true);
+      updateDBStatus(false,true);
     }
     else {
       genPathButton.setVisibility(View.INVISIBLE);
@@ -598,10 +662,13 @@ public class MapActivity extends FragmentActivity
     //update the statistics
     timePassed += timeSpent / 1000; // adding to total seconds on this active route
     averageSpeed = metersPassed / timePassed;
-    movingSpeed = metersPassed / movingTime;
+    if( movingTime !=0 )
+      movingSpeed = metersPassed / movingTime;
 
-    averagePace = timePassed / metersPassed;
-    movingPace = movingTime / metersPassed;
+    if(metersPassed != 0) {
+      averagePace = timePassed / metersPassed;
+      movingPace = movingTime / metersPassed;
+    }
 
     //debug prints (TODO: delete later)
     String outline = "";
@@ -617,7 +684,7 @@ public class MapActivity extends FragmentActivity
     System.out.println(outline);
 
     // Update the user status
-    updateDBStatus(false);
+    updateDBStatus(false,false);
 
       // Restart counter with each update call
     cdt = new CountDownTimer(countdownMillis, countdownMillis/2) {
@@ -748,63 +815,43 @@ public class MapActivity extends FragmentActivity
     }
     return -1;
   }
-  private void initializeUserStatus() {
-    /* We want to set user active in user status table
-     * Check whether the user has an entry in the table already
-     * If the user has an entry update it
-     * Else send a record to the table
-     */
-    RestPuller puller = new RestPuller(statusRecord, this);
-    //puller.start();
-    UserStatusRecord us = null;
-    ArrayList<RestRecordImpl> records = puller.getFetchedRecords();
-    for (RestRecordImpl record : records) {
-      us = (UserStatusRecord) record;
-      if (us.getUserId() == statusRecord.getUserId())
-        break;
-    }
-    //table doesn't have an entry for the current user
-    if(us==null) {
-      RestPusher stPusher = new RestPusher(statusRecord, this);
-      //stPusher.start();
-    }
-    //table has an entry for the user, update it
-    else {
-      statusRecord.setCurrentPosition(cur_location);
-      statusRecord.setEntryId(us.getEntryID());
-      statusRecord.setWaypoints(coordinates);
-      RestUpdater updater = new RestUpdater(statusRecord, this);
-      //updater.start();
-    }
-  }
-  private void updateDBStatus(boolean isDone){
+  private void updateDBStatus(boolean isInitialize,boolean isDone){
     /* We have few tasks here to update the DB with the new status
      * 1. Pull entries
      * 2. Find the entry corresponding to the user
      * 3a. If the user completed the route, update the entry and set isActive to false
      * 3b. If not, update the entry with new location and waypoint info.
      */
+    statusRecord.setCurrentPosition(cur_location);
+    statusRecord.setWaypoints(coordinates);
+    statusRecord.setActive(true);
     RestPuller puller = new RestPuller(statusRecord, this);
-    //puller.start();
+    puller.start();
+    try {
+      puller.join();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
     UserStatusRecord us = null;
     ArrayList<RestRecordImpl> records = puller.getFetchedRecords();
     for (RestRecordImpl record : records) {
       us = (UserStatusRecord) record;
-      if (us.getUserId() == statusRecord.getUserId())
+      if (us.getUserId() == UserRecord.activeUser.getEntryID()) {
         break;
+      }
     }
     if(us==null) {
-      System.out.println("Couldn't find corresponding user status entry. Can't update the DB.");
+      System.out.println("Couldn't find our record. Sending active route record.");
+      RestPusher stPusher = new RestPusher(statusRecord, this);
+      stPusher.start();
       return;
     }
-    statusRecord.setCurrentPosition(cur_location);
     statusRecord.setEntryId(us.getEntryID());
-    statusRecord.setWaypoints(coordinates);
     if(isDone) {
       statusRecord.setActive(false);
     }
     RestUpdater updater = new RestUpdater(statusRecord, this);
-    //updater.start();
+    updater.start();
 
   }
 
@@ -919,7 +966,7 @@ public class MapActivity extends FragmentActivity
   // the updated location info
   @Override
   public void onLocationChanged(Location location) {
-    Logger.getGlobal().log(Level.INFO, "Location changed!");
+    //Logger.getGlobal().log(Level.INFO, "Location changed!");
     cur_location = new LatLng(location.getLatitude(), location.getLongitude());
   }
   @Override
