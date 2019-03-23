@@ -138,7 +138,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             if (userID == null || userID.equals("invalid"))
                 return false;
 
-            RestPuller rp = new RestPuller(new UserRecord(), getApplicationContext());
+            RestPuller rp = new RestPuller(new UserRecord(), getApplicationContext(), Integer.parseInt(userID));
             rp.start();
             try {
                 rp.join();
@@ -413,7 +413,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                         editor.putString("userID", userID);
                         editor.commit();
 
-                        RestPuller rp = new RestPuller(new UserRecord(), getApplicationContext());
+                        RestPuller rp = new RestPuller(new UserRecord(), getApplicationContext(), Integer.parseInt(userID));
                         rp.start();
                         try {
                             rp.join();
