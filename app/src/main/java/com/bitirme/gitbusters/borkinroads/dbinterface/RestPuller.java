@@ -28,6 +28,7 @@ public class RestPuller extends Thread {
   private RestRecord templateReference;
   private String DB_URL;
   private Context context;
+  private boolean single;
 
   public RestPuller(RestRecordImpl template, Context context)
   {
@@ -35,7 +36,16 @@ public class RestPuller extends Thread {
     this.templateReference = template;
     DB_URL = template.getURL() + ".json";
     this.context = context;
+    this.single = false;
+  }
 
+  public RestPuller(RestRecordImpl template, Context context, int id)
+  {
+    this.fetchedRecords = new ArrayList<>();
+    this.templateReference = template;
+    DB_URL = template.getURL() + "/"+ id + ".json";
+    this.context = context;
+    this.single = true;
   }
 
   public ArrayList<RestRecordImpl> getFetchedRecords() {
@@ -80,9 +90,15 @@ public class RestPuller extends Thread {
         for (String line; (line = r.readLine()) != null; ) {
           total.append(line).append('\n');
         }
-        JSONArray jsa = new JSONArray(total.toString());
-        for(int i = 0 ; i < jsa.length() ; i++)
-          fetchedRecords.add((RestRecordImpl) recordConstructor.newInstance(jsa.getJSONObject(i)));
+        if (!single) {
+          JSONArray jsa = new JSONArray(total.toString());
+          for(int i = 0 ; i < jsa.length() ; i++)
+            fetchedRecords.add((RestRecordImpl) recordConstructor.newInstance(jsa.getJSONObject(i)));
+        }
+        else {
+          JSONObject jsonObject = new JSONObject(total.toString());
+          fetchedRecords.add((RestRecordImpl) recordConstructor.newInstance(jsonObject));
+        }
       } else {
         // Unable to connect
         System.out.println("a very bad thing happened.");
