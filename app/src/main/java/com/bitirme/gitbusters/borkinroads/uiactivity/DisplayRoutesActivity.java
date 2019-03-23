@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 public class DisplayRoutesActivity extends Activity {
 
@@ -58,7 +59,6 @@ public class DisplayRoutesActivity extends Activity {
     private EditText mMaxDurationEditText;
     private Spinner mSpinnerSortingCondition;
     private ToggleButton mToggleButtonSortingDirection;
-    private Button mButtonApply;
     private ExpandableRelativeLayout expandableRelativeLayout;
 
     private static List<RouteRecord> routeList;
@@ -90,7 +90,8 @@ public class DisplayRoutesActivity extends Activity {
         mRecyclerView = findViewById(R.id.recycler_view);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(mLinearLayoutManager);
-        mRecyclerView.setAdapter(new DisplayRouteAdapter(routeList));
+        final DisplayRouteAdapter displayRouteAdapter = new DisplayRouteAdapter(routeList);
+        mRecyclerView.setAdapter(displayRouteAdapter);
         mRecyclerView.setRecyclerListener(mRecycleListener);
 
         mFavouriteCheckBox = findViewById(R.id.checkbox_favourite);
@@ -100,6 +101,7 @@ public class DisplayRoutesActivity extends Activity {
         mMaxDurationEditText = findViewById(R.id.text_max_route_direction);
         mSpinnerSortingCondition = findViewById(R.id.spinner_sorting_condition);
         mToggleButtonSortingDirection = findViewById(R.id.toggle_sorting_direction);
+
 
 
 
@@ -229,6 +231,7 @@ public class DisplayRoutesActivity extends Activity {
 
                 }
             });
+
             return new DisplayRouteAdapter.ViewHolder(view);
         }
 
@@ -321,6 +324,7 @@ public class DisplayRoutesActivity extends Activity {
             GoogleMap map;
             final View layout;
             final ImageView favourite;
+            final Button mButtonWalk;
 
             ViewHolder(View itemView) {
                 super(itemView);
@@ -330,7 +334,7 @@ public class DisplayRoutesActivity extends Activity {
                 routeDate = layout.findViewById(R.id.display_row_date);
                 ratingBar = layout.findViewById(R.id.display_row_rating);
                 favourite = layout.findViewById(R.id.favourite);
-
+                mButtonWalk = (Button) layout.findViewById(R.id.use_route);
                 if (mapView != null) {
                     mapView.onCreate(null);
                     mapView.setClickable(false);
@@ -421,6 +425,16 @@ public class DisplayRoutesActivity extends Activity {
                         rr.setRating(rating);
                         RestUpdater ru = new RestUpdater(rr, getApplicationContext());
                         ru.start();
+                    }
+                });
+
+
+                mButtonWalk.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent intent = new Intent(DisplayRoutesActivity.this, MapActivity.class);
+                        intent.putExtra("ROUTE", mFilteredRouteList.get(pos).getEntryID());
+                        startActivity(intent);
                     }
                 });
             }

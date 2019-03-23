@@ -317,18 +317,24 @@ public class MapActivity extends FragmentActivity
     overrideCurrentLocation = false;
 
     // Indicates that we've been instantiated by another activity with
-    // non-usual purpose. Call this here so that nothing breaks down.
-    if(getIntent().getExtras() != null)
-    {
-      RouteRecord oldRoute = (RouteRecord)
-              getIntent().getSerializableExtra("ROUTE");
-      coordinates.add(oldRoute.getStartCoords());
-      for(LatLng ll : oldRoute.getWaypoints())
-        coordinates.add(ll);
-      coordinates.add(oldRoute.getEndCoords());
-      overrideCurrentLocation = true;
-      requestDirection(coordinates);
-    }
+      // non-usual purpose. Call this here so that nothing breaks down.
+
+      if(getIntent().getExtras() != null)
+        {
+            Integer routeID = (Integer) getIntent().getSerializableExtra("ROUTE");
+            RouteRecord oldRoute = null;
+            for (RouteRecord route : UserRecord.activeUser.getRoutes())
+                if (route.getEntryID() == routeID)
+                    oldRoute = route;
+
+
+          coordinates.add(oldRoute.getStartCoords());
+          for(LatLng ll : oldRoute.getWaypoints())
+            coordinates.add(ll);
+          coordinates.add(oldRoute.getEndCoords());
+          overrideCurrentLocation = true;
+          requestDirection(coordinates);
+        }
 
     // Let friend route handler fetch friends' routes
     frh.start();
