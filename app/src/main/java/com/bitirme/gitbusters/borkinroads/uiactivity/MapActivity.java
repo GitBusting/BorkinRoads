@@ -592,9 +592,10 @@ public class MapActivity extends FragmentActivity
       start = coords.get(0);
       end = coords.get(1);
       overrideCurrentLocation = false;
+    }else {
+      if (cur_location == null)
+        throw new AssertionError("Location was null when a direction request was made");
     }
-    if(cur_location == null)
-      throw new AssertionError("Location was null when a direction request was made");
     if (apikey.isEmpty())
       throw new AssertionError("API key not found");
 
