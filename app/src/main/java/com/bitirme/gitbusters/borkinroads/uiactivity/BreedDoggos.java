@@ -83,7 +83,7 @@ public class BreedDoggos extends AppCompatActivity {
                     warning.setText(R.string.warning);
                 } else {
                     ZonedDateTime zdt = ZonedDateTime.ofInstant(myCalendar.toInstant(), ZoneId.systemDefault());
-                    DoggoRecord newPet = new DoggoRecord(nameText.getText().toString(), breedText.getText().toString(), zdt, gender.isChecked() ? DoggoRecord.gender.Male : DoggoRecord.gender.Female);
+                    DoggoRecord newPet = new DoggoRecord(nameText.getText().toString().substring(0, 1).toUpperCase() + nameText.getText().toString().substring(1).toLowerCase(), breedText.getText().toString().substring(0, 1).toUpperCase() + breedText.getText().toString().substring(1).toLowerCase(), zdt, gender.isChecked() ? DoggoRecord.gender.Male : DoggoRecord.gender.Female);
 //                    if (DoggoRecord.doggos.get(0).getName().equals("Add New Pet")) {
 //                        DoggoRecord.doggos.remove(0);
 //                    }
