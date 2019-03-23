@@ -43,6 +43,7 @@
     <string name="estimated_time2">Estimated Time:</string>
     <string name="title_activity_map">BorkinRoads</string>
     <string name="title_activity_main">BorkinRoads</string>
+    <string name="title_activity_register">RegisterRoads</string>
     <string name="bathbutton">bathbutton</string>
     <string name="vetbutton">vetbutton</string>
     <string name="walkbutton">walkbutton</string>

@@ -67,6 +67,9 @@
             android:windowSoftInputMode="adjustNothing"
             android:name=".uiactivity.FriendListActivity"
             android:label="@string/title_activity_friend_list" />
+        <activity
+            android:name=".uiactivity.RegisterActivity"
+            android:label="@string/title_activity_register" />
     </application>
 
 </manifest>
