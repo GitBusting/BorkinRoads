@@ -23,6 +23,8 @@ import com.bitirme.gitbusters.borkinroads.dbinterface.RestPuller;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestUpdater;
 
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class FriendListActivity extends AppCompatActivity {
 
@@ -114,11 +116,14 @@ public class FriendListActivity extends AppCompatActivity {
         friends.add(ur);
 
     // Fill the list "allUsersExceptFriends"
+
     for (int i = 0 ; i < allUsers.size() ; i++) {
-      for (int uid : activeUser.getFriendIds()) {
+      boolean foundFriend = false;
+      for (int uid : activeUser.getFriendIds())
         if (allUsers.get(i).getEntryID() == uid)
-          notFriends.add(allUsers.get(i));
-      }
+          foundFriend = true;
+      if(!foundFriend)
+        notFriends.add(allUsers.get(i));
     }
 
     // Display user's friends on the scrollview layout
@@ -214,6 +219,7 @@ public class FriendListActivity extends AppCompatActivity {
     UserRecord.activeUser.getFriendIds().add(userID);
     RestUpdater ru = new RestUpdater(UserRecord.activeUser, this);
     ru.start();
+    Logger.getGlobal().log(Level.INFO,"userID to add: " + userID);
     UserRecord added = null;
     for (UserRecord ur : notFriends) {
       if (ur.getEntryID() == userID) {
@@ -231,5 +237,6 @@ public class FriendListActivity extends AppCompatActivity {
     resetLayout();
     displayUsersOnLayout(notFriends, false);
   }
+
 
 }

@@ -1,5 +1,7 @@
 package com.bitirme.gitbusters.borkinroads.routeutilities;
 
+import android.widget.Toast;
+
 import com.google.android.gms.maps.model.LatLng;
 
 import java.io.BufferedReader;
@@ -16,7 +18,7 @@ import javax.net.ssl.HttpsURLConnection;
 public class DirectionsHandler extends Thread {
     private LatLng currentLocation;
     private String apikey;
-    private LatLng marker;
+    private LatLng marker = null;
     private String keyword="";
     private boolean isLimitedTime = true;
     private int radius = 500; //default value
@@ -90,6 +92,10 @@ public class DirectionsHandler extends Thread {
                     lng = cleanText(result);
                     insertMarkerMap(lat,lng);
                 }
+            }
+            if (markerMap.size()==0)
+            {
+                return;
             }
             LatLng furthest = getFurthestMarker();
             setMarker(furthest.latitude, furthest.longitude);

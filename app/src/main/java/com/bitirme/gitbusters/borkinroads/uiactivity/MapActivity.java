@@ -87,6 +87,7 @@ public class MapActivity extends FragmentActivity
   private ArrayList<Marker>   friendMarkers;
   private ArrayList<Polyline> friendsRoutes;
   private ArrayList<UserStatusRecord> friendActiveRoutes;
+  private ArrayList<UserRecord> allUsers;
 
   private ArrayList<Marker> markers;
   private ArrayList<LatLng> coordinates;
@@ -228,6 +229,17 @@ public class MapActivity extends FragmentActivity
     assert mapFragment != null;
     mapFragment.getMapAsync(this);
 
+    allUsers = new ArrayList<>();
+    RestPuller rp = new RestPuller(new UserRecord(),this);
+    rp.start();
+    try {
+      rp.join();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    for(RestRecordImpl rri : rp.getFetchedRecords())
+      allUsers.add((UserRecord) rri);
+
     // TODO this doesn't belong here
     // RestPuller rp = new RestPuller();
     // rp.start();
@@ -269,7 +281,10 @@ public class MapActivity extends FragmentActivity
             limitedTime = true;
             timeLimit = mins * 2; //not round trip
             coordinates.add(requester.getResult());
-            requestDirection(coordinates);
+            if(requester.getResult() == null || backupMarkers.isEmpty())
+              Toast.makeText(MapActivity.this,"Can\'t find requested route please try with a smaller time limit.",Toast.LENGTH_LONG).show();
+            else
+              requestDirection(coordinates);
           }
         });
 
@@ -945,7 +960,7 @@ public class MapActivity extends FragmentActivity
     for (FriendMarker fm : fms)
       friendMarkers.add(mMap.addMarker(new MarkerOptions()
             .position(fm.getPosition())
-            .title("Marker added by user")
+            .title(fm.getName())
             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))));
   }
 
@@ -992,7 +1007,9 @@ public class MapActivity extends FragmentActivity
       // Get new records from the database
       ArrayList<UserStatusRecord> newRecords = new ArrayList<>();
       for (RestRecordImpl rri : rp.getFetchedRecords()) {
-        newRecords.add((UserStatusRecord) rri);
+        UserStatusRecord usr = (UserStatusRecord) rri;
+        if(usr.isActive() && isFriend(UserRecord.activeUser, usr.getUserId()))
+          newRecords.add((UserStatusRecord) rri);
         Logger.getGlobal().log(Level.INFO, "Successfully fetched a friend route!");
       }
       Collections.sort(newRecords);
@@ -1018,7 +1035,12 @@ public class MapActivity extends FragmentActivity
       // TODO update friend indicators on map
       clearFriendMarkers();
       for (UserStatusRecord usr : friendActiveRoutes)
-        putFriendMarker(new FriendMarker(usr.getCurrentPosition()));
+      {
+        String uname = getUserNameFromId(usr.getUserId());
+        if(uname == null)
+          new AssertionError("Could not find user name from id");
+        putFriendMarker(new FriendMarker(usr.getCurrentPosition(), uname));
+      }
       return null;
     }
 
@@ -1040,6 +1062,22 @@ public class MapActivity extends FragmentActivity
     @Override
     public void onDirectionFailure(Throwable t) {
 
+    }
+
+    private boolean isFriend(UserRecord act, int id)
+    {
+      for(int i : act.getFriendIds())
+        if(id == i)
+          return true;
+      return false;
+    }
+
+    private String getUserNameFromId(int id)
+    {
+      for(UserRecord ur : allUsers)
+        if(ur.getEntryID() == id)
+          return ur.getName();
+      return null;
     }
   }
 }

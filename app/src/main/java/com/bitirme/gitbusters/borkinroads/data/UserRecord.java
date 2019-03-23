@@ -59,10 +59,12 @@ public class UserRecord extends RestRecordImpl {
 
       this.friendIds = new ArrayList<>();
       String friends_str = jso.getString("friend_ids");
-      String[] friends_sp = friends_str.split(",");
-      for(String s : friends_sp)
-        friendIds.add(Integer.parseInt(s));
-
+      if(!friends_str.equals("null") && !friends_str.equals(""))
+      {
+        String[] friends_sp = friends_str.split(",");
+        for (String s : friends_sp)
+          friendIds.add(Integer.parseInt(s));
+      }
     } catch (JSONException e) {
       e.printStackTrace();
     }
@@ -89,7 +91,10 @@ public class UserRecord extends RestRecordImpl {
       String friend_str = "";
       for(int i : friendIds)
         friend_str += i + ",";
-      jso.put("friend_ids",friend_str.substring(0,friend_str.length()-2));
+      if(friend_str.equals(""))
+        jso.put("friend_ids","");
+      else
+        jso.put("friend_ids",friend_str.substring(0,friend_str.length()-1));
     } catch (JSONException e) {
       e.printStackTrace();
     }
