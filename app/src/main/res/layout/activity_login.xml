@@ -20,6 +20,8 @@
         android:layout_marginBottom="8dp"
         android:visibility="gone" />
 
+
+
     <ScrollView
         android:id="@+id/login_form"
         android:layout_width="match_parent"
@@ -72,6 +74,13 @@
                 android:layout_marginTop="16dp"
                 android:text="@string/action_sign_in"
                 android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/button2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:onClick="startRegisterActivity"
+                android:text="register" />
 
         </LinearLayout>
     </ScrollView>

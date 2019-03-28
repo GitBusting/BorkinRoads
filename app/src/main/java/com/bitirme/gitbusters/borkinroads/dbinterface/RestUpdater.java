@@ -79,7 +79,7 @@ public class RestUpdater extends Thread {
       if(connPut.getResponseCode() == 200)
         System.out.println("Successfully updated a route.");
       else
-        System.out.println(connPut.getResponseMessage());
+        System.out.println(connPut.getResponseCode() + " " + connPut.getResponseMessage());
 
       connPut.disconnect();
 

@@ -5,11 +5,7 @@ import android.location.Location;
 import com.google.android.gms.maps.model.LatLng;
 import org.json.JSONException;
 import org.json.JSONObject;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 
 public class UserStatusRecord extends RestRecordImpl implements Comparable<UserStatusRecord>{
     private int entryId;
@@ -20,7 +16,6 @@ public class UserStatusRecord extends RestRecordImpl implements Comparable<UserS
     private LatLng currentPosition;
     private ArrayList<LatLng> waypoints;
     private LatLng startPoint, endPoint;
-    String date,time;
 
     //Probably will not be used
     public UserStatusRecord(){super();}
@@ -34,11 +29,6 @@ public class UserStatusRecord extends RestRecordImpl implements Comparable<UserS
         this.waypoints = new ArrayList<>(waypoints);
         this.startPoint = new LatLng(startPoint.latitude,startPoint.longitude);
         this.endPoint = new LatLng(endPoint.latitude,endPoint.longitude);
-        Date currentTime = Calendar.getInstance().getTime();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        String strDate = dateFormat.format(currentTime);
-        date = strDate.split(" ")[0] + "T";
-        time = strDate.split(" ")[1] + ".000Z";
     }
 
     //Copy the existing record
@@ -51,11 +41,6 @@ public class UserStatusRecord extends RestRecordImpl implements Comparable<UserS
         this.waypoints = new ArrayList<>(cp.waypoints);
         this.startPoint = new LatLng(cp.startPoint.latitude,cp.startPoint.longitude);
         this.endPoint = new LatLng(cp.endPoint.latitude,cp.endPoint.longitude);
-        Date currentTime = Calendar.getInstance().getTime();
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        String strDate = dateFormat.format(currentTime);
-        date = strDate.split(" ")[0] + "T";
-        time = strDate.split(" ")[1] + ".000Z";
     }
 
     public UserStatusRecord(JSONObject jso) {
@@ -79,15 +64,13 @@ public class UserStatusRecord extends RestRecordImpl implements Comparable<UserS
 
     public LatLng getEndPoint() { return endPoint; }
 
-    public String get_date() { return date; }
-
-    public String get_time() { return time; }
-
     public void setActive(boolean active) { isActive = active; }
 
     public void setCurrentPosition(LatLng cur) { currentPosition = new LatLng(cur.latitude,cur.longitude); }
 
     public void setEntryId(int id) {entryId = id; }
+
+    public void setPetId(int id) {petId = id; }
 
     public void setWaypoints(ArrayList<LatLng> pts) { waypoints = new ArrayList<>(pts); }
 
@@ -100,14 +83,10 @@ public class UserStatusRecord extends RestRecordImpl implements Comparable<UserS
             this.waypoints = this.stringToWaypoints(jso.getString("route"));
             this.startPoint = waypoints.remove(0);
             this.endPoint = waypoints.remove(waypoints.size()-1);
-            String dateTime = jso.getString("date");
-            String[] tokens = dateTime.split("T");
-            this.date = tokens[0] + "T";
-            this.time = tokens[1].substring(0, tokens[1].indexOf('.'));
             this.isActive = jso.getBoolean("isActive");
             String pos = jso.getString("location");
             double lat = Double.parseDouble(pos.substring(0,pos.indexOf(",")));
-            double lng = Double.parseDouble(pos.substring(pos.indexOf(",")));
+            double lng = Double.parseDouble(pos.substring(pos.indexOf(",")+1));
             this.currentPosition = new LatLng(lat,lng);
         } catch(JSONException jse){
             jse.printStackTrace();
@@ -129,7 +108,6 @@ public class UserStatusRecord extends RestRecordImpl implements Comparable<UserS
             jso.put("isActive", this.isActive);
             jso.put("location", this.currentPosition.latitude +","+this.currentPosition.longitude);
             jso.put("route",this.waypointsToString());
-            jso.put("date", this.date + this.time);
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -190,19 +168,7 @@ public class UserStatusRecord extends RestRecordImpl implements Comparable<UserS
         // typecast o to Complex so that we can compare data members
         UserStatusRecord usr = (UserStatusRecord) o;
 
-        if(usr.entryId == this.entryId)
-        {
-            float[] distanceVec = new float[3];
-            Location.distanceBetween(usr.currentPosition.latitude, usr.currentPosition.longitude,
-                usr.currentPosition.latitude, usr.currentPosition.longitude, distanceVec);
-
-            if(distanceVec[0] < 20.0)
-                return false;
-            else
-                return true;
-        }
-
-        return false;
+        return usr.entryId == this.entryId;
     }
 
     @Override

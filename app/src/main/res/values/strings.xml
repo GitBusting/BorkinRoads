@@ -43,6 +43,7 @@
     <string name="estimated_time2">Estimated Time:</string>
     <string name="title_activity_map">BorkinRoads</string>
     <string name="title_activity_main">BorkinRoads</string>
+    <string name="title_activity_register">RegisterRoads</string>
     <string name="bathbutton">bathbutton</string>
     <string name="vetbutton">vetbutton</string>
     <string name="walkbutton">walkbutton</string>
@@ -71,6 +72,6 @@
     </string>
     <string name="search_friend_text">Search For a Friend</string>
     <string name="friend_list">Friend List</string>
-    <string name="search_for_a_friend_text_hint">Search for a friend...</string>
+    <string name="search_for_a_friend_text_hint">Search for a user...</string>
     <string name="your_friends_title">Your Friends</string>
 </resources>

@@ -108,6 +108,8 @@ public class DoggoRecord extends RestRecordImpl {
         return last_vet_date;
     }
 
+    public int getUserID(){ return userID;}
+
     public void setLast_vet_date(ZonedDateTime last_vet_date) {
         this.last_vet_date = last_vet_date;
     }

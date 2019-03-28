@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import com.auth0.android.jwt.JWT;
 import com.bitirme.gitbusters.borkinroads.R;
+import com.bitirme.gitbusters.borkinroads.data.UserRecord;
 import com.bitirme.gitbusters.borkinroads.uihelpers.RouteDetailsAdapter;
 import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
 import com.bitirme.gitbusters.borkinroads.data.RouteDetailsRecord;
@@ -66,7 +67,7 @@ public class RouteDetailsActivity extends AppCompatActivity implements OnMapRead
             startActivity(intent2);
         }
 
-        RestPuller rp = new RestPuller(new RouteRecord(), getApplicationContext());
+        RestPuller rp = new RestPuller(new RouteRecord(), getApplicationContext(), id);
         rp.start();
         try {
             rp.join();
@@ -76,27 +77,13 @@ public class RouteDetailsActivity extends AppCompatActivity implements OnMapRead
         for (RestRecordImpl rec : rp.getFetchedRecords()) {
             RouteRecord rr = (RouteRecord) rec;
             if (rr.getEntryID() == id) {
-                routeRow = rr;
+                this.routeRow = rr;
                 System.out.println("gelen id ye ait route bulundu");
                 rr.prettyPrint();
             }
         }
 
-        routeDetails = new ArrayList<>();
-        rp = new RestPuller(new RouteDetailsRecord(), getApplicationContext());
-        rp.start();
-        try {
-            rp.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        for(RestRecordImpl rec : rp.getFetchedRecords()) {
-            RouteDetailsRecord rdr = (RouteDetailsRecord) rec;
-            if(rdr.getRoute_id() == id)
-            routeDetails.add(rdr);
-        }
-
-//        routeDetails = testDetailsList();
+        routeDetails = routeRow.getDetails();
 
 
         mTitle = findViewById(R.id.display_row_title);

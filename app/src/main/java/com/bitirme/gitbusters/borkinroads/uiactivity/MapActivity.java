@@ -9,8 +9,10 @@ import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -32,6 +34,7 @@ import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.model.Step;
 import com.akexorcist.googledirection.util.DirectionConverter;
+import com.bitirme.gitbusters.borkinroads.data.DoggoRecord;
 import com.bitirme.gitbusters.borkinroads.data.UserRecord;
 import com.bitirme.gitbusters.borkinroads.routeutilities.DirectionsHandler;
 import com.bitirme.gitbusters.borkinroads.R;
@@ -41,7 +44,6 @@ import com.bitirme.gitbusters.borkinroads.data.UserStatusRecord;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestPuller;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestPusher;
 import com.bitirme.gitbusters.borkinroads.routeutilities.FriendMarker;
-import com.bitirme.gitbusters.borkinroads.routeutilities.FriendRouteHandler;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestUpdater;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -54,9 +56,12 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,7 +79,6 @@ public class MapActivity extends FragmentActivity
 
   private GoogleMap mMap;
 
-  private FriendRouteHandler frh;
   private ConcurrentLinkedQueue<Direction> friendDirectionsFromHandler;
   private ConcurrentLinkedQueue<FriendMarker> friendMarkersFromHandler;
 
@@ -82,6 +86,8 @@ public class MapActivity extends FragmentActivity
 
   private ArrayList<Marker>   friendMarkers;
   private ArrayList<Polyline> friendsRoutes;
+  private ArrayList<UserStatusRecord> friendActiveRoutes;
+  private ArrayList<UserRecord> allUsers;
 
   private ArrayList<Marker> markers;
   private ArrayList<LatLng> coordinates;
@@ -178,6 +184,7 @@ public class MapActivity extends FragmentActivity
     legColors = new ArrayList<>();
     friendsRoutes = new ArrayList<>();
     friendMarkers = new ArrayList<>();
+    friendActiveRoutes = new ArrayList<>();
     // Not the best way to solve "Not on the main thread" exception
     friendDirectionsFromHandler = new ConcurrentLinkedQueue<>();
     friendMarkersFromHandler = new ConcurrentLinkedQueue<>();
@@ -212,18 +219,26 @@ public class MapActivity extends FragmentActivity
     startRouteButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
+        fillUserStatusRecord();
         startEndRoute();
       }
     });
-
-    // This thread is responsible for fetching friends' routes
-    frh = new FriendRouteHandler();
-    FriendRouteHandler.setMapReference(this);
 
     SupportMapFragment mapFragment =
             (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
     assert mapFragment != null;
     mapFragment.getMapAsync(this);
+
+    allUsers = new ArrayList<>();
+    RestPuller rp = new RestPuller(new UserRecord(),this);
+    rp.start();
+    try {
+      rp.join();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    for(RestRecordImpl rri : rp.getFetchedRecords())
+      allUsers.add((UserRecord) rri);
 
     // TODO this doesn't belong here
     // RestPuller rp = new RestPuller();
@@ -266,7 +281,10 @@ public class MapActivity extends FragmentActivity
             limitedTime = true;
             timeLimit = mins * 2; //not round trip
             coordinates.add(requester.getResult());
-            requestDirection(coordinates);
+            if(requester.getResult() == null || backupMarkers.isEmpty())
+              Toast.makeText(MapActivity.this,"Can\'t find requested route please try with a smaller time limit.",Toast.LENGTH_LONG).show();
+            else
+              requestDirection(coordinates);
           }
         });
 
@@ -317,27 +335,49 @@ public class MapActivity extends FragmentActivity
     overrideCurrentLocation = false;
 
     // Indicates that we've been instantiated by another activity with
-    // non-usual purpose. Call this here so that nothing breaks down.
-    if(getIntent().getExtras() != null)
-    {
-      RouteRecord oldRoute = (RouteRecord)
-              getIntent().getSerializableExtra("ROUTE");
-      coordinates.add(oldRoute.getStartCoords());
-      for(LatLng ll : oldRoute.getWaypoints())
-        coordinates.add(ll);
-      coordinates.add(oldRoute.getEndCoords());
-      overrideCurrentLocation = true;
-      requestDirection(coordinates);
-    }
+      // non-usual purpose. Call this here so that nothing breaks down.
+
+      if(getIntent().getExtras() != null)
+        {
+            Integer routeID = (Integer) getIntent().getSerializableExtra("ROUTE");
+            RouteRecord oldRoute = null;
+            for (RouteRecord route : UserRecord.activeUser.getRoutes())
+                if (route.getEntryID() == routeID)
+                    oldRoute = route;
+
+
+          coordinates.add(oldRoute.getStartCoords());
+          for(LatLng ll : oldRoute.getWaypoints())
+            coordinates.add(ll);
+          coordinates.add(oldRoute.getEndCoords());
+          overrideCurrentLocation = true;
+          requestDirection(coordinates);
+        }
 
     // Let friend route handler fetch friends' routes
-    frh.start();
+
+    // https://stackoverflow.com/questions/17032024/how-to-call-asynctasks-periodically
+    final Handler handler = new Handler();
+    Timer timer = new Timer();
+    TimerTask task = new TimerTask() {
+      @Override
+      public void run() {
+        handler.post(new Runnable() {
+          public void run() {
+            new FriendRouteHandlerTask().execute();
+          }
+        });
+      }
+    };
+    timer.schedule(task, 0, 20000); //it executes this every 1000ms
+
     friendCdt = new CountDownTimer(4000, 2000) {
       @Override
       public void onTick(long millisUntilFinished) { }
       @Override
       public void onFinish() { friendCdtLoop(); }
     }.start();
+
   }
 
   private void friendCdtLoop()
@@ -346,11 +386,12 @@ public class MapActivity extends FragmentActivity
     {
       displayFriendRoute(dir);
     }
+    friendDirectionsFromHandler.clear();
+
     ArrayList<FriendMarker> fmlist = new ArrayList<>();
     for(FriendMarker fm : friendMarkersFromHandler)
-    {
       fmlist.add(fm);
-    }
+
     displayFriendMarkers(fmlist);
 
     friendCdt = new CountDownTimer(4000, 2000) {
@@ -373,10 +414,76 @@ public class MapActivity extends FragmentActivity
     // (the camera animates to the user's current position).
     return false;
   }
+  private void fillUserStatusRecord(){
+    //If we are ending the route we don't need to fill the user status record
+    //It should be done only at the beginning of the route
+    if(routeActive) return;
+    // Create a User Status Record to update while the route is active
+    UserRecord user = UserRecord.activeUser;
+    final ArrayList<DoggoRecord> pets = user.getPets();
+    statusRecord = new UserStatusRecord(user.getEntryID(),-1,true,cur_location,coordinates,cur_location,cur_location);
+    if (pets.size() == 0 || pets.get(0).getName().equalsIgnoreCase("Add new Pet")) {
+      updateDBStatus(true,false);
+      return; // dont need to select pet because the user has no pets
+    }
 
+    // setup the alert builder
+    AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    builder.setTitle("Choose your pet:");
+    final String[] animals = new String[pets.size()];
+    for (int i =0;i<pets.size();i++) {
+      animals[i] = pets.get(i).getName();
+    }
+    final int[] checkedItem = {-1};
+    builder.setSingleChoiceItems(animals, checkedItem[0], new DialogInterface.OnClickListener() {
+      @Override
+      public void onClick(DialogInterface dialog, int which) {
+        checkedItem[0] = which;
+      }
+    });
+
+    // add OK and Cancel buttons
+    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+      @Override
+      public void onClick(DialogInterface dialog, int which) {
+        if(checkedItem[0] == -1) {
+          Toast.makeText(MapActivity.this,"You didn\'t select any pets.",Toast.LENGTH_LONG).show();
+          return; //no need to update the status record since petId is already -1
+        }
+        Toast.makeText(MapActivity.this,"You selected : " + animals[checkedItem[0]],Toast.LENGTH_LONG).show();
+        boolean foundInDB=false;
+        if (pets.get(checkedItem[0]).getEntryID() == 0) { // this is a newly added pet and it's id is not updated for the db yet
+          RestPuller petpuller = new RestPuller(pets.get(checkedItem[0]),getApplicationContext());
+          petpuller.start();
+          try {
+            petpuller.join();
+          } catch (InterruptedException e) {
+            e.printStackTrace();
+          }
+          ArrayList<RestRecordImpl> dogs = petpuller.getFetchedRecords();
+          for (RestRecordImpl record : dogs) {
+            DoggoRecord dog = (DoggoRecord) record;
+            if(dog.getName().equals(pets.get(checkedItem[0]).getName()) && dog.getUserID() == UserRecord.activeUser.getEntryID()) {
+              statusRecord.setPetId(dog.getEntryID());
+              foundInDB = true;
+              break;
+            }
+          }
+        }
+        if(!foundInDB)
+          statusRecord.setPetId(pets.get(checkedItem[0]).getEntryID());
+      }
+    });
+
+    // create and show the alert dialog
+    AlertDialog dialog = builder.create();
+    dialog.show();
+
+    updateDBStatus(true,false);
+  }
   private void startEndRoute() {
     if(!routeActive) {
-      currRoute = new RouteRecord(cur_location, cur_location,
+           currRoute = new RouteRecord(cur_location, cur_location,
               coordinates, legColors, estimatedMinutes);
       currRoute.setTitle(currTitle);
       copyRoute = new RouteRecord(currRoute); // Checkpoint the current state of the route
@@ -394,11 +501,6 @@ public class MapActivity extends FragmentActivity
       maxPace = 0.0;
       movingPace = 0.0;
 
-      // Create a User Status Record to update while the route is active
-      //TODO: add userID and petID
-      statusRecord = new UserStatusRecord(-1,-1,true,cur_location,coordinates,cur_location,cur_location);
-      initializeUserStatus();
-
       cdt = new CountDownTimer(20000, 10000) {
         public void onTick(long millisUntilFinished) {
           System.out.println("Timer heartbeat per 10 seconds.");
@@ -412,6 +514,7 @@ public class MapActivity extends FragmentActivity
       cdt.cancel();
       cdt = null;
       clearMap();
+      displayDirection = false;
     }
     if(routeActive) {
       resetButton.setVisibility(View.VISIBLE);
@@ -469,7 +572,7 @@ public class MapActivity extends FragmentActivity
       detailPusher.start();
 
       // Update user status in DB
-      updateDBStatus(true);
+      updateDBStatus(false,true);
     }
     else {
       genPathButton.setVisibility(View.INVISIBLE);
@@ -489,11 +592,13 @@ public class MapActivity extends FragmentActivity
       start = coords.get(0);
       end = coords.get(1);
       overrideCurrentLocation = false;
+    }else {
+      if (cur_location == null)
+        throw new AssertionError("Location was null when a direction request was made");
     }
-    if(cur_location == null)
-      throw new AssertionError("Location was null when a direction request was made");
     if (apikey.isEmpty())
       throw new AssertionError("API key not found");
+
     GoogleDirection.withServerKey(apikey)
             .from(start)
             .and(coords)
@@ -579,10 +684,13 @@ public class MapActivity extends FragmentActivity
     //update the statistics
     timePassed += timeSpent / 1000; // adding to total seconds on this active route
     averageSpeed = metersPassed / timePassed;
-    movingSpeed = metersPassed / movingTime;
+    if( movingTime !=0 )
+      movingSpeed = metersPassed / movingTime;
 
-    averagePace = timePassed / metersPassed;
-    movingPace = movingTime / metersPassed;
+    if(metersPassed != 0) {
+      averagePace = timePassed / metersPassed;
+      movingPace = movingTime / metersPassed;
+    }
 
     //debug prints (TODO: delete later)
     String outline = "";
@@ -598,7 +706,7 @@ public class MapActivity extends FragmentActivity
     System.out.println(outline);
 
     // Update the user status
-    updateDBStatus(false);
+    updateDBStatus(false,false);
 
       // Restart counter with each update call
     cdt = new CountDownTimer(countdownMillis, countdownMillis/2) {
@@ -729,63 +837,44 @@ public class MapActivity extends FragmentActivity
     }
     return -1;
   }
-  private void initializeUserStatus() {
-    /* We want to set user active in user status table
-     * Check whether the user has an entry in the table already
-     * If the user has an entry update it
-     * Else send a record to the table
-     */
-    RestPuller puller = new RestPuller(statusRecord, this);
-    //puller.start();
-    UserStatusRecord us = null;
-    ArrayList<RestRecordImpl> records = puller.getFetchedRecords();
-    for (RestRecordImpl record : records) {
-      us = (UserStatusRecord) record;
-      if (us.getUserId() == statusRecord.getUserId())
-        break;
-    }
-    //table doesn't have an entry for the current user
-    if(us==null) {
-      RestPusher stPusher = new RestPusher(statusRecord, this);
-      //stPusher.start();
-    }
-    //table has an entry for the user, update it
-    else {
-      statusRecord.setCurrentPosition(cur_location);
-      statusRecord.setEntryId(us.getEntryID());
-      statusRecord.setWaypoints(coordinates);
-      RestUpdater updater = new RestUpdater(statusRecord, this);
-      //updater.start();
-    }
-  }
-  private void updateDBStatus(boolean isDone){
+  private void updateDBStatus(boolean isInitialize,boolean isDone){
     /* We have few tasks here to update the DB with the new status
      * 1. Pull entries
      * 2. Find the entry corresponding to the user
      * 3a. If the user completed the route, update the entry and set isActive to false
      * 3b. If not, update the entry with new location and waypoint info.
      */
+    statusRecord.setCurrentPosition(cur_location);
+    statusRecord.setWaypoints(coordinates);
+    statusRecord.setActive(true);
     RestPuller puller = new RestPuller(statusRecord, this);
-    //puller.start();
+    puller.start();
+    try {
+      puller.join();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
     UserStatusRecord us = null;
     ArrayList<RestRecordImpl> records = puller.getFetchedRecords();
     for (RestRecordImpl record : records) {
-      us = (UserStatusRecord) record;
-      if (us.getUserId() == statusRecord.getUserId())
+      UserStatusRecord temp = (UserStatusRecord) record;
+      if (temp.getUserId() == UserRecord.activeUser.getEntryID()) {
+        us = temp;
         break;
+      }
     }
     if(us==null) {
-      System.out.println("Couldn't find corresponding user status entry. Can't update the DB.");
+      System.out.println("Couldn't find our record. Sending active route record.");
+      RestPusher stPusher = new RestPusher(statusRecord, this);
+      stPusher.start();
       return;
     }
-    statusRecord.setCurrentPosition(cur_location);
     statusRecord.setEntryId(us.getEntryID());
-    statusRecord.setWaypoints(coordinates);
     if(isDone) {
       statusRecord.setActive(false);
     }
     RestUpdater updater = new RestUpdater(statusRecord, this);
-    //updater.start();
+    updater.start();
 
   }
 
@@ -879,15 +968,13 @@ public class MapActivity extends FragmentActivity
     for (FriendMarker fm : fms)
       friendMarkers.add(mMap.addMarker(new MarkerOptions()
             .position(fm.getPosition())
-            .title("Marker added by user")
+            .title(fm.getName())
             .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE))));
   }
 
-  public void clearFriendRoutes()
+  public void clearFriendMarkers()
   {
-    for(Polyline p : friendsRoutes)
-      p.remove();
-    friendsRoutes.clear();
+    friendMarkersFromHandler.clear();
   }
 
   public String getApiKey()
@@ -902,7 +989,7 @@ public class MapActivity extends FragmentActivity
   // the updated location info
   @Override
   public void onLocationChanged(Location location) {
-    Logger.getGlobal().log(Level.INFO, "Location changed!");
+    //Logger.getGlobal().log(Level.INFO, "Location changed!");
     cur_location = new LatLng(location.getLatitude(), location.getLongitude());
   }
   @Override
@@ -911,4 +998,94 @@ public class MapActivity extends FragmentActivity
   public void onProviderEnabled(String s) {}
   @Override
   public void onProviderDisabled(String s) {}
+
+  private class FriendRouteHandlerTask extends AsyncTask<Void,Void,Void> implements DirectionCallback{
+
+    @Override
+    protected Void doInBackground(Void... params) {
+
+      // Initialize rest puller & fetch active routes
+      RestPuller rp = new RestPuller(new UserStatusRecord(), getApplicationContext());
+      rp.start();
+      try {
+        rp.join();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      // Get new records from the database
+      ArrayList<UserStatusRecord> newRecords = new ArrayList<>();
+      for (RestRecordImpl rri : rp.getFetchedRecords()) {
+        UserStatusRecord usr = (UserStatusRecord) rri;
+        if(usr.isActive() && isFriend(UserRecord.activeUser, usr.getUserId()))
+          newRecords.add((UserStatusRecord) rri);
+        Logger.getGlobal().log(Level.INFO, "Successfully fetched a friend route!");
+      }
+      Collections.sort(newRecords);
+
+      // Compare newly fetched routes with already existing ones
+      // if there exists a new route we tell the MapActivity to display it
+      for (UserStatusRecord usr : newRecords) {
+        boolean exists = false;
+        for (UserStatusRecord act : friendActiveRoutes) {
+          if (act.equals(usr)) {
+            Logger.getGlobal().log(Level.INFO,"Found an equivalent route");
+            act.setCurrentPosition(usr.getCurrentPosition());
+            exists = true;
+            break;
+          }
+        }
+        if (!exists) {
+          ArrayList<LatLng> ll = usr.getWaypoints();
+          requestDirection(usr.getStartPoint(), usr.getEndPoint(), ll);
+          friendActiveRoutes.add(usr);
+        }
+      }
+      // TODO update friend indicators on map
+      clearFriendMarkers();
+      for (UserStatusRecord usr : friendActiveRoutes)
+      {
+        String uname = getUserNameFromId(usr.getUserId());
+        if(uname == null)
+          new AssertionError("Could not find user name from id");
+        putFriendMarker(new FriendMarker(usr.getCurrentPosition(), uname));
+      }
+      return null;
+    }
+
+    private void requestDirection(LatLng start, LatLng end, ArrayList<LatLng> coords)
+    {
+      GoogleDirection.withServerKey(apikey)
+          .from(start)
+          .and(coords)
+          .to(end)
+          .transportMode(TransportMode.WALKING)
+          .execute(this);
+    }
+
+    @Override
+    public void onDirectionSuccess(Direction direction, String rawBody) {
+      putFriendDirection(direction);
+    }
+
+    @Override
+    public void onDirectionFailure(Throwable t) {
+
+    }
+
+    private boolean isFriend(UserRecord act, int id)
+    {
+      for(int i : act.getFriendIds())
+        if(id == i)
+          return true;
+      return false;
+    }
+
+    private String getUserNameFromId(int id)
+    {
+      for(UserRecord ur : allUsers)
+        if(ur.getEntryID() == id)
+          return ur.getName();
+      return null;
+    }
+  }
 }
