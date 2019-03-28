@@ -83,7 +83,7 @@ public class BreedDoggos extends AppCompatActivity {
                     warning.setText(R.string.warning);
                 } else {
                     ZonedDateTime zdt = ZonedDateTime.ofInstant(myCalendar.toInstant(), ZoneId.systemDefault());
-                    DoggoRecord newPet = new DoggoRecord(nameText.getText().toString().substring(0, 1).toUpperCase() + nameText.getText().toString().substring(1).toLowerCase(), breedText.getText().toString().substring(0, 1).toUpperCase() + breedText.getText().toString().substring(1).toLowerCase(), zdt, gender.isChecked() ? DoggoRecord.gender.Male : DoggoRecord.gender.Female);
+                    DoggoRecord newPet = new DoggoRecord(capitalize(nameText.getText().toString()), capitalize(breedText.getText().toString()), zdt, gender.isChecked() ? DoggoRecord.gender.Male : DoggoRecord.gender.Female);
                     pushNewDogToDatabase(newPet);
                     Toast.makeText(BreedDoggos.this, "Pet Added!", Toast.LENGTH_SHORT).show();
                     Intent i = new Intent(view.getContext(), MainActivity.class);
@@ -98,7 +98,15 @@ public class BreedDoggos extends AppCompatActivity {
         RestPusher rp = new RestPusher(newPet, getApplicationContext());
         rp.start();
         UserRecord.activeUser.getPets().add(newPet);
+    }
 
+    private String capitalize(String s) {
+        String[] temp = s.split(" ");
+        String returnString = "";
+        for (String a : temp) {
+            returnString = returnString.concat(a.substring(0, 1).toUpperCase() + a.substring(1).toLowerCase() + " ");
+        }
+        return returnString.trim();
 
     }
 }
