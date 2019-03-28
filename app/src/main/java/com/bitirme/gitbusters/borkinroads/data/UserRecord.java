@@ -36,8 +36,7 @@ public class UserRecord extends RestRecordImpl {
     for (RouteRecord rr: copy.routes)
       this.routes.add(new RouteRecord(rr));
     this.friendIds = new ArrayList<>();
-    for (int i : copy.friendIds)
-      this.friendIds.add(i);
+    this.friendIds.addAll(copy.friendIds);
   }
 
   public UserRecord(JSONObject jso) {
@@ -114,11 +113,11 @@ public class UserRecord extends RestRecordImpl {
     activeUser.userID = id;
   }
 
-    public ArrayList<DoggoRecord> getPets() {
-        return pets;
-    }
+  public ArrayList<DoggoRecord> getPets() {
+    return pets;
+  }
 
-    public ArrayList<RouteRecord> getRoutes() {
+  public ArrayList<RouteRecord> getRoutes() {
         return routes;
     }
 

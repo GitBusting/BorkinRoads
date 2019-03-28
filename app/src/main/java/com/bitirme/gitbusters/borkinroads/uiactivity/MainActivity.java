@@ -204,13 +204,17 @@ public class MainActivity extends AppCompatActivity
                     startActivityForResult(new Intent(Intent.ACTION_PICK, android.provider.MediaStore.Images.Media.INTERNAL_CONTENT_URI), GET_FROM_GALLERY);
             }
         });
+        DoggoRecord temp = null;
         if (UserRecord.activeUser.getPets().size() == 0) {
-            DoggoRecord temp = new DoggoRecord("Add New Pet", "Breed", ZonedDateTime.now(ZoneId.systemDefault()), DoggoRecord.gender.Gender);
-            UserRecord.activeUser.getPets().add(temp);
+            temp = new DoggoRecord("Add New Pet", "Breed", ZonedDateTime.now(ZoneId.systemDefault()), DoggoRecord.gender.Gender);
+//            UserRecord.activeUser.getPets().add(temp);
             Log.v(TAG, "did it!");
         }
 
-        currentDoggo = UserRecord.activeUser.getPets().get(0);
+        if (UserRecord.activeUser.getPets().size() == 0)
+            currentDoggo = temp;
+        else
+            currentDoggo = UserRecord.activeUser.getPets().get(0);
 
         setValues();
         setBars();
