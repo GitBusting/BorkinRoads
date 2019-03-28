@@ -27,10 +27,8 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.bitirme.gitbusters.borkinroads.R;
-import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
 import com.bitirme.gitbusters.borkinroads.data.RouteRecord;
 import com.bitirme.gitbusters.borkinroads.data.UserRecord;
-import com.bitirme.gitbusters.borkinroads.dbinterface.RestPuller;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestUpdater;
 import com.bitirme.gitbusters.borkinroads.uihelpers.FilterPreferences;
 import com.github.aakira.expandablelayout.ExpandableRelativeLayout;

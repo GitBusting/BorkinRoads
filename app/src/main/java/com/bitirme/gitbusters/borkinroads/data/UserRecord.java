@@ -15,9 +15,10 @@ public class UserRecord extends RestRecordImpl {
   private ArrayList<DoggoRecord> pets;
   private ArrayList<RouteRecord> routes;
 
-  public UserRecord(){};
+    public UserRecord() {
+    }
 
-  public UserRecord(String name, int userID, ArrayList<DoggoRecord> pets, ArrayList<RouteRecord> routes) {
+    public UserRecord(String name, int userID, ArrayList<DoggoRecord> pets, ArrayList<RouteRecord> routes) {
     this.name   = name;
     this.userID = userID;
     this.pets = pets;

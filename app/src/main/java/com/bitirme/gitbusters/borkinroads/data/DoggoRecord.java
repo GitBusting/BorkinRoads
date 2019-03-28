@@ -4,12 +4,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.ResolverStyle;
-import java.util.ArrayList;
 
 public class DoggoRecord extends RestRecordImpl {
 //    public static final ArrayList<DoggoRecord> doggos = new ArrayList<>();
