@@ -125,8 +125,6 @@ public class Notifications {
                 .setContentText(textContent)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);
         mBuilder.setWhen(cal.getTimeInMillis());
-
-        mBuilder.setWhen(cal.getTimeInMillis());
     }
 }
 

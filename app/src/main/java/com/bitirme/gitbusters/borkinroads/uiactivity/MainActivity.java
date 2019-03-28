@@ -207,8 +207,6 @@ public class MainActivity extends AppCompatActivity
         DoggoRecord temp = null;
         if (UserRecord.activeUser.getPets().size() == 0) {
             temp = new DoggoRecord("Add New Pet", "Breed", ZonedDateTime.now(ZoneId.systemDefault()), DoggoRecord.gender.Gender);
-//            UserRecord.activeUser.getPets().add(temp);
-            Log.v(TAG, "did it!");
         }
 
         if (UserRecord.activeUser.getPets().size() == 0)
@@ -258,6 +256,8 @@ public class MainActivity extends AppCompatActivity
                 ppbutton.setImageBitmap(bitmap);
                 saveImage(bitmap);
 
+                Intent i = new Intent(this, MainActivity.class);
+                startActivity(i);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             } catch (IOException e) {
