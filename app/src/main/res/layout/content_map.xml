@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<fragment xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/map"
+    android:name="com.google.android.gms.maps.SupportMapFragment"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".uiactivity.MapActivity">
+
+    <Button
+        android:id="@+id/resetButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|top"
+        android:layout_marginTop="10dp"
+        android:padding="10dp"
+        android:text="@string/reset_path" />
+
+    <Button
+        android:id="@+id/generatePathButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|bottom"
+        android:layout_marginTop="20dp"
+        android:padding="10dp"
+        android:text="@string/generate_path_button" />
+
+    <Button
+        android:id="@+id/startRouteButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_marginTop="20dp"
+        android:padding="10dp"
+        android:text="@string/start_route" />
+
+    <Button
+        android:id="@+id/limitedtime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|top"
+        android:layout_marginTop="50dp"
+        android:padding="10dp"
+        android:text="I have limited time!" />
+
+    <TextView
+        android:id="@+id/estimated_time"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_gravity="end|bottom"
+        android:layout_marginBottom="60dp"
+        android:background="@android:color/background_light"
+        android:padding="10dp"
+        android:scrollbars="vertical"
+        android:text="@string/estimated_time2"
+        android:textAlignment="gravity"
+        android:textColor="@android:color/black"
+        android:textColorHighlight="@android:color/primary_text_dark"
+        android:textSize="15sp" />
+
+    <CheckBox
+        android:id="@+id/parksonly"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|top"
+        android:layout_marginTop="100dp"
+        android:background="@color/common_google_signin_btn_text_light_default"
+        android:padding="10dp"
+        android:text="Parks (limited time only)"
+        tools:ignore="HardcodedText" />
+
+
+</fragment>
