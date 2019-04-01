@@ -763,7 +763,7 @@ public class MapActivity extends FragmentActivity
         legColors.add(lineColor);
         for (Step s : stepList) {
           polylineOptionList.add(DirectionConverter.createPolyline(this,
-                  (ArrayList<LatLng>) s.getPolyline().getPointList(), 3, lineColor));
+                  (ArrayList<LatLng>) s.getPolyline().getPointList(), 7, lineColor));
         }
         for (PolylineOptions polylineOption : polylineOptionList) {
           routes.add(mMap.addPolyline(polylineOption));
@@ -824,7 +824,7 @@ public class MapActivity extends FragmentActivity
         legColors.add(lineColor);
         for (Step s : stepList) {
           polylineOptionList.add(DirectionConverter.createPolyline(this,
-                  (ArrayList<LatLng>) s.getPolyline().getPointList(), 3, lineColor));
+                  (ArrayList<LatLng>) s.getPolyline().getPointList(), 7, lineColor));
         }
         for (PolylineOptions polylineOption : polylineOptionList) {
           routes.add(mMap.addPolyline(polylineOption));
