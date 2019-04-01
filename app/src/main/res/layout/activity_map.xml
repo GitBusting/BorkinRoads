@@ -1,71 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<fragment xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/map"
-    android:name="com.google.android.gms.maps.SupportMapFragment"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".uiactivity.MapActivity">
+    android:fitsSystemWindows="true"
+    tools:openDrawer="start">
 
-    <Button
-        android:id="@+id/resetButton"
+    <include
+        layout="@layout/app_bar_map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <android.support.design.widget.NavigationView
+        android:id="@+id/nav_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start|top"
-        android:layout_marginTop="10dp"
-        android:padding="10dp"
-        android:text="@string/reset_path" />
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:fitsSystemWindows="true"
+        app:headerLayout="@layout/nav_header_main"
+        app:menu="@menu/activity_main_drawer" />
 
-    <Button
-        android:id="@+id/generatePathButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start|bottom"
-        android:layout_marginTop="20dp"
-        android:padding="10dp"
-        android:text="@string/generate_path_button" />
-
-    <Button
-        android:id="@+id/startRouteButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end|bottom"
-        android:layout_marginTop="20dp"
-        android:padding="10dp"
-        android:text="@string/start_route" />
-    <Button
-        android:id="@+id/limitedtime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start|top"
-        android:padding="10dp"
-        android:layout_marginTop="50dp"
-        android:text="I have limited time!" />
-
-    <TextView
-        android:id="@+id/estimated_time"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_gravity="end|bottom"
-        android:background="@android:color/background_light"
-        android:textColor="@android:color/black"
-        android:textColorHighlight="@android:color/primary_text_dark"
-        android:padding="10dp"
-        android:layout_marginBottom="60dp"
-        android:text="@string/estimated_time2"
-        android:textAlignment="gravity"
-        android:scrollbars="vertical"
-        android:textSize="15sp" />
-
-    <CheckBox android:id="@+id/parksonly"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start|top"
-        android:padding="10dp"
-        android:layout_marginTop="100dp"
-        android:background="@color/common_google_signin_btn_text_light_default"
-        android:text="Parks (limited time only)"
-        tools:ignore="HardcodedText" />
-
-
-</fragment>
+</android.support.v4.widget.DrawerLayout>

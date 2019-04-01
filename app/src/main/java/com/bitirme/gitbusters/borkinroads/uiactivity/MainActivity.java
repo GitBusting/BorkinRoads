@@ -76,13 +76,6 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        if (UserRecord.activeUser.getPets() != null)
-            for (DoggoRecord doggo : UserRecord.activeUser.getPets()) {
-                Notifications tmp = new Notifications();
-                tmp.checkEverthing(doggo, this);
-            }
-
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -91,6 +84,12 @@ public class MainActivity extends AppCompatActivity
 
         NavigationView navigationView = findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        if (UserRecord.activeUser.getPets() != null)
+            for (DoggoRecord doggo : UserRecord.activeUser.getPets()) {
+                Notifications tmp = new Notifications();
+                tmp.checkEverthing(doggo, this);
+            }
 
         name = findViewById(R.id.name);
         breed = findViewById(R.id.breed);

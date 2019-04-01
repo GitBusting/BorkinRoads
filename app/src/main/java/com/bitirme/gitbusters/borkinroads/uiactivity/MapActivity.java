@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
@@ -14,10 +15,15 @@ import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.text.InputType;
 import android.text.method.ScrollingMovementMethod;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -34,17 +40,18 @@ import com.akexorcist.googledirection.model.Leg;
 import com.akexorcist.googledirection.model.Route;
 import com.akexorcist.googledirection.model.Step;
 import com.akexorcist.googledirection.util.DirectionConverter;
-import com.bitirme.gitbusters.borkinroads.data.DoggoRecord;
-import com.bitirme.gitbusters.borkinroads.data.UserRecord;
-import com.bitirme.gitbusters.borkinroads.routeutilities.DirectionsHandler;
 import com.bitirme.gitbusters.borkinroads.R;
+import com.bitirme.gitbusters.borkinroads.data.DoggoRecord;
 import com.bitirme.gitbusters.borkinroads.data.RestRecordImpl;
 import com.bitirme.gitbusters.borkinroads.data.RouteDetailsRecord;
+import com.bitirme.gitbusters.borkinroads.data.RouteRecord;
+import com.bitirme.gitbusters.borkinroads.data.UserRecord;
 import com.bitirme.gitbusters.borkinroads.data.UserStatusRecord;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestPuller;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestPusher;
-import com.bitirme.gitbusters.borkinroads.routeutilities.FriendMarker;
 import com.bitirme.gitbusters.borkinroads.dbinterface.RestUpdater;
+import com.bitirme.gitbusters.borkinroads.routeutilities.DirectionsHandler;
+import com.bitirme.gitbusters.borkinroads.routeutilities.FriendMarker;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -66,14 +73,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.bitirme.gitbusters.borkinroads.data.RouteRecord;
-
 public class MapActivity extends FragmentActivity
         implements GoogleMap.OnMyLocationButtonClickListener,
         GoogleMap.OnMyLocationClickListener,
         OnMapReadyCallback,
         DirectionCallback,
-        LocationListener {
+        LocationListener, NavigationView.OnNavigationItemSelectedListener {
 
   private final String apikey = "AIzaSyA3nOUd0mIm1mCoUIx1DRa-qsCT3Kz1a_k";
 
@@ -140,7 +145,12 @@ public class MapActivity extends FragmentActivity
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_map);
-    cur_location=null;
+
+      NavigationView navigationView = findViewById(R.id.nav_view);
+      navigationView.setNavigationItemSelectedListener(this);
+
+
+      cur_location = null;
     limitedTime = false;
     LocationManager locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
     if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -1088,4 +1098,62 @@ public class MapActivity extends FragmentActivity
       return null;
     }
   }
+
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.nav_addPet) {
+            Intent i = new Intent(this, BreedDoggos.class);
+            startActivity(i);
+
+        } else if (id == R.id.nav_walk) {
+            Intent i = new Intent(this, MapActivity.class);
+            startActivity(i);
+        } else if (id == R.id.nav_my_routes) {
+            Intent i = new Intent(this, DisplayRoutesActivity.class);
+            startActivity(i);
+        } else if (id == R.id.nav_friend_list) {
+            Intent i = new Intent(this, FriendListActivity.class);
+            startActivity(i);
+        }
+
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
 }
