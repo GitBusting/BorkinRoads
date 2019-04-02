@@ -536,6 +536,8 @@ public class MapActivity extends FragmentActivity
 
       // For now we just push the newly created route
       copyRoute.setUserID(UserRecord.activeUser.getEntryID());
+      new ActiveRouteUpdaterTask().execute();
+      /*
       RestPusher rp = new RestPusher(copyRoute, getApplicationContext());
       rp.start();
       try {
@@ -545,13 +547,13 @@ public class MapActivity extends FragmentActivity
       }
       UserRecord.activeUser.getRoutes().add(copyRoute);
 
-      /* To add details about the created route we need to
-       *  1. Get route id
-       *     a. Pull the routes
-       *     b. Find the newly created route using the date and time
-       *  2. Use the route id to create a new Detail Record
-       *  3. Push the detail record
-       */
+//       To add details about the created route we need to
+//         1. Get route id
+//            a. Pull the routes
+//            b. Find the newly created route using the date and time
+//         2. Use the route id to create a new Detail Record
+//         3. Push the detail record
+//
 
       // Get route id
       // a. pull the routes
@@ -583,6 +585,7 @@ public class MapActivity extends FragmentActivity
 
       // Update user status in DB
       updateDBStatus(false,true);
+      */
     }
     else {
       genPathButton.setVisibility(View.INVISIBLE);
@@ -1099,61 +1102,166 @@ public class MapActivity extends FragmentActivity
     }
   }
 
+  private class ActiveRouteUpdaterTask extends AsyncTask<Void,Void,Void>{
+
     @Override
-    public void onBackPressed() {
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
+    protected void onPostExecute(Void result) {
+      Toast.makeText(getApplicationContext(),"Updated the DB with your route!",
+              Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected Void doInBackground(Void... voids) {
+      RestPusher rp = new RestPusher(copyRoute, getApplicationContext());
+      rp.start();
+      try {
+        rp.join();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      UserRecord.activeUser.getRoutes().add(copyRoute);
+
+      /* To add details about the created route we need to
+       *  1. Get route id
+       *     a. Pull the routes
+       *     b. Find the newly created route using the date and time
+       *  2. Use the route id to create a new Detail Record
+       *  3. Push the detail record
+       */
+
+      // Get route id
+      // a. pull the routes
+      RestPuller puller = new RestPuller(copyRoute, getApplicationContext());
+      puller.start();
+      try {
+        puller.join();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      ArrayList<RestRecordImpl> routeRecords = puller.getFetchedRecords();
+
+      // b. find the newly created route
+      int routeId = getRouteId(routeRecords);
+
+      // couldn't find the route should not happen if we sent the route correctly
+      if(routeId == -1) {
+        System.out.println("Couldn't find the entry.");
+      }
+
+      // Creating route details record for statistics collected during the walk.
+      detailsRecord = new RouteDetailsRecord(-1,routeId,maxPace,
+              averagePace,movingPace,maxSpeed,averageSpeed,movingSpeed,metersPassed,
+              timePassed,movingTime,copyRoute.getDate(),copyRoute.getTime());
+
+      // Send the statistics
+      RestPusher detailPusher = new RestPusher(detailsRecord, getApplicationContext());
+      detailPusher.start();
+
+      // Update user status in DB
+      boolean isInitialize = false;
+      boolean isDone = true;
+
+      /* We have few tasks here to update the DB with the new status
+       * 1. Pull entries
+       * 2. Find the entry corresponding to the user
+       * 3a. If the user completed the route, update the entry and set isActive to false
+       * 3b. If not, update the entry with new location and waypoint info.
+       */
+      statusRecord.setCurrentPosition(cur_location);
+      statusRecord.setWaypoints(coordinates);
+      statusRecord.setActive(true);
+      puller = new RestPuller(statusRecord, getApplicationContext());
+      puller.start();
+      try {
+        puller.join();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+      UserStatusRecord us = null;
+      ArrayList<RestRecordImpl> records = puller.getFetchedRecords();
+      for (RestRecordImpl record : records) {
+        UserStatusRecord temp = (UserStatusRecord) record;
+        if (temp.getUserId() == UserRecord.activeUser.getEntryID()) {
+          us = temp;
+          break;
         }
+      }
+      if(us==null) {
+        System.out.println("Couldn't find our record. Sending active route record.");
+        RestPusher stPusher = new RestPusher(statusRecord, getApplicationContext());
+        stPusher.start();
+        return null;
+      }
+      statusRecord.setEntryId(us.getEntryID());
+      if(isDone) {
+        statusRecord.setActive(false);
+      }
+      RestUpdater updater = new RestUpdater(statusRecord, getApplicationContext());
+      updater.start();
+
+      //Toast.makeText(getApplicationContext(),"Updated the DB with your route!",
+              //Toast.LENGTH_SHORT);
+
+      return null;
     }
+  }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+  @Override
+  public void onBackPressed() {
+      DrawerLayout drawer = findViewById(R.id.drawer_layout);
+      if (drawer.isDrawerOpen(GravityCompat.START)) {
+          drawer.closeDrawer(GravityCompat.START);
+      } else {
+          super.onBackPressed();
+      }
+  }
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+      // Inflate the menu; this adds items to the action bar if it is present.
+      getMenuInflater().inflate(R.menu.main, menu);
+      return true;
+  }
 
-        return super.onOptionsItemSelected(item);
-    }
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+      // Handle action bar item clicks here. The action bar will
+      // automatically handle clicks on the Home/Up button, so long
+      // as you specify a parent activity in AndroidManifest.xml.
+      int id = item.getItemId();
 
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
+      //noinspection SimplifiableIfStatement
+      if (id == R.id.action_settings) {
+          return true;
+      }
 
-        if (id == R.id.nav_addPet) {
-            Intent i = new Intent(this, BreedDoggos.class);
-            startActivity(i);
+      return super.onOptionsItemSelected(item);
+  }
 
-        } else if (id == R.id.nav_walk) {
-            Intent i = new Intent(this, MapActivity.class);
-            startActivity(i);
-        } else if (id == R.id.nav_my_routes) {
-            Intent i = new Intent(this, DisplayRoutesActivity.class);
-            startActivity(i);
-        } else if (id == R.id.nav_friend_list) {
-            Intent i = new Intent(this, FriendListActivity.class);
-            startActivity(i);
-        }
+  @SuppressWarnings("StatementWithEmptyBody")
+  @Override
+  public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+      // Handle navigation view item clicks here.
+      int id = item.getItemId();
 
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
-    }
+      if (id == R.id.nav_addPet) {
+          Intent i = new Intent(this, BreedDoggos.class);
+          startActivity(i);
+
+      } else if (id == R.id.nav_walk) {
+          Intent i = new Intent(this, MapActivity.class);
+          startActivity(i);
+      } else if (id == R.id.nav_my_routes) {
+          Intent i = new Intent(this, DisplayRoutesActivity.class);
+          startActivity(i);
+      } else if (id == R.id.nav_friend_list) {
+          Intent i = new Intent(this, FriendListActivity.class);
+          startActivity(i);
+      }
+
+      DrawerLayout drawer = findViewById(R.id.drawer_layout);
+      drawer.closeDrawer(GravityCompat.START);
+      return true;
+  }
 }
