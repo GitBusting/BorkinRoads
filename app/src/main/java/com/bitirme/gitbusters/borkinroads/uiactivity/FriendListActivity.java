@@ -1,6 +1,8 @@
 package com.bitirme.gitbusters.borkinroads.uiactivity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -11,12 +13,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -44,7 +49,11 @@ public class FriendListActivity extends AppCompatActivity implements NavigationV
   private ArrayList<UserRecord> allUsers;
   private ArrayList<UserRecord> friends;
   private ArrayList<UserRecord> notFriends;
+
+  private ArrayList<Button> visibleButtonList;
   private LinearLayout ll;
+
+  private String lastVisibleText;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -91,10 +100,12 @@ public class FriendListActivity extends AppCompatActivity implements NavigationV
         resetLayout();
         String search = s.toString();
         ArrayList<UserRecord> fitting = searchUser(search);
-        if(s.equals(""))
+        if(s.equals("") || s.length() < 1) {
           resetLayout();
+        }
         else
           displayUsersOnLayout(fitting, false);
+        lastVisibleText = s.toString();
       }
     });
 
@@ -112,6 +123,8 @@ public class FriendListActivity extends AppCompatActivity implements NavigationV
       }
     });
 
+    lastVisibleText = null;
+    visibleButtonList = new ArrayList<>();
     friends = new ArrayList<>();
     notFriends = new ArrayList<>();
     allUsers = new ArrayList<>();
@@ -176,7 +189,8 @@ public class FriendListActivity extends AppCompatActivity implements NavigationV
       String petText = "";
       for(DoggoRecord dr : ur.getPets())
         petText += dr.getName() + " ";
-      tv.setText(ur.getName()+ ": " + petText);
+      tv.setGravity(Gravity.CENTER);
+      tv.setText(ur.getName());
       newLL.addView(tv);
       final int userID = ur.getEntryID();
       if(friends)
@@ -190,6 +204,7 @@ public class FriendListActivity extends AppCompatActivity implements NavigationV
         });
         rmButton.setText("REMOVE");
         newLL.addView(rmButton);
+        visibleButtonList.add(rmButton);
       }else
       {
         Button addButton = new Button(this);
@@ -201,6 +216,7 @@ public class FriendListActivity extends AppCompatActivity implements NavigationV
         });
         addButton.setText("ADD");
         newLL.addView(addButton);
+        visibleButtonList.add(addButton);
       }
       ll.addView(newLL);
     }
@@ -211,6 +227,7 @@ public class FriendListActivity extends AppCompatActivity implements NavigationV
     ViewGroup allEntries = ll;
     while(allEntries.getChildCount()>0)
       allEntries.removeViewAt(0);
+    visibleButtonList.clear();
   }
 
   private final void removeFriend(int userID)
@@ -255,7 +272,7 @@ public class FriendListActivity extends AppCompatActivity implements NavigationV
       throw new AssertionError("Tried to add a friend that was already a friend, " +
           "please isolate yourself from society.");
     resetLayout();
-    displayUsersOnLayout(notFriends, false);
+    displayUsersOnLayout(searchUser(lastVisibleText), false);
   }
 
   @Override
@@ -314,5 +331,37 @@ public class FriendListActivity extends AppCompatActivity implements NavigationV
     DrawerLayout drawer = findViewById(R.id.drawer_layout);
     drawer.closeDrawer(GravityCompat.START);
     return true;
+  }
+
+  // Quick aesthetics patch
+  // https://stackoverflow.com/a/23005236/11131120
+  @Override
+  public boolean dispatchTouchEvent(MotionEvent event) {
+    EditText mEditText = findViewById(R.id.edit_text);
+    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+      View v = getCurrentFocus();
+      if (mEditText.isFocused()) {
+        Rect outRect = new Rect();
+        mEditText.getGlobalVisibleRect(outRect);
+        if (!outRect.contains((int)event.getRawX(), (int)event.getRawY())) {
+          // Did not touch the edittext, but did it touch one of the buttons?
+          for (Button b : visibleButtonList)
+          {
+            Rect buttonOutRect = new Rect();
+            b.getGlobalVisibleRect(buttonOutRect);
+            // If the user pressed the button, skip doing stuff
+            if(buttonOutRect.contains((int)event.getRawX(), (int)event.getRawY()))
+              return super.dispatchTouchEvent(event);
+          }
+          mEditText.clearFocus();
+          //
+          // Hide keyboard
+          //
+          InputMethodManager imm = (InputMethodManager) v.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+          imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+        }
+      }
+    }
+    return super.dispatchTouchEvent(event);
   }
 }
